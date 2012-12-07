@@ -2,7 +2,7 @@
 #define _FACTORY_H_
 
 #ifdef WIN32
-#include <tango.h>
+#include "tango.h"
 #endif
 
 #include <Singleton.h>
@@ -12,9 +12,6 @@
 #include "Debug.h"
 #include <yat/threading/Mutex.h>
 
-#ifndef WIN32
-#include <tango.h>
-#endif
 
 #ifdef SIMULATOR_ENABLED
 	#include <SimulatorInterface.h>
@@ -53,6 +50,9 @@
     #include <RoperScientificInterface.h>
 #endif
 
+#ifndef WIN32
+#include "tango.h"
+#endif
 
 using namespace lima;
 using namespace Tango;
@@ -119,8 +119,8 @@ private:
 
 	CtControl*                     my_control;
 	static bool                    is_created;
-	std::string                         my_server_name;  
-	std::string                         my_device_name;
+	std::string                    my_server_name;  
+	std::string                    my_device_name;
 	Tango::DevState				   my_state;
 	stringstream				   my_status;
 

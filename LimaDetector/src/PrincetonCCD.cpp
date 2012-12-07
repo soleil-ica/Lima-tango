@@ -52,14 +52,14 @@ static const char *RcsId = "$Id:  $";
 //
 //===================================================================
 #ifdef WIN32
-#include <tango.h>
+#include "tango.h"
 #include <PogoHelper.h>
 #endif
 #include <PrincetonCCD.h>
 #include <PrincetonCCDClass.h>
 
 #ifndef WIN32
-#include <tango.h>
+#include "tango.h"
 #include <PogoHelper.h>
 #endif
 
