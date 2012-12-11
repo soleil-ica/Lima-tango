@@ -52,14 +52,14 @@ static const char *RcsId = "$Id:  $";
 //
 //===================================================================
 #ifdef WIN32
-#include <tango.h>
+#include "tango.h"
 #include <PogoHelper.h>
 #endif
 #include <PrincetonCCD.h>
 #include <PrincetonCCDClass.h>
 
 #ifndef WIN32
-#include <tango.h>
+#include "tango.h"
 #include <PogoHelper.h>
 #endif
 
@@ -315,6 +315,7 @@ void PrincetonCCD::always_executed_hook()
 			m_hw = dynamic_cast<RoperScientific::Interface*>(m_ct->hwInterface());
 		//- get camera to specific detector
 		m_camera = &(m_hw->getCamera());
+		this->dev_state();
 
 	}
 	catch(Exception& e)
