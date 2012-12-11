@@ -21,7 +21,7 @@
 			OutputDirectory=".\Debug"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			CharacterSet="1"
+			CharacterSet="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -41,16 +41,16 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;D:\Lima\third-party\Processlib\core\include&quot;;&quot;D:\Lima\third-party\Processlib\core\include\WindowSpecific&quot;;&quot;D:\Lima\third-party\Processlib\tasks\include&quot;;D:\Lima\control\include;D:\Lima\control\software_operation\include;D:\Lima\common\include;D:\Lima\hardware\include;D:\Lima\camera\simulator\include;D:\Lima\applications\tango\LimaDetector\src;Z:\yat4tango\include;Z:\yat\include;D:\tango\win32_vc9\win32_dll\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x0502;TANGO_HAS_DLL;LOG4TANGO_HAS_DLL;SIMULATOR_ENABLED;_HAS_ITERATOR_DEBUGGING=0"
-				MinimalRebuild="true"
+				AdditionalIncludeDirectories="&quot;$(TANGO_ROOT)\win32_vc9\win32_dll\include&quot;;&quot;$(YAT_ROOT)\include&quot;;&quot;$(YAT4TANGO_ROOT)\include&quot;;&quot;D:\Lima\third-party\Processlib\core\include&quot;;&quot;D:\Lima\third-party\Processlib\core\include\WindowSpecific&quot;;&quot;D:\Lima\third-party\Processlib\tasks\include&quot;;D:\Lima\control\include;D:\Lima\control\software_operation\include;D:\Lima\common\include;D:\Lima\hardware\include;D:\Lima\camera\simulator\include;D:\Lima\applications\tango\LimaDetector\src"
+				PreprocessorDefinitions="_WIN32_WINNT=0x0502;WIN32;_DEBUG;_CONSOLE;SIMULATOR_ENABLED;TANGO_HAS_DLL;LOG4TANGO_HAS_DLL"
+				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
 				DefaultCharIsUnsigned="false"
 				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -63,12 +63,17 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="COS414_rt.lib COSDynamic414_rt.lib log4tango.lib omniDynamic414_rt.lib omniORB414_rt.lib omnithread34_rt.lib tango.lib libYAT.lib libYAT4Tango.lib libprocesslib.lib liblimacore.lib liblimasimulator.lib"
+				AdditionalDependencies="COS414_rtd.lib COSDynamic414_rtd.lib log4tangod.lib omniDynamic414_rtd.lib omniORB414_rtd.lib omnithread34_rtd.lib tangod.lib libYATd.lib libYAT4Tangod.lib libprocesslib.lib liblimacore.lib liblimasimulator.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="D:\tango\win32_vc9\win32_dll\lib;&quot;Z:\yat\lib\shared\msvc-9.0&quot;;&quot;Z:\yat4tango\lib\shared\msvc-9.0&quot;;&quot;D:\Lima\third-party\Processlib\build\msvc\9.0\libprocesslib\Debug&quot;;D:\Lima\build\msvc\9.0\LimaCore\Debug;D:\Lima\build\msvc\9.0\LibSimulator\Debug"
+				AdditionalLibraryDirectories="&quot;$(TANGO_ROOT)\win32_vc9\win32_dll\lib&quot;;&quot;$(YAT_ROOT)\lib\shared\msvc-9.0&quot;;&quot;$(YAT4TANGO_ROOT)\lib\shared\msvc-9.0&quot;;&quot;D:\Lima\third-party\Processlib\build\msvc\9.0\libprocesslib\Debug&quot;;D:\Lima\build\msvc\9.0\LimaCore\Debug;D:\Lima\build\msvc\9.0\LibSimulator\Debug"
 				GenerateManifest="true"
 				GenerateDebugInformation="true"
 				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 				CLRImageType="0"
 			/>
@@ -119,10 +124,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="4"
+				Optimization="0"
 				EnableIntrinsicFunctions="false"
-				AdditionalIncludeDirectories="D:\tango\win32_vc9\win32_dll\include;Z:\yat\include;Z:\yat4tango\include;&quot;D:\Lima\third-party\Processlib\core\include&quot;;&quot;D:\Lima\third-party\Processlib\core\include\WindowSpecific&quot;;&quot;D:\Lima\third-party\Processlib\tasks\include&quot;;D:\Lima\control\include;D:\Lima\control\software_operation\include;D:\Lima\common\include;D:\Lima\hardware\include;D:\Lima\camera\simulator\include;D:\Lima\applications\tango\LimaDetector\src"
-				PreprocessorDefinitions="_WIN32_WINNT=0x0502;WIN32;NDEBUG;_CONSOLE;SIMULATOR_ENABLED;TANGO_HAS_DLL;LOG4TANGO_HAS_DLL"
+				AdditionalIncludeDirectories="&quot;$(TANGO_ROOT)\win32_vc9\win32_dll\include&quot;;&quot;$(YAT_ROOT)\include&quot;;&quot;$(YAT4TANGO_ROOT)\include&quot;;&quot;D:\Lima\third-party\Processlib\core\include&quot;;&quot;D:\Lima\third-party\Processlib\core\include\WindowSpecific&quot;;&quot;D:\Lima\third-party\Processlib\tasks\include&quot;;..\..\..\..\..\..\control\include;..\..\..\..\..\..\control\software_operation\include;..\..\..\..\..\..\common\include;..\..\..\..\..\..\hardware\include;..\..\..\..\..\..\camera\simulator\include;..\..\..\..\..\..\camera\roperscientific\sdk\msvc\include;..\..\..\..\..\..\camera\roperscientific\include;..\..\..\..\..\..\applications\tango\LimaDetector\src"
+				PreprocessorDefinitions="_WIN32_WINNT=0x0502;WIN32;NDEBUG;_CONSOLE;SIMULATOR_ENABLED;PRINCETON_ENABLED;TANGO_HAS_DLL;LOG4TANGO_HAS_DLL"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="true"
 				EnableFunctionLevelLinking="false"
@@ -141,9 +146,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="COS414_rt.lib COSDynamic414_rt.lib log4tango.lib omniDynamic414_rt.lib omniORB414_rt.lib omnithread34_rt.lib tango.lib libYAT.lib libYAT4Tango.lib libprocesslib.lib liblimacore.lib liblimasimulator.lib $(NOINHERIT)"
+				AdditionalDependencies="COS414_rt.lib COSDynamic414_rt.lib log4tango.lib omniDynamic414_rt.lib omniORB414_rt.lib omnithread34_rt.lib tango.lib libYAT.lib libYAT4Tango.lib libprocesslib.lib liblimacore.lib liblimasimulator.lib LibRoperScientific.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="D:\tango\win32_vc9\win32_dll\lib;&quot;Z:\yat\lib\shared\msvc-9.0&quot;;&quot;Z:\yat4tango\lib\shared\msvc-9.0&quot;;&quot;D:\Lima\third-party\Processlib\build\msvc\9.0\libprocesslib\Debug&quot;;D:\Lima\build\msvc\9.0\LimaCore\Debug;D:\Lima\build\msvc\9.0\LibSimulator\Debug"
+				AdditionalLibraryDirectories="&quot;$(TANGO_ROOT)\win32_vc9\win32_dll\lib&quot;;&quot;$(YAT_ROOT)\lib\shared\msvc-9.0&quot;;&quot;$(YAT4TANGO_ROOT)\lib\shared\msvc-9.0&quot;;&quot;..\..\..\..\..\..\third-party\Processlib\build\msvc\9.0\libprocesslib\Release&quot;;..\..\..\..\..\..\build\msvc\9.0\LimaCore\Release;..\..\..\..\..\..\build\msvc\9.0\LibSimulator\Release;..\..\..\..\..\..\camera\roperscientific\build\msvc\9.0\LibRoperScientific\Release"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -185,43 +190,55 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\..\src\AcquisitionTask.cpp"
+				RelativePath="..\..\..\src\AcquisitionTask.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\ClassFactory.cpp"
+				RelativePath="..\..\..\src\ClassFactory.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\Factory.cpp"
+				RelativePath="..\..\..\src\Factory.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\LimaDetector.cpp"
+				RelativePath="..\..\..\src\LimaDetector.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\LimaDetectorClass.cpp"
+				RelativePath="..\..\..\src\LimaDetectorClass.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\LimaDetectorStateMachine.cpp"
+				RelativePath="..\..\..\src\LimaDetectorStateMachine.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\main.cpp"
+				RelativePath="..\..\..\src\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\SimulatorCCD.cpp"
+				RelativePath="..\..\..\src\PrincetonCCD.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\SimulatorCCDClass.cpp"
+				RelativePath="..\..\..\src\PrincetonCCDClass.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\SimulatorCCDStateMachine.cpp"
+				RelativePath="..\..\..\src\PrincetonCCDStateMachine.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\SimulatorCCD.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\SimulatorCCDClass.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\SimulatorCCDStateMachine.cpp"
 				>
 			</File>
 		</Filter>
@@ -231,31 +248,39 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\..\..\src\AcquisitionTask.h"
+				RelativePath="..\..\..\src\AcquisitionTask.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\Factory.h"
+				RelativePath="..\..\..\src\Factory.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\LimaDetector.h"
+				RelativePath="..\..\..\src\LimaDetector.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\LimaDetectorClass.h"
+				RelativePath="..\..\..\src\LimaDetectorClass.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\SimulatorCCD.h"
+				RelativePath="..\..\..\src\PrincetonCCD.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\SimulatorCCDClass.h"
+				RelativePath="..\..\..\src\PrincetonCCDClass.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\Singleton.h"
+				RelativePath="..\..\..\src\SimulatorCCD.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\SimulatorCCDClass.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\Singleton.h"
 				>
 			</File>
 		</Filter>
