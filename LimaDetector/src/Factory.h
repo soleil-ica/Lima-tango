@@ -47,6 +47,11 @@
 #endif
 
 #ifdef PRINCETON_ENABLED
+    #include <RoperScientificCamera.h>
+	#include <RoperScientificBinCtrlObj.h>
+    #include <RoperScientificDetInfoCtrlObj.h>
+    #include <RoperScientificRoiCtrlObj.h>
+    #include <RoperScientificSyncCtrlObj.h>   
     #include <RoperScientificInterface.h>
 #endif
 
