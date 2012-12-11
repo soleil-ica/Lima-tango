@@ -34,7 +34,7 @@ static const char *RcsId = "$Id:  $";
 //         (c) - Software Engineering Group - ESRF
 //=============================================================================
 #ifdef WIN32
-#include <tango.h>
+#include "tango.h"
 #endif
 #include <LimaDetectorClass.h>
 
@@ -71,7 +71,7 @@ static const char *RcsId = "$Id:  $";
 #endif
 
 #ifndef WIN32
-#include <tango.h>
+#include "tango.h"
 #endif
 
 /**

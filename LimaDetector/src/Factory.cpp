@@ -66,7 +66,7 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         //get the tango device/instance
         if(!ControlFactory::is_created)
         {
-            std::string  detector = detector_type;
+			std::string  detector = detector_type;
             DbDatum db_datum;
             my_server_name = Tango::Util::instance()->get_ds_name ();
             db_datum = (Tango::Util::instance()->get_database())->get_device_name(my_server_name,detector);
@@ -76,9 +76,9 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 #ifdef SIMULATOR_ENABLED
         if (detector_type.compare("SimulatorCCD")== 0)
         {
-            if(!ControlFactory::is_created)
-            {
-                my_camera_simulator         = new Simulator::Camera();
+			if(!ControlFactory::is_created)
+            {       
+				my_camera_simulator         = new Simulator::Camera();
                 my_interface_simulator      = new Simulator::Interface(*my_camera_simulator);
                 my_control                  = new CtControl(my_interface_simulator);
                 ControlFactory::is_created  = true;
