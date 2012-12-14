@@ -12,6 +12,9 @@
 #include "Debug.h"
 #include <yat/threading/Mutex.h>
 
+#ifndef WIN32
+#include "tango.h"
+#endif
 
 #ifdef SIMULATOR_ENABLED
 	#include <SimulatorInterface.h>
@@ -53,10 +56,6 @@
     #include <RoperScientificRoiCtrlObj.h>
     #include <RoperScientificSyncCtrlObj.h>   
     #include <RoperScientificInterface.h>
-#endif
-
-#ifndef WIN32
-#include "tango.h"
 #endif
 
 using namespace lima;
