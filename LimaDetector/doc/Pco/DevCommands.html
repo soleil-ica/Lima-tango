@@ -43,9 +43,9 @@
 <Br>
 <center>
 <h1>
-LimaDetector		<Br>
+Device specific for Pco detector		<Br>
 Device Commands Description 		<Br> <Br>
-LimaDetector Class	<Br>
+Pco Class	<Br>
 </h1>
 <b>
 Revision:  - Author: 
@@ -53,64 +53,69 @@ Revision:  - Author:
 </center>
 
 
-<Center>
-<Br><Br>
-<A Href="DevCommandsFrame.html"> More Details on commands.... </a><Br>
-<Br> <Br>
-<Table Border=2 Cellpadding=3 CELLSPACING=0 WIDTH="100%">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<Td COLSPAN=3> <Font Size=+2><Center><b>Device Commands for Operator Level</b></td></Font></Center>
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<Td><Center><b>Command name</b></td></Center>
-<Td><Center><b>Argument In</b></td></Center>
-<Td><Center><b>Argument Out</b></td></Center>
-<Tr><Td><b>Init</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>State</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_STATE</Font></Td>
-<Tr><Td><b>Status</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>CONST_DEV_STRING</Font></Td>
-<Tr><Td><b>Snap</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>Start</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>Stop</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>SetROI</b></Td>
-<Td><Font Size=-1>DEVVAR_ULONGARRAY</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>SetBinning</b></Td>
-<Td><Font Size=-1>DEVVAR_ULONGARRAY</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>ResetROI</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-
-
-
-</Table></Center>
-<Br> <Br> <Br> 
-<Center>
-<Table Border=2 Cellpadding=3 CELLSPACING=0 WIDTH="100%">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<Td COLSPAN=3> <Font Size=+2><Center><b>Device Commands for Expert Level Only</b></td></Font></Center>
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<Td><Center><b>Command name</b></td></Center>
-<Td><Center><b>Argument In</b></td></Center>
-<Td><Center><b>Argument Out</b></td></Center>
-<Tr><Td><b>GetAttributeAvailableValues</b></Td>
-<Td><Font Size=-1>DEV_STRING</Font></Td>
-<Td><Font Size=-1>DEVVAR_STRINGARRAY</Font></Td>
-
-
-
-</Table></Center>
+<Br>
+<Br>
+<Br>
+<A NAME="Init"><!-- --></A>
+<A NAME="Init"><!-- --></A>
+<h2>1 - Init</h2>
+<ul>
+<Li><Strong>Description: </Strong> This commands re-initialise a device keeping the same network connection.<Br>
+After an Init command executed on a device, it is not necessary for client to re-connect to the device.<Br>
+This command first calls the device <i> delete_device() </i>method and then execute its <i> init_device()</i> method.<Br>
+For C++ device server, all the memory allocated in the <i> nit_device() </i> method must be freed in the <i> delete_device() </i> method.<Br>
+The language device desctructor automatically calls the <i> delete_device() </i> method.<Br>&nbsp
+<Li><Strong>Argin:<Br>DEV_VOID</Strong>
+ : none.<Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_VOID</Strong>
+ : none.<Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::INIT<Li>Tango::STANDBY<Li>Tango::FAULT<Li>Tango::RUNNING</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
+<A NAME="State"><!-- --></A>
+<A NAME="State"><!-- --></A>
+<h2>2 - State</h2>
+<ul>
+<Li><Strong>Description: </Strong> This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.<Br>&nbsp
+<Li><Strong>Argin:<Br>DEV_VOID</Strong>
+ : none.<Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_STATE</Strong>
+ : State Code<Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::INIT<Li>Tango::STANDBY<Li>Tango::FAULT<Li>Tango::RUNNING</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
+<A NAME="Status"><!-- --></A>
+<A NAME="Status"><!-- --></A>
+<h2>3 - Status</h2>
+<ul>
+<Li><Strong>Description: </Strong> This command gets the device status (stored in its <i>device_status</i> data member) and returns it to the caller.<Br>&nbsp
+<Li><Strong>Argin:<Br>DEV_VOID</Strong>
+ : none.<Br>&nbsp
+<Li><Strong>Argout:<Br>CONST_DEV_STRING</Strong>
+ : Status description<Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::INIT<Li>Tango::STANDBY<Li>Tango::FAULT<Li>Tango::RUNNING</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
+<A NAME="Talk"><!-- --></A>
+<A NAME="Talk"><!-- --></A>
+<h2>4 - Talk</h2>
+<ul>
+<Li><Strong>Description: </Strong> A direct command to talk to de camera<Br>&nbsp
+<Li><Strong>Argin:<Br>DEV_STRING</Strong>
+ : str argin<Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_STRING</Strong>
+ : str argout<Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::INIT<Li>Tango::STANDBY<Li>Tango::FAULT<Li>Tango::RUNNING</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
 
 <!--- html Footer --->
 

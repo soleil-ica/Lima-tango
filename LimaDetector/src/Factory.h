@@ -1,8 +1,10 @@
 #ifndef _FACTORY_H_
 #define _FACTORY_H_
 
+
+//- Workaround for the RGB24 bug
 #ifdef WIN32
-#include "tango.h"
+#include <tango.h>
 #endif
 
 #include <Singleton.h>
@@ -13,7 +15,7 @@
 #include <yat/threading/Mutex.h>
 
 #ifndef WIN32
-#include "tango.h"
+#include <tango.h>
 #endif
 
 #ifdef SIMULATOR_ENABLED
@@ -58,8 +60,18 @@
     #include <RoperScientificInterface.h>
 #endif
 
+#ifdef PCO_ENABLED
+    #include <Pco.h>
+    #include <PcoBufferCtrlObj.h>
+    #include <PcoCamera.h>
+    #include <PcoCameraUtils.h>
+    #include <PcoDetInfoCtrlObj.h>
+    #include <PcoInterface.h>
+    #include <PcoSyncCtrlObj.h>   
+    
+#endif
+
 using namespace lima;
-using namespace Tango;
 
 class ControlFactory : public Singleton<ControlFactory>
 {
@@ -119,6 +131,11 @@ private:
 #ifdef PRINCETON_ENABLED
 	RoperScientific::Camera*       my_camera_princeton;
 	RoperScientific::Interface*    my_interface_princeton;
+#endif
+
+#ifdef PCO_ENABLED
+	Pco::Camera*                   my_camera_pco;
+	Pco::Interface*                my_interface_pco;
 #endif
 
 	CtControl*                     my_control;

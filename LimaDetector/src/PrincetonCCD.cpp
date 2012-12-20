@@ -470,7 +470,7 @@ void PrincetonCCD::read_shutterMode(Tango::Attribute &attr)
         Tango::Except::re_throw_exception(df,
                     static_cast<const char*> ("TANGO_DEVICE_ERROR"),
                     static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                    static_cast<const char*> ("PrincetonCCD::read_internalAcquisitionMode"));
+                    static_cast<const char*> ("PrincetonCCD::read_shutterMode"));
     }			
 }
 
@@ -531,7 +531,7 @@ void PrincetonCCD::write_shutterMode(Tango::WAttribute &attr)
         Tango::Except::re_throw_exception(df,
                     static_cast<const char*> ("TANGO_DEVICE_ERROR"),
                     static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                    static_cast<const char*> ("PrincetonCCD::write_internalAcquisitionMode"));
+                    static_cast<const char*> ("PrincetonCCD::write_shutterMode"));
     }
     catch(Exception& e)
     {
@@ -540,7 +540,7 @@ void PrincetonCCD::write_shutterMode(Tango::WAttribute &attr)
         Tango::Except::throw_exception(
                     static_cast<const char*> ("TANGO_DEVICE_ERROR"),
                     static_cast<const char*> (e.getErrMsg().c_str()),
-                    static_cast<const char*> ("PrincetonCCD::write_internalAcquisitionMode"));
+                    static_cast<const char*> ("PrincetonCCD::write_shutterMode"));
     }		
 }
 
