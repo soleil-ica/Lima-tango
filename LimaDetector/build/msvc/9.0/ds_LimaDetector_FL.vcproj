@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9,00"
 	Name="ds_LimaDetector"
-	ProjectGUID="{8EF353BA-477E-4699-B3D8-C32BCFC869F3}"
+	ProjectGUID="{EB7FEB1D-97F2-4B0A-82E3-C36EE7B5EF93}"
 	RootNamespace="DeviceLimaDetector"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
