@@ -268,7 +268,7 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
             if(!ControlFactory::is_created)
             {
                 Tango::DbData db_data;
-                db_data.push_back(Tango::Tango::DbDatum("DetectorNum"));
+				db_data.push_back(Tango::DbDatum("DetectorNum"));
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 long camera_num;
                 db_data[0] >> camera_num;
