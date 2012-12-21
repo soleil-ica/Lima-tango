@@ -153,6 +153,7 @@
 							<!--<exclude>Prosilica*.*</exclude>-->
 							<exclude>Princeton*.*</exclude>
 							<!--<exclude>Simulator*.*</exclude>-->
+							<exclude>Pco*.*</exclude>
 
 
 						</excludes>

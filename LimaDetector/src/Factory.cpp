@@ -97,10 +97,10 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         {
             if(!ControlFactory::is_created)
             {
-                DbData db_data;
-                db_data.push_back(DbDatum("DetectorIP"));
-                db_data.push_back(DbDatum("DetectorTimeout"));
-                db_data.push_back(DbDatum("DetectorPacketSize"));
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("DetectorIP"));
+                db_data.push_back(Tango::DbDatum("DetectorTimeout"));
+                db_data.push_back(Tango::DbDatum("DetectorPacketSize"));
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 std::string camera_ip;
                 db_data[0] >> camera_ip;
@@ -125,8 +125,8 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 
             if(!ControlFactory::is_created)
             {
-                DbData db_data;
-                db_data.push_back(DbDatum("XpadModel"));
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("XpadModel"));
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 std::string xpad_model;
                 db_data[0] >> xpad_model;
@@ -145,10 +145,10 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 
             if(!ControlFactory::is_created)
             {
-                DbData db_data;
-                db_data.push_back(DbDatum("DetectorIP"));
-                db_data.push_back(DbDatum("DetectorPort"));
-                db_data.push_back(DbDatum("UseReader"));
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("DetectorIP"));
+                db_data.push_back(Tango::DbDatum("DetectorPort"));
+                db_data.push_back(Tango::DbDatum("UseReader"));
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 std::string camera_ip;
                 long camera_port;
@@ -175,12 +175,12 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         {
             if(!ControlFactory::is_created)
             {
-                DbData db_data;
-                db_data.push_back(DbDatum("DetectorIP"));
-                db_data.push_back(DbDatum("DetectorPort"));
-                db_data.push_back(DbDatum("DetectorTargetPath"));
-                db_data.push_back(DbDatum("ReaderTimeout"));
-                db_data.push_back(DbDatum("UseReader"));
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("DetectorIP"));
+                db_data.push_back(Tango::DbDatum("DetectorPort"));
+                db_data.push_back(Tango::DbDatum("DetectorTargetPath"));
+                db_data.push_back(Tango::DbDatum("ReaderTimeout"));
+                db_data.push_back(Tango::DbDatum("UseReader"));
 
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 std::string camera_ip;
@@ -217,9 +217,9 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 
             if(!ControlFactory::is_created)
             {
-                DbData db_data;
-                db_data.push_back(DbDatum("ReaderTimeout"));
-                db_data.push_back(DbDatum("UseReader"));
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("ReaderTimeout"));
+                db_data.push_back(Tango::DbDatum("UseReader"));
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 short reader_timeout = 1000;
                 bool use_reader;
@@ -246,8 +246,8 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 
             if(!ControlFactory::is_created)
             {
-                DbData db_data;
-                db_data.push_back(DbDatum("DetectorIP"));
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("DetectorIP"));
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 std::string camera_ip;
                 db_data[0] >> camera_ip;
@@ -268,7 +268,7 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
             if(!ControlFactory::is_created)
             {
                 Tango::DbData db_data;
-                db_data.push_back(Tango::DbDatum("DetectorNum"));
+                db_data.push_back(Tango::Tango::DbDatum("DetectorNum"));
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 long camera_num;
                 db_data[0] >> camera_num;
