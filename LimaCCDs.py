@@ -108,6 +108,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
         self.__entry_header_delimiter = '\n'
         self.__image_number_header_delimiter = ';'
 	self.__readImage_frame_number = 0
+        self.__configInit = False
        
 #------------------------------------------------------------------
 #    Device destructor
@@ -222,6 +223,12 @@ class LimaCCDs(PyTango.Device_4Impl) :
                                'EDF' : Core.CtSaving.EDF,
                                'CBF' : Core.CtSaving.CBFFormat}
 
+	try:
+	     self.__SavingFormat['EDFGZ'] = Core.CtSaving.EDFGZ
+             self.__SavingFormatDefaultSuffix[Core.CtSaving.EDFGZ] = '.edfgz'
+	except AttributeError:
+	     pass
+
         self.__SavingFormatDefaultSuffix = {Core.CtSaving.RAW : '.raw',
                                             Core.CtSaving.EDF : '.edf',
                                             Core.CtSaving.CBFFormat : '.cbf'}
@@ -319,6 +326,28 @@ class LimaCCDs(PyTango.Device_4Impl) :
                 return callable_obj
         
         raise AttributeError('LimaCCDs has no attribute %s' % name)
+
+    def always_executed_hook(self) :
+        if not self.__configInit:
+            self.__configInit = True
+            #Configuration mgt
+            config_file_path = self.ConfigurationFilePath
+            config_default_name = self.ConfigurationDefaultName
+
+            self.__configDefaultActiveFlag = False
+            try:
+                config = self.__control.config()
+            except AttributeError:
+                pass
+            else:
+                config.setFilename(config_file_path)
+                if os.access(config_file_path,os.R_OK):
+                    try:
+                        config.load()
+                        config.apply(config_default_name)
+                        self.__configDefaultActiveFlag = True
+                    except Core.Exception:
+                        pass
 
 
 #==================================================================
@@ -1184,8 +1213,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
         attr.set_value(self.__shared_memory_names)
 
     def write_shared_memory_names(self,attr) :
-        self.__shared_memory_names = []
-        attr.get_write_value(self.__shared_memory_names)
+        self.__shared_memory_names = attr.get_write_value()
         shared_memory = self.__control.display()
         shared_memory.setNames(*self.__shared_memory_names)
 
@@ -1195,6 +1223,15 @@ class LimaCCDs(PyTango.Device_4Impl) :
     def write_shared_memory_active(self,attr):
         data = attr.get_write_value()
         self.__control.display().setActive(data)
+
+    def read_config_available_module(self,attr) :
+        config = self.__control.config()
+        attr.set_value(config.getAvailableModule())
+
+    def read_config_available_name(self,attr) :
+        config = self.__control.config()
+        attr.set_value(config.getAlias())
+        
 #==================================================================
 #
 #    LimaCCDs command methods
@@ -1250,6 +1287,11 @@ class LimaCCDs(PyTango.Device_4Impl) :
     @Core.DEB_MEMBER_FUNCT
     def reset(self) :
         self.__control.reset()
+        #reapply default config
+        if self.__configDefaultActiveFlag:
+            config = self.__control.config()
+            config.apply(self.ConfigurationDefaultName)
+
 
     ##@brief set images heaaders
     #
@@ -1284,6 +1326,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
         data = self.__control.ReadImage(image_id)
         self.__dataflat_cache = numpy.array(data.buffer.ravel())
         self.__dataflat_cache.dtype = numpy.uint8
+        data.releaseBuffer()
         return self.__dataflat_cache
 
     ##@brief get image data
@@ -1347,7 +1390,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
         #prepare the structure
         #  '>IHHHHHHHHHHHHHHIIIIIIII',
         dataheader = struct.pack(
-          'IHHIIHHHHHHHHHHHHHHHHHHIII',
+          '<IHHIIHHHHHHHHHHHHHHHHHHIII',
           0x44544159,  				# 4bytes I  - magic number
           1,           				# 2bytes H  - version
           64,          				# 2 bytes H - header length, this header
@@ -1364,6 +1407,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
         flatimage.dtype = numpy.uint8
         
         self._datacache = dataheader+flatimage.tostring()        
+        image.releaseBuffer()
         
         return ('DATA_ARRAY',  self._datacache)  
   
@@ -1461,7 +1505,39 @@ class LimaCCDs(PyTango.Device_4Impl) :
         pluginType2deviceName = dict([(x.lower().replace('deviceserver',''),y) for x,y in get_sub_devices().iteritems()])
         return pluginType2deviceName.get(pluginType,'')
 
+#----------------------------------------------------------------------------
+#                         Configuration Mgt
+#----------------------------------------------------------------------------
+    @Core.DEB_MEMBER_FUNCT
+    def configStore(self,args):
+        config_name = args.pop(0)
+        config = self.__control.config()
+        config.store(config_name,*args)
 
+    @Core.DEB_MEMBER_FUNCT
+    def configApply(self,config_name):
+        config = self.__control.config()
+        config.apply(config_name)
+
+    @Core.DEB_MEMBER_FUNCT
+    def configPop(self,config_name):
+        config = self.__control.config()
+        config.pop(config_name)
+
+    @Core.DEB_MEMBER_FUNCT
+    def configDelete(self,config_name):
+        config = self.__control.config()
+        config.remove(config_name)
+
+    @Core.DEB_MEMBER_FUNCT
+    def configFileSave(self):
+        config = self.__control.config()
+        config.save()
+
+    @Core.DEB_MEMBER_FUNCT
+    def configFileLoad(self):
+        config = self.__control.config()
+        config.load()
 
 #==================================================================
 #
@@ -1485,6 +1561,12 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         'AccThresholdCallbackModule':
         [PyTango.DevString,
          "Plugin name file which manage threshold",[]],
+        'ConfigurationFilePath' :
+        [PyTango.DevString,
+         "Configuration file path",[os.path.join(os.path.expanduser('~'),'lima_%s.cfg' % sys.argv[1])]],
+        'ConfigurationDefaultName' :
+        [PyTango.DevString,
+         "Default configuration name",["default"]],
         }
 
     #    Command definitions
@@ -1537,6 +1619,24 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         'getPluginDeviceNameFromType':
         [[PyTango.DevString,"plugin type"],
          [PyTango.DevString,"device name"]],
+        'configStore':
+        [[PyTango.DevVarStringArray,"config name,module1,module2,...,modulen"],
+         [PyTango.DevVoid,""]],
+        'configApply':
+        [[PyTango.DevString,"config name"],
+         [PyTango.DevVoid,""]],
+        'configPop':
+        [[PyTango.DevString,"config name"],
+         [PyTango.DevVoid,""]],
+        'configDelete':
+        [[PyTango.DevString,"config name"],
+         [PyTango.DevVoid,""]],
+        'configFileSave':
+        [[PyTango.DevVoid,""],
+         [PyTango.DevVoid,""]],
+        'configFileLoad':
+        [[PyTango.DevVoid,""],
+         [PyTango.DevVoid,""]],
 	}
     
     #    Attribute definitions
@@ -1853,6 +1953,14 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         [[PyTango.DevBoolean,
           PyTango.SCALAR,
           PyTango.READ_WRITE]],
+        'config_available_module':
+        [[PyTango.DevString,
+          PyTango.SPECTRUM,
+          PyTango.READ,1024]],
+        'config_available_name':
+        [[PyTango.DevString,
+          PyTango.SPECTRUM,
+          PyTango.READ,1024]],
         }
 
 

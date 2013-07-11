@@ -292,6 +292,7 @@ class LimaTacoCCDs(PyTango.Device_4Impl, object):
         data = control.ReadImage(int(frame_nb))
         self._data_cache = numpy.array(data.buffer.ravel())
 	self._data_cache.dtype = numpy.uint8
+        data.releaseBuffer()
         if self._data_cache.shape[0] != frame_size:
             raise Core.Exception, ('Client expects %d bytes, frame has %d' % 
                                    (frame_size, self._data_cache.shape[0]))
@@ -372,6 +373,7 @@ class LimaTacoCCDs(PyTango.Device_4Impl, object):
         concat_frames = control.ReadImage(0, nb_frames)
         self._concat_data_cache = data_header + concat_frames.buffer.tostring()
         da_len = len(self._concat_data_cache) - header_len
+        concat_frames.releaseBuffer()
         if da_len != frame_size:
             raise Core.Exception, ('Client expects %d bytes, frame has %d' % 
                                    (frame_size, da_len))
@@ -498,6 +500,8 @@ class LimaTacoCCDs(PyTango.Device_4Impl, object):
             pars.overwritePolicy = Core.CtSaving.Abort
         if pars.suffix.lower()[-4:] == '.edf':
             pars.fileFormat = Core.CtSaving.EDF
+        elif pars.suffix.lower()[-6:] == '.edfgz':
+            pars.fileFormat = Core.CtSaving.EDFGZ
         elif pars.suffix.lower()[-4:] == '.cbf':
             pars.fileFormat = Core.CtSaving.CBFFormat
         else:
@@ -714,10 +718,14 @@ class LimaTacoCCDs(PyTango.Device_4Impl, object):
 	control = _control_ref()
 	try:
 	    display = control.display()
-	    display.setNames('_ccd_ds_', 'limaccd_live')
-	    display.setActive(livedisplay_act)
 	except AttributeError:
+	    return
+	try:
+	    if livedisplay_act:
+	        display.setNames('_ccd_ds_', 'limaccd_live')
+	except Core.Exception:
 	    pass
+	display.setActive(livedisplay_act)
 
     @Core.DEB_MEMBER_FUNCT
     def getLiveDisplay(self):
@@ -772,6 +780,20 @@ class LimaTacoCCDs(PyTango.Device_4Impl, object):
 	control = _control_ref()
         saving = control.saving()
         saving.writeFrame(frame_nb,1,synchronous)
+
+#------------------------------------------------------------------
+#    DevCcdWriteAll command:
+#
+#    Description: 
+#------------------------------------------------------------------
+    @Core.DEB_MEMBER_FUNCT
+    def DevCcdWriteAll(self):
+	control = _control_ref()
+	acq = control.acquisition()
+	nbConcat = acq.getConcatNbFrames()
+
+        saving = control.saving()
+        saving.writeFrame(0,nbConcat)
 
 #------------------------------------------------------------------
 #    DevCcdGetBin command:
@@ -889,6 +911,7 @@ class LimaTacoCCDs(PyTango.Device_4Impl, object):
         control = _control_ref()
         img_data = control.ReadImage(-1)
         self.__bpm_task.process(img_data)
+        img_data.releaseBuffer()
         bpm_pars = self.__bpm_mgr.getResult(1)
         if bpm_pars.errorCode != self.__bpm_mgr.OK:
             raise Core.Exception,'Error calculating beam params: %d' % bpm_pars.errorCode
@@ -1128,6 +1151,9 @@ class LimaTacoCCDsClass(PyTango.DeviceClass):
             [PyTango.DevLong, ""]],
         'DevCcdWriteFile':
             [[PyTango.DevLong, "frame to write"],
+            [PyTango.DevVoid, ""]],
+	'DevCcdWriteAll':
+            [[PyTango.DevVoid, ""],
             [PyTango.DevVoid, ""]],
         'DevCcdGetBin':
             [[PyTango.DevVoid, ""],

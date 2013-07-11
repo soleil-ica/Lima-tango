@@ -48,6 +48,25 @@ class RoiCounterDeviceServer(BasePostProcess) :
                 
 	BasePostProcess.__init__(self,cl,name)
 	RoiCounterDeviceServer.init_device(self)
+        try:
+            ctControl = _control_ref()
+            config = ctControl.config()
+
+            class _RoiConfigSave(Core.CtConfig.ModuleTypeCallback) :
+                def __init__(self,cnt):
+                    Core.CtConfig.ModuleTypeCallback.__init__(self,"RoiCounters")
+                    self.__cnt = weakref.ref(cnt)
+                def store(self) :
+                    cnt = self.__cnt()
+                    return cnt.get_current_config()
+                def restore(self,c) :
+                    cnt = self.__cnt()
+                    cnt.apply_config(c)
+
+            self.__roiConfigsave = _RoiConfigSave(self)
+            config.registerModule(self.__roiConfigsave)
+        except AttributeError:
+            pass
 
     def set_state(self,state) :
 	if(state == PyTango.DevState.OFF) :
@@ -78,9 +97,8 @@ class RoiCounterDeviceServer(BasePostProcess) :
 #    Write BufferSize attribute
 #------------------------------------------------------------------
     def write_BufferSize(self, attr):
-	data=[]
-	attr.get_write_value(data)
-        self.__roiCounterMgr.setBufferSize(data[0])
+	data = attr.get_write_value()
+        self.__roiCounterMgr.setBufferSize(data)
 
 
 #------------------------------------------------------------------
@@ -117,6 +135,46 @@ class RoiCounterDeviceServer(BasePostProcess) :
             returnList.extend((p.x,p.y,s.getWidth(),s.getHeight()))
         return returnList
 
+    def get_current_config(self):
+        returnDict = {}
+        if self.__roiCounterMgr:
+            returnDict["active"] = True
+            returnDict["runLevel"] = self._runLevel
+            for i,roi in enumerate(self.__roiCounterMgr.get()) :
+                p = roi.getTopLeft()
+                s = roi.getSize()
+                returnDict["roi_%d" % i] = {"x":p.x,
+                                            "y":p.y,
+                                            "width":s.getWidth(),
+                                            "height":s.getHeight()}
+        else:
+            returnDict["active"] = False
+        return returnDict
+
+    def apply_config(self,c) :
+        active = c.get("active",False)
+        self.Stop()
+        if active:
+            self._runLevel = c.get("runLevel",0)
+            self.Start()
+            roi_list = [(key,values) for key,values in c.iteritems() if key.startswith('roi_')]
+            def _sort(a,b):
+                ak,_ = a
+                bk,_ = b
+                return int(ak.split('_')[-1]) - int(bk.split('_')[-1])
+            roi_list.sort(_sort)
+            rois = []
+            for roi_name,values in roi_list:
+                try:
+                    rois.append(Core.Roi(values['x'],
+                                         values['y'],
+                                         values['width'],
+                                         values['height']))
+                except:
+                    import traceback
+                    traceback.print_exc()
+            self.__roiCounterMgr.set(rois)
+                
     def clearAllRoi(self):
         self.__roiCounterMgr.clearAllRoi()
 
@@ -146,6 +204,41 @@ class RoiCounterDeviceServer(BasePostProcess) :
                                                                 result.minValue,
                                                                 result.maxValue)
                         indexArray += 6
+                return returnArray
+        return numpy.array([0],dtype = numpy.double)
+
+    def readCountersByFrame(self,argin) :
+        roiResultCounterList = self.__roiCounterMgr.readCounters(argin)
+        nrCounters = 6
+	if roiResultCounterList:
+            nrFrames = len(roiResultCounterList[0][1])
+            for roiId,resultList in roiResultCounterList:
+                if nrFrames > len(resultList):
+                    nrFrames = len(resultList)
+            
+            if nrFrames :
+	    	nrRois = len(roiResultCounterList)
+		returnArray = numpy.zeros(nrFrames * nrRois * nrCounters + 1,dtype = numpy.double)
+		#print "--- nrRois[%d]  nrFrames[%d] array[%d]" %(nrRois, nrFrames, len(returnArray)) 
+                returnArray[0] = float(nrFrames)
+
+                for roiId,resultList in roiResultCounterList:
+                    iRoi = roiId - 1
+		    iFrame=0
+		    for result in resultList[:nrFrames] :
+		    	#indexArray = (iRoi * nrFrames + iFrame) * nrCounters + 0 + 1 
+
+                        # ordered: frame -> roi -> counter
+		    	indexArray = (iFrame * nrRois + iRoi) * nrCounters + 1 
+                        #print "    index[%d] roiId[%d] iFrame[%d]" % (indexArray, iRoi, iFrame) 
+
+                        returnArray[indexArray:indexArray+6] = (float(result.frameNumber),
+                                                                result.sum,
+                                                                result.average,
+                                                                result.std,
+                                                                result.minValue,
+                                                                result.maxValue)
+                        iFrame += 1
                 return returnArray
         return numpy.array([0],dtype = numpy.double)
 
@@ -195,6 +288,9 @@ class RoiCounterDeviceServerClass(PyTango.DeviceClass):
         'readCounters':
         [[PyTango.DevLong,"from which frame"],
          [PyTango.DevVarDoubleArray,"number of result for each roi,frame number 0,sum 0,average 0,std 0,min 0,max 0,frame number 1,sum 1,average 1,std 1,min 1,max 1..."]],
+        'readCountersByFrame':
+        [[PyTango.DevLong,"from which frame"],
+         [PyTango.DevVarDoubleArray,"number of result for each frame,(roi0) frame number,sum,average,std,min,max, (roi1) frame number,sum,average,std,min,max..."]],
 	'Start':
 	[[PyTango.DevVoid,""],
 	 [PyTango.DevVoid,""]],
