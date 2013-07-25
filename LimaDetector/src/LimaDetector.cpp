@@ -2719,14 +2719,6 @@ void LimaDetector::write_flipX(Tango::WAttribute &attr)
 	DEBUG_STREAM << "LimaDetector::write_flipX(Tango::WAttribute &attr) entering... "<< endl;
     try
     {
-    	//TODO : activate when flip is correct
-
-		//- throw exception
-		Tango::Except::throw_exception( (const char*) ("CONFIGURATION_ERROR"),
-										(const char*) ("This functionnality is not already Available !\n"),
-										(const char*) ("LimaDetector::write_flipX"));
-
-		
 		attr.get_write_value(attr_flipX_write);
 
 		Flip flip;
@@ -2794,13 +2786,6 @@ void LimaDetector::write_flipY(Tango::WAttribute &attr)
 	DEBUG_STREAM << "LimaDetector::write_flipY(Tango::WAttribute &attr) entering... "<< endl;
     try
     {
-    	//TODO : activate when flip is correct
-
-		//- throw exception
-		Tango::Except::throw_exception( (const char*) ("CONFIGURATION_ERROR"),
-										(const char*) ("This functionnality is not already Available !\n"),
-										(const char*) ("LimaDetector::write_flipY"));
-		
 		attr.get_write_value(attr_flipY_write);
 		Flip flip;
 		m_ct->image()->getFlip(flip);
@@ -3215,14 +3200,28 @@ Tango::DevVarStringArray *LimaDetector::get_attribute_available_values(Tango::De
 		transform(attribute_name.begin(), attribute_name.end(),attribute_name.begin(), ::toupper);
 		if(attribute_name == "TRIGGERMODE")
 		{
-			argout->length(7);
-			(*argout)[0] = CORBA::string_dup("INTERNAL_SINGLE");
-			(*argout)[1] = CORBA::string_dup("EXTERNAL_SINGLE");
-			(*argout)[2] = CORBA::string_dup("EXTERNAL_MULTI");
-			(*argout)[3] = CORBA::string_dup("EXTERNAL_GATE");
-            (*argout)[4] = CORBA::string_dup("INTERNAL_MULTI");
-            (*argout)[5] = CORBA::string_dup("EXTERNAL_START_STOP");
-            (*argout)[6] = CORBA::string_dup("EXTERNAL_READOUT");
+            TrigModeList modeList;
+            m_ct->acquisition()->getTriggerModeList(modeList);
+
+            argout->length(modeList.size());
+
+            for (int i = 0; i < modeList.size(); i++)
+            {
+                if (modeList[i] == IntTrig)
+                    (*argout)[i] = CORBA::string_dup("INTERNAL_SINGLE");
+                else if (modeList[i] == ExtTrigSingle)
+                    (*argout)[i] = CORBA::string_dup("EXTERNAL_SINGLE");
+                else if (modeList[i] == ExtTrigMult)
+                    (*argout)[i] = CORBA::string_dup("EXTERNAL_MULTI");
+                else if (modeList[i] == ExtGate)
+                    (*argout)[i] = CORBA::string_dup("EXTERNAL_GATE");
+                else if (modeList[i] == IntTrigMult)
+                    (*argout)[i] = CORBA::string_dup("INTERNAL_MULTI");
+                else if (modeList[i] == ExtStartStop)
+                    (*argout)[i] = CORBA::string_dup("EXTERNAL_START_STOP");
+                else if (modeList[i] == ExtTrigReadout)
+                    (*argout)[i] = CORBA::string_dup("EXTERNAL_READOUT");
+            }
 		}
         else if( (attribute_name == "SHUTTERMODE") && (m_ct->shutter()->hasCapability()))
         {
