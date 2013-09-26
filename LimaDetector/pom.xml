@@ -17,41 +17,17 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>com.basler</groupId>
-			<artifactId>Genicam-${aol}-shared-${mode}</artifactId>
-			<version>2.1.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.basler</groupId>
-			<artifactId>Pylon-${aol}-shared-${mode}</artifactId>
-			<version>2.3.3</version>
-		</dependency>
-			
-		<dependency>
-			<groupId>fr.in2p3</groupId>
-			<artifactId>Xpix-${aol}-static-release</artifactId>
-			<version>2.0.7</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.adsc-xray.lib</groupId>
-			<artifactId>AdscDriver-${aol}-shared-${mode}</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
-            
-		<dependency>
-			<groupId>fr.soleil.lib</groupId>
-			<artifactId>Utils-${aol}-${library}-${mode}</artifactId>
-		</dependency>
-            
-		<dependency>
 			<groupId>fr.soleil.lib.Lima</groupId>
 			<artifactId>LimaControl-${aol}-shared-${mode}</artifactId>
 			<version>1.2.3</version>         
 		</dependency>
 
+		<dependency>
+			<groupId>fr.soleil.lib.Lima.Camera</groupId>
+			<artifactId>LimaAviex-${aol}-shared-${mode}</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+        
 		<dependency>
 			<groupId>fr.soleil.lib.Lima.Camera</groupId>
 			<artifactId>LimaBasler-${aol}-shared-${mode}</artifactId>
@@ -93,12 +69,7 @@
 			<artifactId>LimaSimulator-${aol}-shared-${mode}</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-			
-      <dependency>
-         <groupId>fr.soleil.lib</groupId>
-         <artifactId>NexusCPP-${aol}-${library}-${mode}</artifactId>
-      </dependency>
-                  
+                    
 		<dependency>
 			<groupId>fr.soleil.lib</groupId>
 			<artifactId>YAT4Tango-${aol}-${library}-${mode}</artifactId>   
@@ -127,6 +98,7 @@
 						<defines>
 							<define>USE_GIGE</define>													 
 							<!-- define wich detector you need to ENABLE -->
+							<define>AVIEX_ENABLED</define>	                            
 							<define>BASLER_ENABLED</define>												 
 							<define>MARCCD_ENABLED</define>
 							<define>PILATUS_ENABLED</define>
@@ -143,7 +115,7 @@
 
 						<!-- exclude every detector who is NOT ENABLED -->
 						<excludes>
- 										                      
+                            <!--<exclude>Aviex*.*</exclude>--> 										                      
 							<!--<exclude>Basler*.*</exclude>-->
 							<!--<exclude>MarCCD*.*</exclude>-->
 							<!--<exclude>Pilatus*.*</exclude>-->
@@ -154,14 +126,12 @@
 							<!--<exclude>Simulator*.*</exclude>-->
 							<exclude>Pco*.*</exclude>
 							<exclude>PerkinElmer*.*</exclude>
-
-
 						</excludes>
 
 						<!-- define less verbose mode for gcc-->
 						<options>
 							<option>-w</option>
-						</options>
+						</options>     
 					</cpp>   
 					<linker>
 						<libs>

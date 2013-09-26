@@ -698,6 +698,10 @@ public :
  */
 	virtual bool is_SetBinning_allowed(const CORBA::Any &any);
 /**
+ *	Execution allowed for ResetBinning command.
+ */
+	virtual bool is_ResetBinning_allowed(const CORBA::Any &any);
+/**
  *	Execution allowed for ResetROI command.
  */
 	virtual bool is_ResetROI_allowed(const CORBA::Any &any);
@@ -749,6 +753,11 @@ public :
  *	@exception DevFailed
  */
 	void	set_binning(const Tango::DevVarULongArray *);
+/**
+ * Use the binning Hrizontal=1 & Verical=1 of the detector according to current Roi.
+ *	@exception DevFailed
+ */
+	void	reset_binning();
 /**
  * Use the full frame of the detector according to current Binning.
  *	@exception DevFailed
