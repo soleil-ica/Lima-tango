@@ -21,13 +21,13 @@
 			<artifactId>LimaControl-${aol}-shared-${mode}</artifactId>
 			<version>1.2.3</version>         
 		</dependency>
-
+<!-- NOT READY YET
 		<dependency>
 			<groupId>fr.soleil.lib.Lima.Camera</groupId>
 			<artifactId>LimaAviex-${aol}-shared-${mode}</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-        
+-->    
 		<dependency>
 			<groupId>fr.soleil.lib.Lima.Camera</groupId>
 			<artifactId>LimaBasler-${aol}-shared-${mode}</artifactId>
@@ -98,7 +98,7 @@
 						<defines>
 							<define>USE_GIGE</define>													 
 							<!-- define wich detector you need to ENABLE -->
-							<define>AVIEX_ENABLED</define>	                            
+							<!--<define>AVIEX_ENABLED</define>-->
 							<define>BASLER_ENABLED</define>												 
 							<define>MARCCD_ENABLED</define>
 							<define>PILATUS_ENABLED</define>
@@ -115,7 +115,7 @@
 
 						<!-- exclude every detector who is NOT ENABLED -->
 						<excludes>
-                            <!--<exclude>Aviex*.*</exclude>--> 										                      
+                                                        <exclude>Aviex*.*</exclude>
 							<!--<exclude>Basler*.*</exclude>-->
 							<!--<exclude>MarCCD*.*</exclude>-->
 							<!--<exclude>Pilatus*.*</exclude>-->
