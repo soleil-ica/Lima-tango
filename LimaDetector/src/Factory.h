@@ -87,6 +87,18 @@
     #include <PerkinElmerSyncCtrlObj.h>    
 #endif
 
+#ifdef ANDOR3_ENABLED
+    #include <Andor3BinCtrlObj.h>
+    #include <Andor3Camera.h>
+    #include <Andor3DetInfoCtrlObj.h>
+    #include <Andor3Interface.h>
+    #include <Andor3RoiCtrlObj.h>
+    #include <Andor3ShutterCtrlObj.h>
+    #include <Andor3SyncCtrlObj.h>    
+#endif
+
+
+
 using namespace lima;
 
 class ControlFactory : public Singleton<ControlFactory>
@@ -160,6 +172,11 @@ private:
 
 #ifdef PERKINELMER_ENABLED
 	PerkinElmer::Interface*        my_interface_perkinelmer;
+#endif
+
+#ifdef ANDOR3_ENABLED
+    Andor3::Camera* my_camera_andor3;
+    Andor3::Interface* my_interface_andor3;
 #endif
 
 	CtControl*                     my_control;
