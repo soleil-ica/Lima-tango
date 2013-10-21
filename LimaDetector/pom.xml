@@ -9,13 +9,14 @@
 
 	<groupId>fr.soleil.device</groupId>
 	<artifactId>LimaDetector-${aol}-${mode}</artifactId>
-	<version>1.2.3</version>
+	<version>1.2.4-SNAPSHOT</version>
 	<packaging>nar</packaging>
 	<name>LimaDetector</name>
 	<description>LimaDetector device</description>
 
 	<dependencies>
 
+		<!-- Mavenized drivers -->
 		<dependency>
 			<groupId>com.basler</groupId>
 			<artifactId>Genicam-${aol}-shared-${mode}</artifactId>
@@ -40,64 +41,66 @@
 			<version>1.0.0</version>
 		</dependency>
 
-            
-		<dependency>
-			<groupId>fr.soleil.lib</groupId>
-			<artifactId>Utils-${aol}-${library}-${mode}</artifactId>
-		</dependency>
-            
+		<!-- Lima modules (core and plugins) -->
 		<dependency>
 			<groupId>fr.soleil.lib.Lima</groupId>
 			<artifactId>LimaControl-${aol}-shared-${mode}</artifactId>
-			<version>1.2.3</version>         
+			<version>1.2.4-SNAPSHOT</version>         
+		</dependency>
+
+		<dependency>
+			<groupId>fr.soleil.lib.Lima.Camera</groupId>
+			<artifactId>LimaAndor3-${aol}-shared-${mode}</artifactId>
+			<version>1.2.4-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>fr.soleil.lib.Lima.Camera</groupId>
 			<artifactId>LimaBasler-${aol}-shared-${mode}</artifactId>
-			<version>1.2.3</version>
+			<version>1.2.4-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>fr.soleil.lib.Lima.Camera</groupId>
 			<artifactId>LimaMarccd-${aol}-shared-${mode}</artifactId>
-			<version>1.2.3</version>
+			<version>1.2.4-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			 <groupId>fr.soleil.lib.Lima.Camera</groupId>
 			 <artifactId>LimaPilatus-${aol}-shared-${mode}</artifactId>
-			 <version>1.2.3</version>
+			 <version>1.2.4-SNAPSHOT</version>
 		</dependency>
     
 		<dependency>
 			<groupId>fr.soleil.lib.Lima.Camera</groupId>
 			<artifactId>LimaXpad-${aol}-shared-${mode}</artifactId>
-			<version>1.2.3</version>
+			<version>1.2.4-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>fr.soleil.lib.Lima.Camera</groupId>
 			<artifactId>LimaAdsc-${aol}-shared-${mode}</artifactId>
-			<version>1.2.3</version>
+			<version>1.2.4-SNAPSHOT</version>
 		</dependency>
       
 		<dependency>
 			<groupId>fr.soleil.lib.Lima.Camera</groupId>
 			<artifactId>LimaProsilica-${aol}-shared-${mode}</artifactId>
-			<version>1.2.3</version>
+			<version>1.2.4-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>fr.soleil.lib.Lima.Camera</groupId>
 			<artifactId>LimaSimulator-${aol}-shared-${mode}</artifactId>
-			<version>1.2.3</version>
+			<version>1.2.4-SNAPSHOT</version>
 		</dependency>
-			
-      <dependency>
-         <groupId>fr.soleil.lib</groupId>
-         <artifactId>NexusCPP-${aol}-${library}-${mode}</artifactId>
-      </dependency>
+		
+		<!-- Tools -->
+		<dependency>
+			<groupId>fr.soleil.lib</groupId>
+			<artifactId>NexusCPP-${aol}-${library}-${mode}</artifactId>
+		</dependency>
                   
 		<dependency>
 			<groupId>fr.soleil.lib</groupId>
@@ -112,9 +115,9 @@
 	</dependencies>
 	
 	<scm>
-		<connection>scm:git:git://git.epn-campus.eu/repositories/Lima</connection>
-		<developerConnection>scm:git:git://git@git.epn-campus.eu/repositories/Lima</developerConnection>
-		<url>https://forge.epn-campus.eu/projects/show/lima</url>
+		<connection>scm:git:git@github.com:soleil-ica/Lima.git</connection>
+		<developerConnection>scm:git:git@github.com:soleil-ica/Lima.git</developerConnection>
+		<url>https://github.com/soleil-ica/Lima</url>
 	</scm>
 	
 	<build>
@@ -125,7 +128,8 @@
 				<configuration>
 					<cpp>
 						<defines>
-							<define>USE_GIGE</define>													 
+							<define>USE_GIGE</define>	
+							
 							<!-- define wich detector you need to ENABLE -->
 							<define>BASLER_ENABLED</define>												 
 							<define>MARCCD_ENABLED</define>
@@ -133,15 +137,15 @@
 							<define>XPAD_ENABLED</define>
 							<define>ADSC_ENABLED</define>   
 							<define>PROSILICA_ENABLED</define>
-							<!--<define>PRINCETON_ENABLED</define>-->
 							<define>SIMULATOR_ENABLED</define>
+							<define>ANDOR3_ENABLED</define>
 						</defines>
 
 						<systemIncludePaths>                
-							<!--<systemIncludePath></systemIncludePath>-->            
+							<systemIncludePath>/home/informatique/ica/langlois/Andor3/andor/inc</systemIncludePath>
 						</systemIncludePaths>
 
-						<!-- exclude every detector who is NOT ENABLED -->
+						<!-- exclude every detector which is NOT ENABLED -->
 						<excludes>
  										                      
 							<!--<exclude>Basler*.*</exclude>-->
@@ -154,6 +158,7 @@
 							<!--<exclude>Simulator*.*</exclude>-->
 							<exclude>Pco*.*</exclude>
 							<exclude>PerkinElmer*.*</exclude>
+							<!--<exclude>Andor3*.*</exclude>-->
 
 
 						</excludes>
@@ -163,18 +168,6 @@
 							<option>-w</option>
 						</options>
 					</cpp>   
-					<linker>
-						<libs>
-
-							<!--						<lib>
- 						 <name>pvcam</name>
- 						 <type>shared</type>
- 						 <directory></directory>
-							</lib>-->
-                                     
-						</libs>
-
-					</linker>                  
 				</configuration>
 			</plugin>
 
@@ -185,6 +178,18 @@
 		<developer>
 			<id>noureddine</id>
 			<name>noureddine</name>
+			<url>http://controle/</url>
+			<organization>Synchrotron Soleil</organization>
+			<organizationUrl>http://www.synchrotron-soleil.fr</organizationUrl>
+			<roles>
+				<role>developper</role>
+			</roles>
+			<timezone>1</timezone>
+		</developer>
+
+		<developer>
+			<id>langlois</id>
+			<name>langlois</name>
 			<url>http://controle/</url>
 			<organization>Synchrotron Soleil</organization>
 			<organizationUrl>http://www.synchrotron-soleil.fr</organizationUrl>

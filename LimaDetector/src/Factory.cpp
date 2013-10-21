@@ -59,6 +59,11 @@ void ControlFactory::initialize_pointers()
     my_interface_perkinelmer= 0;
 #endif
 
+#ifdef ANDOR3_ENABLED
+    my_camera_andor3        = 0;
+    my_interface_andor3	    = 0;
+#endif
+
     my_server_name 			= "none";
     my_device_name 			= "none";
 
@@ -312,6 +317,31 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         }
 #endif
 
+#ifdef ANDOR3_ENABLED
+        if (detector_type.compare("Andor3")== 0)
+        {
+            if(!ControlFactory::is_created)
+            {
+                Tango::DbData db_data;
+				db_data.push_back(Tango::DbDatum("BitFlowPath"));
+                db_data.push_back(Tango::DbDatum("CameraNumber"));
+                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                std::string bit_flow_path;
+                long camera_number;
+                db_data[0] >> bit_flow_path;
+                db_data[1] >> camera_number;
+                
+                my_camera_andor3            = new Andor3::Camera(bit_flow_path,camera_number);
+                my_interface_andor3         = new Andor3::Interface(*my_camera_andor3);
+                my_control                  = new CtControl(my_interface_andor3);
+                ControlFactory::is_created  = true;
+                return my_control;
+            }
+        }
+#endif
+
+        
+
         if(!ControlFactory::is_created)
             throw LIMA_HW_EXC(Error, "Unable to create the lima control object : Unknown Detector Type");
 
@@ -513,6 +543,24 @@ void ControlFactory::reset(const std::string& detector_type )
                 }                
             }
 #endif
+
+#ifdef ANDOR3_ENABLED
+            if (detector_type.compare("Andor3")==0)
+            {
+                if(my_interface_andor3)
+                {
+                    delete my_interface_andor3;
+                    my_interface_andor3 = 0;
+                }
+
+                if(my_camera_andor3)
+                {
+                    delete my_camera_andor3;
+                    my_camera_andor3 = 0;
+                }
+            }
+#endif
+    
         }
     }
     catch(Tango::DevFailed& df)
