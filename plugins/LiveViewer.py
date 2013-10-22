@@ -190,14 +190,14 @@ class LiveViewer (PyTango.Device_4Impl):
     def write_Exposure(self, attr):
 
         data=attr.get_write_value()
-        self.control.stopAcq()
+	state = self.dev_state()
+        self.Stop()
         try:
             self.acquisition.setAcqExpoTime(data)
         except:
             self.debug_stream("Exposure time out of range")
 	    
-        self.control.prepareAcq()
-        self.control.startAcq()
+        if state == PyTango.DevState.ON: self.Start()
 
     ## @brief Read the gain
     #
@@ -216,14 +216,11 @@ class LiveViewer (PyTango.Device_4Impl):
     def write_Gain(self, attr):
 
         data=attr.get_write_value()
-	self.control.stopAcq()
         try:
             self.interface.setGain(data)
         except:
 	    self.debug_stream("Camera interface does not support Gain")
 	    
-        self.control.prepareAcq()
-        self.control.startAcq()
 	
     ## @brief Read Frame rate
     #
@@ -262,11 +259,10 @@ class LiveViewer (PyTango.Device_4Impl):
     @Core.DEB_MEMBER_FUNCT            
     def write_Frames(self, attr):
         data=attr.get_write_value()
-
-        self.control.stopAcq()
+        state = self.dev_state()
+        self.Stop()
 	self.acquisition.setAcqNbFrames(data)
-        self.control.prepareAcq()
-        self.control.startAcq()
+        if state == PyTango.DevState.ON: self.Start()
 
     ## @brief Read last image acquire number
     #
@@ -318,13 +314,11 @@ class LiveViewer (PyTango.Device_4Impl):
         data=attr.get_write_value()
 	if data: trigMode = Core.ExtTrigSingle
 	else: trigMode = Core.IntTrig
-	
-	self.control.stopAcq()
+	state = self.dev_state()
+	self.Stop()
 
         self.acquisition.setTriggerMode(trigMode)
-
-        self.control.prepareAcq()
-        self.control.startAcq()
+        if state == PyTango.DevState.ON: self.Start()
 
     ## @brief Read ROI definition
     #
@@ -342,14 +336,14 @@ class LiveViewer (PyTango.Device_4Impl):
     def write_Roi(self, attr):
 
         data=attr.get_write_value()
-	self.control.stopAcq()
+	state  = dev_state()
+	self.Stop()
         
 	roi = Core.Roi()
 	roi.setCorners(Core.Point(data[0],data[1]), Core.Point(data[2],data[3]))
 	self.image.setRoi(roi)
 	
-        self.control.prepareAcq()
-        self.control.startAcq()
+        if state == PyTango.DevState.ON: self.Start()
         
     ## @brief Read the last Image
     #
@@ -410,25 +404,27 @@ class LiveViewer (PyTango.Device_4Impl):
     #
     @Core.DEB_MEMBER_FUNCT
     def Reset(self):
+        self.Stop()
     	self.control.reset()
 	
     ## @brief ResetRoi command: reset the camera to full image size
     #
     @Core.DEB_MEMBER_FUNCT
     def ResetRoi(self):
-	self.control.stopAcq()
+	self.Stop()
 	self.image.resetRoi()
-        	
-        self.control.prepareAcq()
-        self.control.startAcq()
+        self.Start()        
+
 	
     ## @brief Start command: start the acquisition
     #
     @Core.DEB_MEMBER_FUNCT
     def Start(self):
-        self.control.stopAcq()
-	self.control.prepareAcq()
-	self.control.startAcq()
+        #kind of state machine !!!!
+	if self.dev_state() != PyTango.DevState.ON:
+            self.control.stopAcq()
+	    self.control.prepareAcq()
+	    self.control.startAcq()
 
     ## @brief Stop command: stop the acquisition
     #
@@ -480,7 +476,7 @@ class LiveViewerClass(PyTango.DeviceClass):
              'unit':"second",
              'standard unit':"second",
              'display unit':"second",
-             'format':"%f",
+             'format':"%6.4f",
          }],
         'Gain':
             [[PyTango.DevDouble,
@@ -491,7 +487,7 @@ class LiveViewerClass(PyTango.DeviceClass):
              'description':"Gain of the camera",
              'unit':"dB",
              'display unit':"dB",
-             'format':"%d",
+             'format':"%5.2f",
          }],
         'FrameRate':
             [[PyTango.DevDouble,
@@ -503,7 +499,7 @@ class LiveViewerClass(PyTango.DeviceClass):
              'unit':"Hz",
              'standard unit':"Hz",
              'display unit':"Hz",
-             'format':"%f",
+             'format':"%5.2f",
          }],
         'Frames':
             [[PyTango.DevLong,
@@ -515,7 +511,7 @@ class LiveViewerClass(PyTango.DeviceClass):
              'unit':"image",
              'standard unit':"image",
              'display unit':"image",
-             'format':"%d",
+             'format':"%5d",
          }],
         'ImageCounter':
             [[PyTango.DevLong,
@@ -527,7 +523,7 @@ class LiveViewerClass(PyTango.DeviceClass):
              'unit':"image",
              'standard unit':"image",
              'display unit':"image",
-             'format':"%d",
+             'format':"%5d",
          }],
 	    
         'Depth':
@@ -540,7 +536,7 @@ class LiveViewerClass(PyTango.DeviceClass):
              'unit':"byte",
              'standard unit':"byte",
              'display unit':"byte",
-             'format':"%d",
+             'format':"%1d",
          }],
         'JpegQuality':
             [[PyTango.DevLong,
@@ -551,7 +547,7 @@ class LiveViewerClass(PyTango.DeviceClass):
              'unit':"%",
              'standard unit':"%",
              'display unit':"%",
-             'format':"%d",
+             'format':"%3d",
              'description':"The JPEG Quality factor applied for the JpegImage compression",
          }],
         'ExternalTrigger':
@@ -564,7 +560,7 @@ class LiveViewerClass(PyTango.DeviceClass):
              'unit':"",
              'standard unit':"",
              'display unit':"",
-             'format':"%d",
+             'format':"%1d",
          }],
         'Roi':
             [[PyTango.DevLong,
@@ -576,7 +572,7 @@ class LiveViewerClass(PyTango.DeviceClass):
              'unit':"",
              'standard unit':"",
              'display unit':"",
-             'format':"%d",
+             'format':"%4d",
          }],	    
         'JpegImage':
             [[PyTango.DevEncoded,
