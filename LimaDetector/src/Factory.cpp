@@ -15,6 +15,11 @@ void ControlFactory::initialize_pointers()
     my_interface_simulator 	= 0;
 #endif
 
+#ifdef AVIEX_ENABLED
+    my_camera_aviex 		= 0;
+    my_interface_aviex   	= 0;
+#endif
+    
 #ifdef BASLER_ENABLED
     my_camera_basler 		= 0;
     my_interface_basler 	= 0;
@@ -102,6 +107,29 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         }
 #endif
 
+#ifdef AVIEX_ENABLED
+        if (detector_type.compare("AviexCCD")== 0)
+        {
+            if(!ControlFactory::is_created)
+            {
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("DetectorID"));
+                db_data.push_back(Tango::DbDatum("MxDatabaseFileFullName"));
+                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                std::string detector_id;
+                std::string database_file;
+                db_data[0] >> detector_id;
+                db_data[1] >> database_file;
+                my_camera_aviex            = new Aviex::Camera(detector_id, database_file);                
+                
+                my_interface_aviex         = new Aviex::Interface(*my_camera_aviex);
+                my_control                  = new CtControl(my_interface_aviex);          
+                ControlFactory::is_created  = true;
+                return my_control;
+            }
+        }
+#endif
+        
 #ifdef BASLER_ENABLED
         if (detector_type.compare("BaslerCCD")== 0)
         {
@@ -395,6 +423,23 @@ void ControlFactory::reset(const std::string& detector_type )
             }
 #endif        
 
+#ifdef AVIEX_ENABLED
+            if (detector_type.compare("AviexCCD")==0)
+            {
+                if(my_camera_aviex)
+                {
+                    delete my_camera_aviex;
+                    my_camera_aviex = 0;
+                }
+
+                if(my_interface_aviex)
+                {
+                    delete my_interface_aviex;
+                    my_interface_aviex = 0;
+                }
+            }
+#endif
+            
 #ifdef BASLER_ENABLED
             if (detector_type.compare("BaslerCCD")==0)
             {

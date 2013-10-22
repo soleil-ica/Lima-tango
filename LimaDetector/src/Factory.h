@@ -22,6 +22,15 @@
 #include <SimulatorInterface.h>
 #endif
 
+#ifdef AVIEX_ENABLED  
+#include <AviexCamera.h>
+#include <AviexDetInfoCtrlObj.h>
+#include <AviexSyncCtrlObj.h>
+#include <AviexRoiCtrlObj.h>
+#include <AviexBinCtrlObj.h>
+#include <AviexInterface.h>
+#endif
+
 #ifdef BASLER_ENABLED  
 #include <BaslerInterface.h>
 #endif
@@ -116,6 +125,11 @@ private:
     Simulator::Interface* my_interface_simulator;
 #endif
 
+#ifdef AVIEX_ENABLED  
+    Aviex::Camera* my_camera_aviex;
+    Aviex::Interface* my_interface_aviex;
+#endif
+    
 #ifdef BASLER_ENABLED  
     Basler::Camera* my_camera_basler;
     Basler::Interface* my_interface_basler;

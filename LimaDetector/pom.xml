@@ -131,6 +131,7 @@
 							<define>USE_GIGE</define>	
 							
 							<!-- define wich detector you need to ENABLE -->
+							<!--<define>AVIEX_ENABLED</define>-->
 							<define>BASLER_ENABLED</define>												 
 							<define>MARCCD_ENABLED</define>
 							<define>PILATUS_ENABLED</define>
@@ -147,7 +148,7 @@
 
 						<!-- exclude every detector which is NOT ENABLED -->
 						<excludes>
- 										                      
+                                                        <exclude>Aviex*.*</exclude>
 							<!--<exclude>Basler*.*</exclude>-->
 							<!--<exclude>MarCCD*.*</exclude>-->
 							<!--<exclude>Pilatus*.*</exclude>-->

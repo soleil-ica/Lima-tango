@@ -42,6 +42,7 @@
 #include "CtAcquisition.h"
 #include "CtImage.h"
 #include <XpadInterface.h>
+#include <XpadCamera.h>
 #include "Factory.h"
 
 #ifndef WIN32

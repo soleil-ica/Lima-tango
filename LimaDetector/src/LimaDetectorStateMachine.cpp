@@ -838,5 +838,28 @@ bool LimaDetector::is_CloseShutter_allowed(const CORBA::Any &any)
 	}
 	return true;
 }
+//+----------------------------------------------------------------------------
+//
+// method : 		LimaDetector::is_ResetBinning_allowed
+// 
+// description : 	Execution allowed for ResetBinning command.
+//
+//-----------------------------------------------------------------------------
+bool LimaDetector::is_ResetBinning_allowed(const CORBA::Any &any)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
+	{
+		//	End of Generated Code
+		if ( get_state()==Tango::FAULT && is_device_initialized() )
+		{
+           return true;
+		}
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
 
 }	// namespace LimaDetector_ns
