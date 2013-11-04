@@ -264,8 +264,6 @@ void Andor3Class::attribute_factory(vector<Tango::Attr *> &att_list)
 	adc_gain_str_prop.set_min_value("0");
 	adc_gain_str_prop.set_description("ADC Gain Str");
 	adc_gain_str->set_default_properties(adc_gain_str_prop);
-	adc_gain_str->set_memorized();
-	adc_gain_str->set_memorized_init(true);
 	att_list.push_back(adc_gain_str);
 
 	//	Attribute : adcRate
