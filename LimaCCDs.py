@@ -234,6 +234,10 @@ class LimaCCDs(PyTango.Device_4Impl) :
         self.__SavingFormat = {'RAW' : Core.CtSaving.RAW,
                                'EDF' : Core.CtSaving.EDF,
                                'CBF' : Core.CtSaving.CBFFormat}
+	try:
+	    self.__SavingFormat['TIFF'] = Core.CtSaving.TIFFFormat
+	except AttributeError:
+	    pass
 
 	try:
 	     self.__SavingFormat['EDFGZ'] = Core.CtSaving.EDFGZ
@@ -244,6 +248,10 @@ class LimaCCDs(PyTango.Device_4Impl) :
         self.__SavingFormatDefaultSuffix = {Core.CtSaving.RAW : '.raw',
                                             Core.CtSaving.EDF : '.edf',
                                             Core.CtSaving.CBFFormat : '.cbf'}
+	try:
+	    self.__SavingFormatDefaultSuffix[Core.CtSaving.TIFFFormat] = '.tiff'
+	except AttributeError:
+	    pass
 
         self.__SavingMode = {'MANUAL' : Core.CtSaving.Manual,
                              'AUTO_FRAME' : Core.CtSaving.AutoFrame,
@@ -356,8 +364,9 @@ class LimaCCDs(PyTango.Device_4Impl) :
                 if os.access(config_file_path,os.R_OK):
                     try:
                         config.load()
-                        config.apply(config_default_name)
-                        self.__configDefaultActiveFlag = True
+                        if config_default_name in config.getAlias() :
+                            config.apply(config_default_name)
+                            self.__configDefaultActiveFlag = True
                     except Core.Exception:
                         pass
 
