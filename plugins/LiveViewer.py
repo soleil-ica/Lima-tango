@@ -354,8 +354,9 @@ class LiveViewer (PyTango.Device_4Impl):
           	    	
         data = self.control.ReadImage(-1)	  
         self._flat_image = data.buffer
-	#only available with limacore 1.3
-        #data.releaseBuffer()
+        release = getattr(data, 'releaseBuffer', None)
+        if release:
+            release()
 	            
         attr.set_value(self._flat_image, dim.getSize().getWidth(), dim.getSize().getHeight())
 
@@ -367,8 +368,9 @@ class LiveViewer (PyTango.Device_4Impl):
  	depth, signed, tgType = self.get_ImageType()
         data = self.control.ReadImage(-1)	    
         db = data.buffer	    
-        #only available with limacore 1.3
-	#data.releaseBuffer()
+        release = getattr(data, 'releaseBuffer', None)
+        if release:
+            release()
         enc = PyTango.EncodedAttribute()
 	if depth == 1:
         
