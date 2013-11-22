@@ -52,9 +52,10 @@ import struct
 
 # Before loading Lima.Core, must find out the version the plug-in
 # was compiled with - horrible hack ...
+LimaCameraType = None
 if 'linux' in sys.platform:
     from EnvHelper import setup_lima_env
-    setup_lima_env(sys.argv)
+    LimaCameraType = setup_lima_env(sys.argv)
 
 from AttrHelper import CallableReadEnum,CallableWriteEnum
 
@@ -69,6 +70,14 @@ except ImportError:
     
 TacoSpecificDict = {}
 TacoSpecificName = []
+
+VerboseLevel2TypeFlags = {
+    0: ['Fatal'],
+    1: ['Error'],
+    2: ['Warning'],
+    3: ['Trace'],
+    4: ['Funct', 'Param', 'Return']
+    }
 
 class LimaCCDs(PyTango.Device_4Impl) :
 
@@ -148,7 +157,11 @@ class LimaCCDs(PyTango.Device_4Impl) :
                 specificClass,specificDevice = m.get_tango_specific_class_n_device()
             except AttributeError: pass
             else:
-		Core.DebParams.setTypeFlags(0)
+                typeFlagsNameList = []
+                for l in range(verboseLevel + 1):
+                    typeFlagsNameList += VerboseLevel2TypeFlags.get(l, [])
+                Core.DebParams.setTypeFlagsNameList(typeFlagsNameList)
+
                 util = PyTango.Util.instance()
                 deviceName = self.__className2deviceName.get(specificDevice.__name__,None)
                 if deviceName:
@@ -222,6 +235,10 @@ class LimaCCDs(PyTango.Device_4Impl) :
         self.__SavingFormat = {'RAW' : Core.CtSaving.RAW,
                                'EDF' : Core.CtSaving.EDF,
                                'CBF' : Core.CtSaving.CBFFormat}
+	try:
+	    self.__SavingFormat['TIFF'] = Core.CtSaving.TIFFFormat
+	except AttributeError:
+	    pass
 
 	try:
 	     self.__SavingFormat['EDFGZ'] = Core.CtSaving.EDFGZ
@@ -232,6 +249,10 @@ class LimaCCDs(PyTango.Device_4Impl) :
         self.__SavingFormatDefaultSuffix = {Core.CtSaving.RAW : '.raw',
                                             Core.CtSaving.EDF : '.edf',
                                             Core.CtSaving.CBFFormat : '.cbf'}
+	try:
+	    self.__SavingFormatDefaultSuffix[Core.CtSaving.TIFFFormat] = '.tiff'
+	except AttributeError:
+	    pass
 
         self.__SavingMode = {'MANUAL' : Core.CtSaving.Manual,
                              'AUTO_FRAME' : Core.CtSaving.AutoFrame,
@@ -344,8 +365,9 @@ class LimaCCDs(PyTango.Device_4Impl) :
                 if os.access(config_file_path,os.R_OK):
                     try:
                         config.load()
-                        config.apply(config_default_name)
-                        self.__configDefaultActiveFlag = True
+                        if config_default_name in config.getAlias() :
+                            config.apply(config_default_name)
+                            self.__configDefaultActiveFlag = True
                     except Core.Exception:
                         pass
 
@@ -1326,7 +1348,9 @@ class LimaCCDs(PyTango.Device_4Impl) :
         data = self.__control.ReadImage(image_id)
         self.__dataflat_cache = numpy.array(data.buffer.ravel())
         self.__dataflat_cache.dtype = numpy.uint8
-        data.releaseBuffer()
+        release = getattr(data, 'releaseBuffer', None)
+        if release:
+            release()
         return self.__dataflat_cache
 
     ##@brief get image data
@@ -1407,7 +1431,9 @@ class LimaCCDs(PyTango.Device_4Impl) :
         flatimage.dtype = numpy.uint8
         
         self._datacache = dataheader+flatimage.tostring()        
-        image.releaseBuffer()
+        release = getattr(image, 'releaseBuffer', None)
+        if release:
+            release()
         
         return ('DATA_ARRAY',  self._datacache)  
   
@@ -1967,6 +1993,8 @@ class LimaCCDsClass(PyTango.DeviceClass) :
 def declare_camera_n_commun_to_tango_world(util) :
     for module_name in camera.__all__:
         try:
+            if LimaCameraType and (module_name != LimaCameraType):
+                continue
             m = __import__('camera.%s' % (module_name),None,None,'camera.%s' % (module_name))
         except ImportError:
             continue

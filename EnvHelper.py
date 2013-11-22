@@ -69,7 +69,10 @@ def setup_lima_env(argv):
     aux_py = open(aux_py_name, 'wt')
     aux_py.write(FindCoreVerHelperPy)
     aux_py.close()
-    args = ['python', aux_py_name] + argv[1:]
+    args = ['python', aux_py_name]
+    for arg in argv[1:]:
+        if not arg.startswith('-v'):
+            args.append(arg)
     for r in range(2):
         pobj = Popen(args, stdout=PIPE, stderr=PIPE)
         output = {}
@@ -107,6 +110,7 @@ def setup_lima_env(argv):
         if 'LIMA_' in k and '_VERSION' in k and \
                k not in ['LIMA_LINK_STRICT_VERSION']:
             print_debug('Env: %s=%s' % (k, v))
+    return output['LimaCameraType']
 
 def check_args(argv):
     global Debug
