@@ -48,11 +48,11 @@
 			<version>1.2.4-SNAPSHOT</version>         
 		</dependency>
 
-		<dependency>
+		<!--<dependency>
 			<groupId>fr.soleil.lib.Lima.Camera</groupId>
 			<artifactId>LimaAndor3-${aol}-shared-${mode}</artifactId>
 			<version>1.2.4-SNAPSHOT</version>
-		</dependency>
+		</dependency>-->
 
 		<dependency>
 			<groupId>fr.soleil.lib.Lima.Camera</groupId>
@@ -139,11 +139,11 @@
 							<define>ADSC_ENABLED</define>   
 							<define>PROSILICA_ENABLED</define>
 							<define>SIMULATOR_ENABLED</define>
-							<define>ANDOR3_ENABLED</define>
+							<!--<define>ANDOR3_ENABLED</define>-->
 						</defines>
 
 						<systemIncludePaths>                
-							<systemIncludePath>/home/informatique/ica/langlois/Andor3/andor/inc</systemIncludePath>
+							<!--<systemIncludePath>/home/informatique/ica/langlois/Andor3/andor/inc</systemIncludePath>-->
 						</systemIncludePaths>
 
 						<!-- exclude every detector which is NOT ENABLED -->
@@ -159,7 +159,7 @@
 							<!--<exclude>Simulator*.*</exclude>-->
 							<exclude>Pco*.*</exclude>
 							<exclude>PerkinElmer*.*</exclude>
-							<!--<exclude>Andor3*.*</exclude>-->
+							<exclude>Andor3*.*</exclude>
 
 
 						</excludes>
