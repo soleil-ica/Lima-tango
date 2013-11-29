@@ -146,9 +146,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="COS414_rt.lib COSDynamic414_rt.lib log4tango.lib omniDynamic414_rt.lib omniORB414_rt.lib omnithread34_rt.lib tango.lib libYAT.lib libYAT4Tango.lib libNexusCPP.lib libprocesslib.lib liblimacore.lib liblimasimulator.lib LibRoperScientific.lib liblimapco.lib"
+				AdditionalDependencies="COS414_rt.lib COSDynamic414_rt.lib log4tango.lib omniDynamic414_rt.lib omniORB414_rt.lib omnithread34_rt.lib tango.lib libYAT.lib libYAT4Tango.lib libNexusCPP.lib libprocesslib.lib LibLimaCore.lib LibSimulator.lib LibRoperScientific.lib liblimapco.lib LibLimaPerkinElmer.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(TANGO_LIB)&quot;;&quot;$(YAT_LIB)&quot;;&quot;$(YAT4TANGO_LIB)&quot;;&quot;$(NEXUSCPP_LIB)&quot;;&quot;..\..\..\..\..\..\third-party\Processlib\build\msvc\9.0\libprocesslib\Release&quot;;..\..\..\..\..\..\build\msvc\9.0\LimaCore\Release;..\..\..\..\..\..\build\msvc\9.0\LibSimulator\Release;..\..\..\..\..\..\camera\roperscientific\build\msvc\9.0\LibRoperScientific\Release;..\..\..\..\..\..\camera\pco\build\msvc\9.0\liblimapco\Release"
+				AdditionalLibraryDirectories="&quot;$(TANGO_LIB)&quot;;&quot;$(YAT_LIB)&quot;;&quot;$(YAT4TANGO_LIB)&quot;;&quot;$(NEXUSCPP_LIB)&quot;;&quot;..\..\..\..\..\..\third-party\Processlib\build\msvc\9.0\libprocesslib\Release&quot;;..\..\..\..\..\..\build\msvc\9.0\LimaCore\Release;..\..\..\..\..\..\camera\simulator\build\msvc\9.0\LibSimulator\Release;..\..\..\..\..\..\camera\roperscientific\build\msvc\9.0\LibRoperScientific\Release;..\..\..\..\..\..\camera\perkinelmer\build\msvc\9.0\LibPerkinElmer\Release;..\..\..\..\..\..\camera\pco\build\msvc\9.0\liblimapco\Release"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
