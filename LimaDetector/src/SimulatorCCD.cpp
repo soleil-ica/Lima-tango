@@ -185,35 +185,10 @@ void SimulatorCCD::init_device()
 void SimulatorCCD::always_executed_hook()
 {
 	DEBUG_STREAM << "SimulatorCCD::always_executed_hook() entering... "<< endl;
-	try
-    {
-	    m_status_message.str("");
-		//- get the singleton control objet used to pilot the lima framework
-        m_ct = ControlFactory::instance().get_control("SimulatorCCD");
+	
+    //- update state
+    dev_state();
 
-        //- get interface to specific detector
-        if(m_ct!=0)
-            m_hw = dynamic_cast<Simulator::Interface*>(m_ct->hwInterface());
-        this->dev_state();
-
-    }
-    catch(Exception& e)
-    {
-        ERROR_STREAM << e.getErrMsg() << endl;
-        m_status_message <<"Initialization Failed : "<<e.getErrMsg( )<< endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;        
-    }
-    catch(...)
-    {
-        ERROR_STREAM<<"Initialization Failed : UNKNOWN"<<endl;
-        m_status_message <<"Initialization Failed : UNKNOWN"<< endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;
-    }
-	DEBUG_STREAM << "SimulatorCCD::always_executed_hook() ending... "<< endl;	
 }
 //+----------------------------------------------------------------------------
 //
@@ -255,7 +230,7 @@ void SimulatorCCD::read_exposureTime(Tango::Attribute &attr)
                         static_cast<const char*> (string(df.errors[0].desc).c_str()),
                         static_cast<const char*> ("SimulatorCCD::read_exposureTime"));
         }
-        catch(Exception& e)
+        catch(lima::Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
@@ -294,7 +269,7 @@ void SimulatorCCD::write_exposureTime(Tango::WAttribute &attr)
                         static_cast<const char*> (string(df.errors[0].desc).c_str()),
                         static_cast<const char*> ("SimulatorCCD::write_exposureTime"));
         }
-        catch(Exception& e)
+        catch(lima::Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception

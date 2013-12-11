@@ -320,38 +320,9 @@ void BaslerCCD::get_device_property()
 void BaslerCCD::always_executed_hook()
 {
     DEBUG_STREAM << "BaslerCCD::always_executed_hook() entering... " << endl;
-    try
-    {
-        m_status_message.str("");
-        //- get the singleton control objet used to pilot the lima framework
-        m_ct = ControlFactory::instance().get_control("BaslerCCD");
-
-        //- get interface to specific detector
-        if (m_ct != 0)
-            m_hw = dynamic_cast<Basler::Interface*> (m_ct->hwInterface());
-
-        //- get camera to specific detector
-        m_camera = &(m_hw->getCamera());
-
-    }
-    catch (Exception& e)
-    {
-        ERROR_STREAM << e.getErrMsg() << endl;
-        m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;
-        return;
-    }
-    catch (...)
-    {
-        ERROR_STREAM << "Initialization Failed : UNKNOWN" << endl;
-        m_status_message << "Initialization Failed : UNKNOWN" << endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;
-        return;
-    }
+    
+    //- update state
+    dev_state();
 }
 //+----------------------------------------------------------------------------
 //

@@ -63,10 +63,6 @@
 #endif
 
 
-
-using namespace lima;
-using namespace std;
-
 namespace SimulatorCCD_ns
 {
 
