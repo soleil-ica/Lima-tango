@@ -189,35 +189,10 @@ void PerkinElmer::init_device()
 //-----------------------------------------------------------------------------
 void PerkinElmer::always_executed_hook()
 {
-    try
-	{
-	    m_status_message.str("");
-		//- get the singleton control objet used to pilot the lima framework
-		m_ct = ControlFactory::instance().get_control("PerkinElmer");
-		//- get interface to specific detector
-		if(m_ct!=0)
-			m_hw = dynamic_cast<lima::PerkinElmer::Interface*>(m_ct->hwInterface());
-		this->dev_state();
+    DEBUG_STREAM << "PerkinElmer::always_executed_hook() entering... "<< endl;
 
-	}
-	catch(Exception& e)
-	{
-		ERROR_STREAM << e.getErrMsg() << endl;
-		m_status_message <<"Initialization Failed : "<<e.getErrMsg( )<< endl;
-		//- throw exception
-		set_state(Tango::FAULT);
-		m_is_device_initialized = false;
-		return;
-	}
-	catch(...)
-	{
-		ERROR_STREAM<<"Initialization Failed : UNKNOWN"<<endl;
-		m_status_message <<"Initialization Failed : UNKNOWN"<< endl;
-		//- throw exception
-		set_state(Tango::FAULT);
-		m_is_device_initialized = false;
-		return;
-	}
+    //- update state
+    dev_state();
 	
 }
 //+----------------------------------------------------------------------------

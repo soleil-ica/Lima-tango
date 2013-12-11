@@ -265,6 +265,7 @@ protected :
 	std::stringstream		m_status_message;
 	
 	//LIMA objects
+    Marccd::Camera*         m_camera;
 	Marccd::Interface*		m_hw;
 	CtControl*				m_ct;	
 };

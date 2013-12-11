@@ -35,20 +35,15 @@
 
 #ifdef WIN32
 #include "Factory.h"
-
 //- Tango
 #include <tango.h>
-
 //- YAT/YAT4TANGO
 #include <yat4tango/InnerAppender.h>
 #include <yat4tango/DynamicAttributeManager.h>
 #include <yat/utils/XString.h>
-
 #endif
 
-
-
-
+//- STL 
 #include <algorithm>
 #include <string>
 #include <iostream>
@@ -76,17 +71,15 @@
 #include "Factory.h"
 //- Tango
 #include <tango.h>
-
 //- YAT/YAT4TANGO
 #include <yat4tango/InnerAppender.h>
 #include <yat4tango/DynamicAttributeManager.h>
 #include <yat/utils/XString.h>
-
 #endif
 
 
 
-using namespace lima;
+//using namespace lima;
 using namespace std;
 using namespace yat4tango;
 

@@ -65,8 +65,6 @@ static const char *RcsId = "$Id:  $";
 #include <PogoHelper.h>
 #endif
 
-const size_t MAX_STRING_LENGTH = 256;
-
 namespace MarCCD_ns
 {
 
@@ -134,7 +132,7 @@ void MarCCD::init_device()
 
     // Initialise variables to default values
     //--------------------------------------------
-    CREATE_DEVSTRING_ATTRIBUTE(attr_imageName_read, MAX_STRING_LENGTH);
+    CREATE_DEVSTRING_ATTRIBUTE(attr_imageName_read, MAX_ATTRIBUTE_STRING_LENGTH);
     CREATE_SCALAR_ATTRIBUTE(attr_imageIndex_read);
 
     get_device_property();
@@ -162,6 +160,17 @@ void MarCCD::init_device()
             return;
         }
 
+        //- get camera to specific detector
+        m_camera = &(m_hw->getCamera());
+        if (m_camera == 0)
+        {
+            INFO_STREAM << "Initialization Failed : Unable to get the camera of plugin !" << endl;
+            m_status_message << "Initialization Failed : Unable to get the camera object !" << endl;
+            m_is_device_initialized = false;
+            set_state(Tango::FAULT);
+            return;
+        }
+
     }
     catch (Exception& e)
     {
@@ -179,7 +188,9 @@ void MarCCD::init_device()
         m_is_device_initialized = false;
         return;
     }
+
     m_is_device_initialized = true;
+
     set_state(Tango::STANDBY);
     this->dev_state();
 }
@@ -283,36 +294,10 @@ void MarCCD::get_device_property()
 void MarCCD::always_executed_hook()
 {
     DEBUG_STREAM << "MarCCD::always_executed_hook() entering... " << endl;
-    try
-    {
-        m_status_message.str("");
-        //- get the singleton control objet used to pilot the lima framework
-        m_ct = ControlFactory::instance().get_control("MarCCD");
+   
+    //- update state
+    dev_state();
 
-        //- get interface to specific detector
-        if (m_ct != 0)
-            m_hw = dynamic_cast<Marccd::Interface*> (m_ct->hwInterface());
-        this->dev_state();
-
-    }
-    catch (Exception& e)
-    {
-        ERROR_STREAM << e.getErrMsg() << endl;
-        m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;
-        return;
-    }
-    catch (...)
-    {
-        ERROR_STREAM << "Initialization Failed : UNKNOWN" << endl;
-        m_status_message << "Initialization Failed : UNKNOWN" << endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;
-        return;
-    }
 }
 //+----------------------------------------------------------------------------
 //
@@ -343,7 +328,7 @@ void MarCCD::read_imageName(Tango::Attribute &attr)
 
     try
     {
-        imgName = m_hw->getImageFileName();
+        imgName = m_camera->getImageFileName();
         ::strcpy(*attr_imageName_read, imgName.c_str());
         attr.set_value(attr_imageName_read);
     }
@@ -381,7 +366,7 @@ void MarCCD::write_imageName(Tango::WAttribute &attr)
     try
     {
         attr.get_write_value(attr_imageName_write);
-        m_hw->setImageFileName(attr_imageName_write);
+        m_camera->setImageFileName(attr_imageName_write);
     }
     catch (Tango::DevFailed& df)
     {
@@ -414,7 +399,7 @@ void MarCCD::read_imageIndex(Tango::Attribute &attr)
     DEBUG_STREAM << "MarCCD::read_imageIndex(Tango::Attribute &attr) entering... " << endl;
     try
     {
-        *attr_imageIndex_read = m_hw->getImageIndex();
+        *attr_imageIndex_read = m_camera->getImageIndex();
         attr.set_value(attr_imageIndex_read);
     }
     catch (Tango::DevFailed& df)
@@ -449,7 +434,7 @@ void MarCCD::write_imageIndex(Tango::WAttribute &attr)
     try
     {
         attr.get_write_value(attr_imageIndex_write);
-        m_hw->setImageIndex(attr_imageIndex_write);
+        m_camera->setImageIndex(attr_imageIndex_write);
     }
     catch (Tango::DevFailed& df)
     {
@@ -489,8 +474,8 @@ void MarCCD::take_background()
     {
         try
         {
-            if (m_hw != 0)
-                m_hw->takeBackgroundFrame();
+            if (m_camera!= 0)
+                m_camera->takeBackgroundFrame();
         }
         catch (Tango::DevFailed& df)
         {

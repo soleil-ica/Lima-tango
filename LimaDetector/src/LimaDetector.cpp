@@ -227,7 +227,7 @@ void LimaDetector::init_device()
     catch (Tango::DevFailed& df)
     {
         ERROR_STREAM << df << endl;
-        this->set_state(Tango::FAULT);
+        set_state(Tango::FAULT);
         m_status_message << "Initialization Failed :  could not instanciate the InnerAppender ! " << endl;
         return;
     }
@@ -275,12 +275,11 @@ void LimaDetector::init_device()
                 break;
             case 16: dai.tai.data_type = Tango::DEV_USHORT;
                 break;
-
             case 32: dai.tai.data_type = Tango::DEV_ULONG;
                 break;
             default: //ERROR
-                INFO_STREAM << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
                 m_status_message << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
+                ERROR_STREAM << m_status_message.str() << endl;
                 m_is_device_initialized = false;
                 set_state(Tango::FAULT);
                 return;
@@ -315,8 +314,8 @@ void LimaDetector::init_device()
         m_hw = dynamic_cast<HwInterface*> (m_ct->hwInterface());
         if (m_hw == 0)
         {
-            INFO_STREAM << "Initialization Failed : Unable to get the interface of camera plugin " << "(" << detectorType << ") !" << endl;
             m_status_message << "Initialization Failed : Unable to get the interface of camera plugin " << "(" << detectorType << ") !" << endl;
+            ERROR_STREAM << m_status_message.str() << endl;
             m_is_device_initialized = false;
             set_state(Tango::FAULT);
             return;
@@ -338,8 +337,8 @@ void LimaDetector::init_device()
                 hw_det_info->setCurrImageType(Bpp32);
                 break;
             default: //ERROR
-                INFO_STREAM << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
                 m_status_message << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
+                ERROR_STREAM << m_status_message.str() << endl;
                 m_is_device_initialized = false;
                 set_state(Tango::FAULT);
                 return;
@@ -479,11 +478,20 @@ void LimaDetector::init_device()
             m_saving_par.fileFormat = CtSaving::TIFFFormat;
             m_saving_par.suffix = ".tiff";
         }
-        else
+        else if (fileFormat == "RAW")
         {
             m_saving_par.fileFormat = CtSaving::RAW;
             m_saving_par.suffix = ".raw";
         }
+        else
+        {
+            m_status_message << "Initialization Failed : VideoMode " << "(" << detectorVideoMode << ") is not supported!" << endl;
+            ERROR_STREAM << m_status_message.str() << endl;
+            m_is_device_initialized = false;
+            set_state(Tango::FAULT);
+            return;
+        }
+
         m_ct->saving()->setParameters(m_saving_par);
 
         //video stuff
@@ -519,8 +527,8 @@ void LimaDetector::init_device()
             }
             else
             {
-                ERROR_STREAM << "Initialization Failed : VideoMode " << "(" << detectorVideoMode << ") is not supported!" << endl;
                 m_status_message << "Initialization Failed : VideoMode " << "(" << detectorVideoMode << ") is not supported!" << endl;
+                ERROR_STREAM << m_status_message.str() << endl;
                 m_is_device_initialized = false;
                 set_state(Tango::FAULT);
                 return;
@@ -533,16 +541,16 @@ void LimaDetector::init_device()
     }
     catch (Exception& e)
     {
-        ERROR_STREAM << "Initialization Failed : " << e.getErrMsg() << endl;
         m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
+        ERROR_STREAM << m_status_message.str() << endl;
         m_is_device_initialized = false;
         set_state(Tango::FAULT);
         return;
     }
     catch (...)
     {
-        ERROR_STREAM << "Initialization Failed : UNKNOWN" << endl;
         m_status_message << "Initialization Failed : UNKNOWN" << endl;
+        ERROR_STREAM << m_status_message.str() << endl;
         set_state(Tango::FAULT);
         m_is_device_initialized = false;
         return;
@@ -1116,7 +1124,8 @@ void LimaDetector::get_device_property()
 
 void LimaDetector::always_executed_hook()
 {
-    this->dev_state();
+    //- update state
+    dev_state();
 }
 
 //+----------------------------------------------------------------------------
