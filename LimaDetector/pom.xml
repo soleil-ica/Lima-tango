@@ -77,6 +77,16 @@
 			</os>
 		  </activation>
 		  <dependencies>
+			<dependency>
+				<groupId>org.tango</groupId>
+				<artifactId>tango-cpp-api-${aol}-shared-${mode}</artifactId>
+				<version>7.2.6-vc9</version>
+			</dependency>
+			<dependency>
+				<groupId>org.omnigroup</groupId>
+				<artifactId>omniORB-${aol}-shared-${mode}</artifactId>
+				<version>4.1.4-vc9</version>
+			</dependency>
 			<!-- Lima Camera Plugins -->
 			<dependency>
 				<groupId>fr.soleil.lib.Lima.Camera</groupId>
