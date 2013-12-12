@@ -69,6 +69,11 @@ void ControlFactory::initialize_pointers()
     my_interface_andor3	    = 0;
 #endif
 
+#ifdef VIEWORKSVP_ENABLED
+    my_camera_vieworksvp    = 0;
+    my_interface_vieworksvp = 0;
+#endif
+
     my_server_name 			= "none";
     my_device_name 			= "none";
 
@@ -368,6 +373,39 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         }
 #endif
 
+#ifdef VIEWORKSVP_ENABLED
+        if (detector_type == "VieworksVP")
+        {
+            if(!ControlFactory::is_created)
+            {
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("SisoPath"));
+				db_data.push_back(Tango::DbDatum("BoardIndex"));
+                db_data.push_back(Tango::DbDatum("CameraPort"));
+                db_data.push_back(Tango::DbDatum("AppletName"));
+                db_data.push_back(Tango::DbDatum("DMAIndex"));
+                
+                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                std::string siso_path;
+                long board_index;
+                long camera_port;
+                std::string applet_name;
+                unsigned long dma_index;
+                db_data[0] >> siso_path;
+                db_data[1] >> board_index;
+                db_data[2] >> camera_port;
+                db_data[3] >> applet_name;
+                db_data[4] >> dma_index;
+                
+                my_camera_vieworksvp        = new VieworksVP::Camera(siso_path,board_index,camera_port,applet_name,dma_index);
+                my_interface_vieworksvp     = new VieworksVP::Interface(*my_camera_vieworksvp);
+                my_control                  = new CtControl(my_interface_vieworksvp);
+                ControlFactory::is_created  = true;
+                return my_control;
+            }
+        }
+#endif
+
         
 
         if(!ControlFactory::is_created)
@@ -602,6 +640,23 @@ void ControlFactory::reset(const std::string& detector_type )
                 {
                     delete my_camera_andor3;
                     my_camera_andor3 = 0;
+                }
+            }
+#endif
+
+#ifdef VIEWORKSVP_ENABLED
+            if (detector_type == "VieworksVP")
+            {
+                if(my_interface_vieworksvp)
+                {
+                    delete my_interface_vieworksvp;
+                    my_interface_vieworksvp = 0;
+                }
+
+                if(my_camera_vieworksvp)
+                {
+                    delete my_camera_vieworksvp;
+                    my_camera_vieworksvp = 0;
                 }
             }
 #endif
