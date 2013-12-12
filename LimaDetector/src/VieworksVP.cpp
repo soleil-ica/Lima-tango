@@ -393,7 +393,7 @@ void VieworksVP::read_testImage(Tango::Attribute &attr)
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
         Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> ("LIMA_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
             static_cast<const char*> ("VieworksVP::read_testImage"));
     }
@@ -429,7 +429,7 @@ void VieworksVP::write_testImage(Tango::WAttribute &attr)
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
         Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> ("LIMA_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
             static_cast<const char*> ("VieworksVP::write_testImage"));
     }
@@ -477,7 +477,7 @@ void VieworksVP::read_dataBits(Tango::Attribute &attr)
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
         Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> ("LIMA_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
             static_cast<const char*> ("VieworksVP::read_dataBits"));
     }
@@ -513,7 +513,7 @@ void VieworksVP::write_dataBits(Tango::WAttribute &attr)
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
         Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> ("LIMA_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
             static_cast<const char*> ("VieworksVP::write_dataBits"));
     }
@@ -561,7 +561,7 @@ void VieworksVP::read_lUTControl(Tango::Attribute &attr)
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
         Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> ("LIMA_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
             static_cast<const char*> ("VieworksVP::read_lUTControl"));
     }
@@ -597,7 +597,7 @@ void VieworksVP::write_lUTControl(Tango::WAttribute &attr)
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
         Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> ("LIMA_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
             static_cast<const char*> ("VieworksVP::write_lUTControl"));
     }
@@ -645,7 +645,7 @@ void VieworksVP::read_asynchronousReset(Tango::Attribute &attr)
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
         Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> ("LIMA_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
             static_cast<const char*> ("VieworksVP::read_asynchronousReset"));
     }
@@ -681,7 +681,7 @@ void VieworksVP::write_asynchronousReset(Tango::WAttribute &attr)
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
         Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> ("LIMA_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
             static_cast<const char*> ("VieworksVP::write_asynchronousReset"));
     }
@@ -717,7 +717,7 @@ void VieworksVP::read_flatFieldCorrection(Tango::Attribute &attr)
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
         Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> ("LIMA_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
             static_cast<const char*> ("VieworksVP::read_flatFieldCorrection"));
     }
@@ -732,7 +732,7 @@ void VieworksVP::read_flatFieldCorrection(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_flatFieldCorrection(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_flatFieldCorrection(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_flatFieldCorrection(Tango::WAttribute &attr) entering... "<< endl;
 
     try
     {
@@ -753,7 +753,7 @@ void VieworksVP::write_flatFieldCorrection(Tango::WAttribute &attr)
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
         Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> ("LIMA_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
             static_cast<const char*> ("VieworksVP::write_flatFieldCorrection"));
     }
@@ -769,6 +769,30 @@ void VieworksVP::write_flatFieldCorrection(Tango::WAttribute &attr)
 void VieworksVP::read_defectCorrection(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_defectCorrection(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getDefectCorrection(*attr_defectCorrection_read);
+        attr.set_value(attr_defectCorrection_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_defectCorrection"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_defectCorrection"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -780,7 +804,31 @@ void VieworksVP::read_defectCorrection(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_defectCorrection(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_defectCorrection(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_defectCorrection(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_defectCorrection_write);
+        m_camera->setDefectCorrection(attr_defectCorrection_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_defectCorrection"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_defectCorrection"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -793,6 +841,30 @@ void VieworksVP::write_defectCorrection(Tango::WAttribute &attr)
 void VieworksVP::read_imageInvert(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_imageInvert(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getImageInvert(*attr_imageInvert_read);
+        attr.set_value(attr_imageInvert_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_imageInvert"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_imageInvert"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -804,7 +876,31 @@ void VieworksVP::read_imageInvert(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_imageInvert(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_imageInvert(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_imageInvert(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_imageInvert_write);
+        m_camera->setImageInvert(attr_imageInvert_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_imageInvert"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_imageInvert"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -817,6 +913,30 @@ void VieworksVP::write_imageInvert(Tango::WAttribute &attr)
 void VieworksVP::read_horizontalFlip(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_horizontalFlip(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getHorizontalFlip(*attr_horizontalFlip_read);
+        attr.set_value(attr_horizontalFlip_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_horizontalFlip"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_horizontalFlip"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -828,7 +948,31 @@ void VieworksVP::read_horizontalFlip(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_horizontalFlip(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_horizontalFlip(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_horizontalFlip(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_horizontalFlip_write);
+        m_camera->setHorizontalFlip(attr_horizontalFlip_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_horizontalFlip"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_horizontalFlip"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -841,6 +985,30 @@ void VieworksVP::write_horizontalFlip(Tango::WAttribute &attr)
 void VieworksVP::read_triggerPolarity(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_triggerPolarity(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getTriggerPolaroty(*attr_triggerPolarity_read);
+        attr.set_value(attr_triggerPolarity_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_triggerPolarity"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_triggerPolarity"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -852,7 +1020,31 @@ void VieworksVP::read_triggerPolarity(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_triggerPolarity(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_triggerPolarity(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_triggerPolarity(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_triggerPolarity_write);
+        m_camera->setTriggerPolarity(attr_triggerPolarity_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_triggerPolarity"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_triggerPolarity"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -865,6 +1057,31 @@ void VieworksVP::write_triggerPolarity(Tango::WAttribute &attr)
 void VieworksVP::read_strobeOffsetMs(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_strobeOffsetMs(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getStrobeOffsetMus(*attr_strobeOffsetMs_read);
+        *attr_strobeOffsetMs_read = *attr_strobeOffsetMs_read / 1000; //- plugin return us so we transform into ms
+        attr.set_value(attr_strobeOffsetMs_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_strobeOffsetMs"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_strobeOffsetMs"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -876,7 +1093,32 @@ void VieworksVP::read_strobeOffsetMs(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_strobeOffsetMs(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_strobeOffsetMs(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_strobeOffsetMs(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_strobeOffsetMs_write);
+        attr_strobeOffsetMs_write = attr_strobeOffsetMs_write * 1000; //- plugin want us so we transform into us
+        m_camera->setStrobeOffsetMus(attr_strobeOffsetMs_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_strobeOffsetMs"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_strobeOffsetMs"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -889,6 +1131,30 @@ void VieworksVP::write_strobeOffsetMs(Tango::WAttribute &attr)
 void VieworksVP::read_strobePolarity(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_strobePolarity(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getStrobePolarity(*attr_strobePolarity_read);
+        attr.set_value(attr_strobePolarity_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_strobePolarity"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_strobePolarity"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -900,7 +1166,31 @@ void VieworksVP::read_strobePolarity(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_strobePolarity(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_strobePolarity(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_strobePolarity(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_strobePolarity_write);
+        m_camera->setStrobePolarity(attr_strobePolarity_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_strobePolarity"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_strobePolarity"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -913,6 +1203,30 @@ void VieworksVP::write_strobePolarity(Tango::WAttribute &attr)
 void VieworksVP::read_analogGain(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_analogGain(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getAnalogGain(*attr_analogGain_read);
+        attr.set_value(attr_analogGain_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_analogGain"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_analogGain"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -924,7 +1238,31 @@ void VieworksVP::read_analogGain(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_analogGain(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_analogGain(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_analogGain(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_analogGain_write);
+        m_camera->setAnalogGain(attr_analogGain_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_analogGain"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_analogGain"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -937,6 +1275,30 @@ void VieworksVP::write_analogGain(Tango::WAttribute &attr)
 void VieworksVP::read_analogOffset(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_analogOffset(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getAnalogOffset(*attr_analogOffset_read);
+        attr.set_value(attr_analogOffset_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_analogOffset"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_analogOffset"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -948,7 +1310,31 @@ void VieworksVP::read_analogOffset(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_analogOffset(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_analogOffset(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_analogOffset(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_analogOffset_write);
+        m_camera->setAnalogOffset(attr_analogOffset_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_analogOffset"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_analogOffset"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -961,6 +1347,30 @@ void VieworksVP::write_analogOffset(Tango::WAttribute &attr)
 void VieworksVP::read_flatFieldIteration(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_flatFieldIteration(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getFlatFieldIteration(*attr_flatFieldIteration_read);
+        attr.set_value(attr_flatFieldIteration_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_flatFieldIteration"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_flatFieldIteration"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -972,7 +1382,31 @@ void VieworksVP::read_flatFieldIteration(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_flatFieldIteration(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_flatFieldIteration(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_flatFieldIteration(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_flatFieldIteration_write);
+        m_camera->setFlatFieldIteration(attr_flatFieldIteration_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_flatFieldIteration"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_flatFieldIteration"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -985,6 +1419,30 @@ void VieworksVP::write_flatFieldIteration(Tango::WAttribute &attr)
 void VieworksVP::read_flatFieldOffset(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_flatFieldOffset(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getFlatFieldOffset(*attr_flatFieldOffset_read);
+        attr.set_value(attr_flatFieldOffset_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_flatFieldOffset"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_flatFieldOffset"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -996,7 +1454,31 @@ void VieworksVP::read_flatFieldOffset(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_flatFieldOffset(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_flatFieldOffset(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_flatFieldOffset(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_flatFieldOffset_write);
+        m_camera->setFlatFieldOffset(attr_flatFieldOffset_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_flatFieldOffset"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_flatFieldOffset"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1009,6 +1491,30 @@ void VieworksVP::write_flatFieldOffset(Tango::WAttribute &attr)
 void VieworksVP::read_temperatureSP(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_temperatureSP(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getTemperatureSP(*attr_temperatureSP_read);
+        attr.set_value(attr_temperatureSP_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_temperatureSP"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_temperatureSP"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1020,7 +1526,31 @@ void VieworksVP::read_temperatureSP(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_temperatureSP(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_temperatureSP(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_temperatureSP(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_temperatureSP_write);
+        m_camera->setTemperatureSP(attr_temperatureSP_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_temperatureSP"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_temperatureSP"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1033,6 +1563,30 @@ void VieworksVP::write_temperatureSP(Tango::WAttribute &attr)
 void VieworksVP::read_pixelClock(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_pixelClock(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getPixelClock((lima::VieworksVP::Camera::VP_pixel_clock&)*attr_pixelClock_read);
+        attr.set_value(attr_pixelClock_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_pixelClock"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_pixelClock"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1044,7 +1598,31 @@ void VieworksVP::read_pixelClock(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_pixelClock(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_pixelClock(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_pixelClock(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_pixelClock_write);
+        m_camera->setPixelClock((lima::VieworksVP::Camera::VP_pixel_clock&)attr_pixelClock_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_pixelClock"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_pixelClock"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1057,6 +1635,30 @@ void VieworksVP::write_pixelClock(Tango::WAttribute &attr)
 void VieworksVP::read_fanControl(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_fanControl(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getFanStatus(*attr_fanControl_read);
+        attr.set_value(attr_fanControl_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_fanControl"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_fanControl"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1068,7 +1670,31 @@ void VieworksVP::read_fanControl(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_fanControl(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_fanControl(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_fanControl(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_fanControl_write);
+        m_camera->setFanStatus(attr_fanControl_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_fanControl"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_fanControl"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1081,6 +1707,30 @@ void VieworksVP::write_fanControl(Tango::WAttribute &attr)
 void VieworksVP::read_peltierControl(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_peltierControl(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getPeltierControl(*attr_peltierControl_read);
+        attr.set_value(attr_peltierControl_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_peltierControl"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_peltierControl"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1092,7 +1742,31 @@ void VieworksVP::read_peltierControl(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void VieworksVP::write_peltierControl(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "VieworksVP::write_peltierControl(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "VieworksVP::write_peltierControl(Tango::WAttribute &attr) entering... "<< endl;
+
+    try
+    {
+        attr.get_write_value(attr_peltierControl_write);
+        m_camera->setPeltierControl(attr_peltierControl_write);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::write_peltierControl"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::write_peltierControl"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1105,6 +1779,33 @@ void VieworksVP::write_peltierControl(Tango::WAttribute &attr)
 void VieworksVP::read_mCUVersion(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_mCUVersion(Tango::Attribute &attr) entering... "<< endl;
+
+    try 
+    {
+        std::string mcu_version_str;
+        m_camera->getMCUversion(mcu_version_str);
+
+        strcpy(*attr_mCUVersion_read, mcu_version_str.c_str());
+        attr.set_value(attr_mCUVersion_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_mCUVersion"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_mCUVersion"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1117,6 +1818,33 @@ void VieworksVP::read_mCUVersion(Tango::Attribute &attr)
 void VieworksVP::read_modelNumber(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_modelNumber(Tango::Attribute &attr) entering... "<< endl;
+
+    try 
+    {
+        std::string model_number_str;
+        m_camera->getModelNumber(model_number_str);
+
+        strcpy(*attr_modelNumber_read, model_number_str.c_str());
+        attr.set_value(attr_modelNumber_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_modelNumber"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_modelNumber"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1129,6 +1857,33 @@ void VieworksVP::read_modelNumber(Tango::Attribute &attr)
 void VieworksVP::read_fPGAVersion(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_fPGAVersion(Tango::Attribute &attr) entering... "<< endl;
+
+    try 
+    {
+        std::string fpga_version_str;
+        m_camera->getFPGAversion(fpga_version_str);
+
+        strcpy(*attr_fPGAVersion_read, fpga_version_str.c_str());
+        attr.set_value(attr_fPGAVersion_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_fPGAVersion"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_fPGAVersion"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1141,6 +1896,33 @@ void VieworksVP::read_fPGAVersion(Tango::Attribute &attr)
 void VieworksVP::read_serialNumber(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_serialNumber(Tango::Attribute &attr) entering... "<< endl;
+
+    try 
+    {
+        std::string serial_number_str;
+        m_camera->getSerialNumber(serial_number_str);
+
+        strcpy(*attr_serialNumber_read, serial_number_str.c_str());
+        attr.set_value(attr_serialNumber_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_serialNumber"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_serialNumber"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1153,6 +1935,30 @@ void VieworksVP::read_serialNumber(Tango::Attribute &attr)
 void VieworksVP::read_currentTemperature(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_currentTemperature(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getCurrentTemperature(*attr_currentTemperature_read);
+        attr.set_value(attr_currentTemperature_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_currentTemperature"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_currentTemperature"));
+    }
 }
 
 //+----------------------------------------------------------------------------
@@ -1165,6 +1971,30 @@ void VieworksVP::read_currentTemperature(Tango::Attribute &attr)
 void VieworksVP::read_sensorTemperature(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "VieworksVP::read_sensorTemperature(Tango::Attribute &attr) entering... "<< endl;
+
+    try
+    {
+        m_camera->getSensorTemperature(*attr_sensorTemperature_read);
+        attr.set_value(attr_sensorTemperature_read);
+    }
+    catch(Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("VieworksVP::read_sensorTemperature"));
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+            static_cast<const char*> ("LIMA_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("VieworksVP::read_sensorTemperature"));
+    }
 }
 
 
