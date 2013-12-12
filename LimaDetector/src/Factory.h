@@ -1,7 +1,6 @@
 #ifndef _FACTORY_H_
 #define _FACTORY_H_
 
-
 //- Workaround for the RGB24 bug
 #ifdef WIN32
 #include <tango.h>

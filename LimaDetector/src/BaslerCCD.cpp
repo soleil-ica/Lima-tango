@@ -768,4 +768,5 @@ int BaslerCCD::find_index_from_property_name(Tango::DbData& dev_prop, string pro
 
 
 
+
 }	//	namespace

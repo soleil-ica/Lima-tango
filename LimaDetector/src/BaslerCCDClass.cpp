@@ -249,6 +249,7 @@ void BaslerCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : frameRate
 	frameRateAttrib	*frame_rate = new frameRateAttrib();
 	Tango::UserDefaultAttrProp	frame_rate_prop;
+	frame_rate_prop.set_unit(" ");
 	frame_rate_prop.set_display_unit("Frames/s");
 	frame_rate_prop.set_description("Display the current frame rate (nb frames/s)<br>");
 	frame_rate->set_default_properties(frame_rate_prop);
@@ -268,6 +269,7 @@ void BaslerCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : gain
 	gainAttrib	*gain = new gainAttrib();
 	Tango::UserDefaultAttrProp	gain_prop;
+	gain_prop.set_unit(" ");
 	gain_prop.set_description("Define the gain of the detector. [0..1]");
 	gain->set_default_properties(gain_prop);
 	gain->set_memorized();
