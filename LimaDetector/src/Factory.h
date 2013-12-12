@@ -96,6 +96,16 @@
     #include <Andor3SyncCtrlObj.h>    
 #endif
 
+#ifdef VIEWORKSVP_ENABLED
+    #include <VieworksVPBinCtrlObj.h>
+    #include <VieworksVPCamera.h>
+    #include <VieworksVPDetInfoCtrlObj.h>
+    #include <VieworksVPInterface.h>
+    #include <VieworksVPRoiCtrlObj.h>
+    #include <VieworksVPShutterCtrlObj.h>
+    #include <VieworksVPSyncCtrlObj.h>    
+#endif
+
 
 
 using namespace lima;
@@ -176,6 +186,11 @@ private:
 #ifdef ANDOR3_ENABLED
     Andor3::Camera* my_camera_andor3;
     Andor3::Interface* my_interface_andor3;
+#endif
+
+#ifdef VIEWORKSVP_ENABLED
+    VieworksVP::Camera* my_camera_vieworksvp;
+    VieworksVP::Interface* my_interface_vieworksvp;
 #endif
 
 	CtControl*                     my_control;
