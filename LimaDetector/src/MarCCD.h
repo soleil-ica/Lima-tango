@@ -100,6 +100,8 @@ public :
 		Tango::DevString	attr_imageName_write;
 		Tango::DevUShort	*attr_imageIndex_read;
 		Tango::DevUShort	attr_imageIndex_write;
+		Tango::DevDouble	*attr_waitFileOnDiskTime_read;
+		Tango::DevDouble	attr_waitFileOnDiskTime_write;
 //@}
 
 /**
@@ -212,6 +214,14 @@ public :
  */
 	virtual void write_imageIndex(Tango::WAttribute &attr);
 /**
+ *	Extract real attribute values for waitFileOnDiskTime acquisition result.
+ */
+	virtual void read_waitFileOnDiskTime(Tango::Attribute &attr);
+/**
+ *	Write waitFileOnDiskTime attribute values to hardware.
+ */
+	virtual void write_waitFileOnDiskTime(Tango::WAttribute &attr);
+/**
  *	Read/Write allowed for imageName attribute.
  */
 	virtual bool is_imageName_allowed(Tango::AttReqType type);
@@ -219,6 +229,10 @@ public :
  *	Read/Write allowed for imageIndex attribute.
  */
 	virtual bool is_imageIndex_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for waitFileOnDiskTime attribute.
+ */
+	virtual bool is_waitFileOnDiskTime_allowed(Tango::AttReqType type);
 /**
  *	Execution allowed for TakeBackground command.
  */

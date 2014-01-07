@@ -52,6 +52,20 @@ namespace MarCCD_ns
 {//=====================================
 //	Define classes for attributes
 //=====================================
+class waitFileOnDiskTimeAttrib: public Tango::Attr
+{
+public:
+	waitFileOnDiskTimeAttrib():Attr("waitFileOnDiskTime", Tango::DEV_DOUBLE, Tango::READ_WRITE) {};
+	~waitFileOnDiskTimeAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<MarCCD *>(dev))->read_waitFileOnDiskTime(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<MarCCD *>(dev))->write_waitFileOnDiskTime(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<MarCCD *>(dev))->is_waitFileOnDiskTime_allowed(ty);}
+};
+
 class imageIndexAttrib: public Tango::Attr
 {
 public:
