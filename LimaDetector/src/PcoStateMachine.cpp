@@ -82,6 +82,34 @@ bool Pco::is_pixelScanRate_allowed(Tango::AttReqType type)
 		//	Re-Start of Generated Code
 	return true;
 }
+//+----------------------------------------------------------------------------
+//
+// method : 		Pco::is_frameRate_allowed
+// 
+// description : 	Read/Write allowed for frameRate attribute.
+//
+//-----------------------------------------------------------------------------
+bool Pco::is_frameRate_allowed(Tango::AttReqType type)
+{
+		//	End of Generated Code
+
+		//	Re-Start of Generated Code
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		Pco::is_maxNbImage_allowed
+// 
+// description : 	Read/Write allowed for maxNbImage attribute.
+//
+//-----------------------------------------------------------------------------
+bool Pco::is_maxNbImage_allowed(Tango::AttReqType type)
+{
+		//	End of Generated Code
+
+		//	Re-Start of Generated Code
+	return true;
+}
 
 //=================================================
 //		Commands Allowed Methods
@@ -95,6 +123,48 @@ bool Pco::is_pixelScanRate_allowed(Tango::AttReqType type)
 //
 //-----------------------------------------------------------------------------
 bool Pco::is_Talk_allowed(const CORBA::Any &any)
+{
+		//	End of Generated Code
+
+		//	Re-Start of Generated Code
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		Pco::is_GetCamInfo_allowed
+// 
+// description : 	Execution allowed for GetCamInfo command.
+//
+//-----------------------------------------------------------------------------
+bool Pco::is_GetCamInfo_allowed(const CORBA::Any &any)
+{
+		//	End of Generated Code
+
+		//	Re-Start of Generated Code
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		Pco::is_GetCamType_allowed
+// 
+// description : 	Execution allowed for GetCamType command.
+//
+//-----------------------------------------------------------------------------
+bool Pco::is_GetCamType_allowed(const CORBA::Any &any)
+{
+		//	End of Generated Code
+
+		//	Re-Start of Generated Code
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		Pco::is_GetInfo_allowed
+// 
+// description : 	Execution allowed for GetInfo command.
+//
+//-----------------------------------------------------------------------------
+bool Pco::is_GetInfo_allowed(const CORBA::Any &any)
 {
 		//	End of Generated Code
 

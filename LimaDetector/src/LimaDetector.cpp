@@ -75,8 +75,6 @@ static const char *RcsId = "$Id:  $";
 #endif
 
 
-#define MAX_ATTRIBUTE_STRING_LENGTH     256
-
 
 namespace LimaDetector_ns
 {
@@ -200,7 +198,6 @@ void LimaDetector::delete_device()
 // description :     will be called at device initialization.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::init_device()
 {
     INFO_STREAM << "LimaDetector::LimaDetector() create device " << device_name << endl;
@@ -222,7 +219,7 @@ void LimaDetector::init_device()
     {
         //- specify both the associated device and the log buffer depth
         INFO_STREAM << "Create the inner-appender in order to manage logs." << endl;
-        yat4tango::InnerAppender::initialize(this, 512);
+        yat4tango::InnerAppender::initialize(this, LOG_BUFFER_DEPTH);
     }
     catch (Tango::DevFailed& df)
     {
@@ -678,7 +675,6 @@ void LimaDetector::init_device()
 // description :     Read the device properties from database.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::get_device_property()
 {
     //    Initialize your default values here (if not done with  POGO).
@@ -1116,7 +1112,6 @@ void LimaDetector::get_device_property()
 // description :     method always executed before any command is executed
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::always_executed_hook()
 {
     //- update state
@@ -1130,7 +1125,6 @@ void LimaDetector::always_executed_hook()
 // description :     Hardware acquisition for attributes.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_attr_hardware(vector<long> &attr_list)
 {
     DEBUG_STREAM << "LimaDetector::read_attr_hardware(vector<long> &attr_list) entering... " << endl;
@@ -1146,7 +1140,6 @@ void LimaDetector::read_attr_hardware(vector<long> &attr_list)
 // description :     Extract real attribute values for detectorDescription acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_detectorDescription(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_detectorDescription(Tango::Attribute &attr) entering... " << endl;
@@ -1173,7 +1166,6 @@ void LimaDetector::read_detectorDescription(Tango::Attribute &attr)
 // description :     Extract real attribute values for detectorType acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_detectorType(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_detectorType(Tango::Attribute &attr) entering... " << endl;
@@ -1215,7 +1207,6 @@ void LimaDetector::read_detectorType(Tango::Attribute &attr)
 // description :     Extract real attribute values for detectorModel acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_detectorModel(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_detectorModel(Tango::Attribute &attr) entering... " << endl;
@@ -1258,7 +1249,6 @@ void LimaDetector::read_detectorModel(Tango::Attribute &attr)
 // description : 	Extract real attribute values for detectorWidthMax acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_detectorWidthMax(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_detectorWidthMax(Tango::Attribute &attr) entering... " << endl;
@@ -1299,7 +1289,6 @@ void LimaDetector::read_detectorWidthMax(Tango::Attribute &attr)
 // description : 	Extract real attribute values for detectorHeightMax acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_detectorHeightMax(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_detectorHeightMax(Tango::Attribute &attr) entering... " << endl;
@@ -1382,7 +1371,6 @@ void LimaDetector::read_detectorPixelDepth(Tango::Attribute &attr)
 // description :     Extract real attribute values for triggerMode acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_triggerMode(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_triggerMode(Tango::Attribute &attr) entering... " << endl;
@@ -1439,7 +1427,6 @@ void LimaDetector::read_triggerMode(Tango::Attribute &attr)
 // description :     Write triggerMode attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::write_triggerMode(Tango::WAttribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::write_triggerMode(Tango::WAttribute &attr) entering... " << endl;
@@ -1524,7 +1511,6 @@ void LimaDetector::write_triggerMode(Tango::WAttribute &attr)
 // description :     Extract real attribute values for acquisitionMode acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_acquisitionMode(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_acquisitionMode(Tango::Attribute &attr) entering... " << endl;
@@ -1560,7 +1546,6 @@ void LimaDetector::read_acquisitionMode(Tango::Attribute &attr)
 // description :     Write acquisitionMode attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::write_acquisitionMode(Tango::WAttribute &attr) entering... " << endl;
@@ -1701,7 +1686,6 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 // description :     Extract real attribute values for exposureTime acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_exposureTime(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_exposureTime(Tango::Attribute &attr) entering... " << endl;
@@ -1739,7 +1723,6 @@ void LimaDetector::read_exposureTime(Tango::Attribute &attr)
 // description :     Write exposureTime attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::write_exposureTime(Tango::WAttribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::write_exposureTime(Tango::WAttribute &attr) entering... " << endl;
@@ -1777,7 +1760,6 @@ void LimaDetector::write_exposureTime(Tango::WAttribute &attr)
 // description :
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_exposureAccTime_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
 {
     DEBUG_STREAM << "LimaDetector::read_exposureAccTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -1817,7 +1799,6 @@ void LimaDetector::read_exposureAccTime_callback(yat4tango::DynamicAttributeRead
 // description :
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::write_exposureAccTime_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd)
 {
     DEBUG_STREAM << "LimaDetector::write_exposureAccTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -1854,7 +1835,6 @@ void LimaDetector::write_exposureAccTime_callback(yat4tango::DynamicAttributeWri
 // description : 	Extract real attribute values for latencyTime acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_latencyTime(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_latencyTime(Tango::Attribute &attr) entering... " << endl;
@@ -1892,7 +1872,6 @@ void LimaDetector::read_latencyTime(Tango::Attribute &attr)
 // description : 	Write latencyTime attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::write_latencyTime(Tango::WAttribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::write_latencyTime(Tango::WAttribute &attr) entering... " << endl;
@@ -1968,7 +1947,6 @@ void LimaDetector::read_roiX(Tango::Attribute &attr)
 // description : 	Extract real attribute values for roiY acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_roiY(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_roiY(Tango::Attribute &attr) entering... " << endl;
@@ -2006,7 +1984,6 @@ void LimaDetector::read_roiY(Tango::Attribute &attr)
 // description : 	Extract real attribute values for roiWidth acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_roiWidth(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_roiWidth(Tango::Attribute &attr) entering... " << endl;
@@ -2083,7 +2060,6 @@ void LimaDetector::read_roiHeight(Tango::Attribute &attr)
 // description : 	Extract real attribute values for binningH acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_binningH(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_binningH(Tango::Attribute &attr) entering... " << endl;
@@ -2121,7 +2097,6 @@ void LimaDetector::read_binningH(Tango::Attribute &attr)
 // description : 	Extract real attribute values for binningV acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_binningV(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_binningV(Tango::Attribute &attr) entering... " << endl;
@@ -2197,7 +2172,6 @@ void LimaDetector::read_nbFrames(Tango::Attribute &attr)
 // description :     Write nbFrames attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::write_nbFrames(Tango::WAttribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::write_nbFrames(Tango::WAttribute &attr) entering... " << endl;
@@ -2234,7 +2208,6 @@ void LimaDetector::write_nbFrames(Tango::WAttribute &attr)
 // description :     Extract real attribute values for currentFrame acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_currentFrame(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_currentFrame(Tango::Attribute &attr) entering... " << endl;
@@ -2299,7 +2272,6 @@ long long LimaDetector::get_last_image_counter(void)
 // description :
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_shutterState_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
 {
     DEBUG_STREAM << "LimaDetector::read_shutterState_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2341,7 +2313,6 @@ void LimaDetector::read_shutterState_callback(yat4tango::DynamicAttributeReadCal
 // description :
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_shutterOpenTime_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
 {
     DEBUG_STREAM << "LimaDetector::read_shutterOpenTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2378,7 +2349,6 @@ void LimaDetector::read_shutterOpenTime_callback(yat4tango::DynamicAttributeRead
 // description :
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::write_shutterOpenTime_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd)
 {
     DEBUG_STREAM << "LimaDetector::write_shutterOpenTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2417,7 +2387,6 @@ void LimaDetector::write_shutterOpenTime_callback(yat4tango::DynamicAttributeWri
 // description :
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_shutterCloseTime_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
 {
     DEBUG_STREAM << "LimaDetector::read_shutterCloseTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2456,7 +2425,6 @@ void LimaDetector::read_shutterCloseTime_callback(yat4tango::DynamicAttributeRea
 // description :
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::write_shutterCloseTime_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd)
 {
     DEBUG_STREAM << "LimaDetector::write_shutterCloseTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2541,7 +2509,6 @@ void LimaDetector::read_shutterMode_callback(yat4tango::DynamicAttributeReadCall
 // description :
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::write_shutterMode_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd)
 {
     DEBUG_STREAM << "LimaDetector::write_shutterMode_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2616,7 +2583,6 @@ void LimaDetector::write_shutterMode_callback(yat4tango::DynamicAttributeWriteCa
 // description :
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
 {
     DEBUG_STREAM << "LimaDetector::read_image_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2704,7 +2670,6 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
 // description :     Extract real attribute values for fileGeneration acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_fileGeneration(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_fileGeneration(Tango::Attribute &attr) entering... " << endl;
@@ -2768,7 +2733,6 @@ void LimaDetector::write_fileGeneration(Tango::WAttribute &attr)
 // description : 	Extract real attribute values for flipX acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_flipX(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_flipX(Tango::Attribute &attr) entering... " << endl;
@@ -2837,7 +2801,6 @@ void LimaDetector::write_flipX(Tango::WAttribute &attr)
 // description : 	Extract real attribute values for flipY acquisition result.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::read_flipY(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::read_flipY(Tango::Attribute &attr) entering... " << endl;
@@ -2870,7 +2833,6 @@ void LimaDetector::read_flipY(Tango::Attribute &attr)
 // description : 	Write flipY attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::write_flipY(Tango::WAttribute &attr)
 {
     DEBUG_STREAM << "LimaDetector::write_flipY(Tango::WAttribute &attr) entering... " << endl;
@@ -2983,7 +2945,6 @@ void LimaDetector::snap()
  *
  */
 //+------------------------------------------------------------------
-
 void LimaDetector::start()
 {
     DEBUG_STREAM << "LimaDetector::start(): entering... !" << endl;
@@ -3047,7 +3008,6 @@ void LimaDetector::start()
  *
  */
 //+------------------------------------------------------------------
-
 void LimaDetector::stop()
 {
     DEBUG_STREAM << "LimaDetector::stop(): entering... !" << endl;
@@ -3093,7 +3053,6 @@ void LimaDetector::stop()
  *
  */
 //+------------------------------------------------------------------
-
 void LimaDetector::set_roi(const Tango::DevVarULongArray *argin)
 {
     DEBUG_STREAM << "LimaDetector::set_roi(): entering... !" << endl;
@@ -3163,7 +3122,6 @@ void LimaDetector::set_roi(const Tango::DevVarULongArray *argin)
  *
  */
 //+------------------------------------------------------------------
-
 void LimaDetector::set_binning(const Tango::DevVarULongArray *argin)
 {
     DEBUG_STREAM << "LimaDetector::set_binning(): entering... !" << endl;
@@ -3223,7 +3181,6 @@ void LimaDetector::set_binning(const Tango::DevVarULongArray *argin)
  *
  */
 //+------------------------------------------------------------------
-
 void LimaDetector::reset_roi()
 {
     DEBUG_STREAM << "LimaDetector::reset_roi(): entering... !" << endl;
@@ -3277,7 +3234,6 @@ void LimaDetector::reset_roi()
  *
  */
 //+------------------------------------------------------------------
-
 void LimaDetector::reset_binning()
 {
     DEBUG_STREAM << "LimaDetector::reset_binning(): entering... !" << endl;
@@ -3324,7 +3280,6 @@ void LimaDetector::reset_binning()
  *
  */
 //+------------------------------------------------------------------
-
 Tango::DevVarStringArray *LimaDetector::get_attribute_available_values(Tango::DevString argin)
 {
     //	POGO has generated a method core with argout allocation.
@@ -3412,7 +3367,6 @@ Tango::DevVarStringArray *LimaDetector::get_attribute_available_values(Tango::De
  *
  */
 //+------------------------------------------------------------------
-
 Tango::DevState LimaDetector::dev_state()
 {
     Tango::DevState argout = DeviceImpl::dev_state();
@@ -3517,7 +3471,6 @@ Tango::DevState LimaDetector::dev_state()
 // method :         LimaDetector::create_acquisition_task
 //
 //-----------------------------------------------------------------------------
-
 bool LimaDetector::create_acquisition_task(void)
 {
     DEBUG_STREAM << "LimaDetector::CreateAcquisitionTask()" << endl;
@@ -3576,7 +3529,6 @@ bool LimaDetector::create_acquisition_task(void)
 // method :         LimaDetector::print_acq_conf
 //
 //-----------------------------------------------------------------------------
-
 void LimaDetector::print_acq_conf(void)
 {
     INFO_STREAM << "\n" << endl;
@@ -3753,7 +3705,6 @@ int LimaDetector::find_index_from_property_name(Tango::DbData& dev_prop, string 
  *
  */
 //+------------------------------------------------------------------
-
 void LimaDetector::open_shutter()
 {
     DEBUG_STREAM << "LimaDetector::open_shutter(): entering... !" << endl;
@@ -3813,7 +3764,6 @@ void LimaDetector::open_shutter()
  *
  */
 //+------------------------------------------------------------------
-
 void LimaDetector::close_shutter()
 {
     DEBUG_STREAM << "LimaDetector::close_shutter(): entering... !" << endl;
