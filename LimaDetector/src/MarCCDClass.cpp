@@ -305,6 +305,12 @@ void MarCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	image_index->set_default_properties(image_index_prop);
 	att_list.push_back(image_index);
 
+	//	Attribute : waitFileOnDiskTime
+	waitFileOnDiskTimeAttrib	*wait_file_on_disk_time = new waitFileOnDiskTimeAttrib();
+	wait_file_on_disk_time->set_memorized();
+	wait_file_on_disk_time->set_memorized_init(false);
+	att_list.push_back(wait_file_on_disk_time);
+
 	//	End of Automatic code generation
 	//-------------------------------------------------------------
 }
