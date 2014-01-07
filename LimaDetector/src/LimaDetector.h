@@ -42,7 +42,6 @@
 //- YAT/YAT4TANGO
 #include <yat4tango/InnerAppender.h>
 #include <yat4tango/DynamicAttributeManager.h>
-
 #endif
 
 //- STL 
@@ -79,7 +78,6 @@
 //- YAT/YAT4TANGO
 #include <yat4tango/InnerAppender.h>
 #include <yat4tango/DynamicAttributeManager.h>
-
 #endif
 
 
@@ -96,6 +94,8 @@ using namespace yat4tango;
  //    Add your own constant definitions here.
  //-----------------------------------------------
 
+#define MAX_ATTRIBUTE_STRING_LENGTH     256
+const size_t LOG_BUFFER_DEPTH = 1024;
 
 namespace LimaDetector_ns
 {
