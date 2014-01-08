@@ -62,11 +62,17 @@ Revision:  - Author:
 <Td><Center><b>Data Type</b></td></Center>
 <Td><Center><b>R/W Type</b></td></Center>
 <Td><Center><b>Expert</b></td></Center>
-<Tr><Td><b>shutterMode</b>: <Font Size=-1>Available Shutter Modes are :<br> GLOBAL<br> ROLLING<br></Font></Td>
+<Tr><Td><b>shutterMode</b>: <Font Size=-1>Available Shutter Modes are :<br> -1-> Not available 0 -> GLOBAL<br> 1 -> ROLLING<br></Font></Td>
 <Td><Center><Font Size=-1>DEV_STRING</Font></Center></Td><Td><Center><Font Size=-1>READ_WRITE</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
 
-<Tr><Td><b>pixelScanRate</b>: <Font Size=-1>Available Pixel Scan Rates are :<br> SLOW<br> FAST<br>  SLOW mean 95.3 MHz <br> FAST mean 286 MHz </Font></Td>
+<Tr><Td><b>pixelScanRate</b>: <Font Size=-1>Available Pixel Scan Rates are :<br> 1 -> LOW (95.3 MHz)<br> 2 -> HIGH (286 MHz)<br></Font></Td>
 <Td><Center><Font Size=-1>DEV_STRING</Font></Center></Td><Td><Center><Font Size=-1>READ_WRITE</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
+
+<Tr><Td><b>frameRate</b>: <Font Size=-1>Give the current Frame Rate</Font></Td>
+<Td><Center><Font Size=-1>DEV_DOUBLE</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
+
+<Tr><Td><b>maxNbImage</b>: <Font Size=-1>Max Nb Image</Font></Td>
+<Td><Center><Font Size=-1>DEV_SHORT</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
 
 </Table>
 </Center>

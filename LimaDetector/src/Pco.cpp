@@ -113,6 +113,9 @@ void Pco::delete_device()
     DELETE_SCALAR_ATTRIBUTE(attr_frameRate_read);
     DELETE_SCALAR_ATTRIBUTE(attr_maxNbImage_read);
 
+    if(dev_string_val)
+        delete dev_string_val;
+
     //!!!! ONLY LimaDetector device can do this !!!!
     //if(m_ct!=0)
     //{
@@ -139,6 +142,8 @@ void Pco::init_device()
     CREATE_DEVSTRING_ATTRIBUTE(attr_pixelScanRate_read,MAX_ATTRIBUTE_STRING_LENGTH);	
     CREATE_SCALAR_ATTRIBUTE(attr_frameRate_read);
     CREATE_SCALAR_ATTRIBUTE(attr_maxNbImage_read);
+
+    dev_string_val = new char[MAX_ATTRIBUTE_STRING_LENGTH];
 
     m_is_device_initialized = false;
     set_state(Tango::INIT);
@@ -227,55 +232,6 @@ void Pco::read_attr_hardware(vector<long> &attr_list)
 
 //+----------------------------------------------------------------------------
 //
-// method : 		Pco::read_pixelScanRateStr
-// 
-// description : 	Extract real attribute values for pixelScanRateStr acquisition result.
-//
-//-----------------------------------------------------------------------------
-void Pco::read_pixelScanRateStr(Tango::Attribute &attr)
-{
-	DEBUG_STREAM << "Pco::read_pixelScanRateStr(Tango::Attribute &attr) entering... "<< endl;
-
-    //- force a read to pixelScanRate
-    Tango::Attribute &pixelScanRate = dev_attr->get_attr_by_name("pixelScanRate");
-    read_pixelScanRate(pixelScanRate);
-
-    try
-    {
-		switch(*attr_pixelScanRate_read)
-		{
-            case 95333333 : strcpy(*attr_pixelScanRateStr_read, "LOW: 95.3 MHz");
-			break;
-            case 286000000 : strcpy(*attr_pixelScanRateStr_read "HIGH: 286 MHz");
-			break;
-            default : strcpy(*attr_pixelScanRateStr_read, "Not Supported");
-			break;
-		}
-
-        attr.set_value(attr_pixelScanRateStr_read);
-    }
-    catch(Tango::DevFailed& df)
-    {
-        ERROR_STREAM << df << endl;
-        //- rethrow exception
-        Tango::Except::re_throw_exception(df,
-                    static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                    static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                    static_cast<const char*> ("Pco::read_pixelScanRateStr"));
-    }			
-    catch(Exception& e)
-    {
-        ERROR_STREAM << e.getErrMsg() << endl;
-        //- throw exception
-        Tango::Except::throw_exception(
-                     static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                     static_cast<const char*> (e.getErrMsg().c_str()),
-                     static_cast<const char*> ("Pco::read_pixelScanRateStr"));
-    }	 
-}
-
-//+----------------------------------------------------------------------------
-//
 // method : 		Pco::read_frameRate
 // 
 // description : 	Extract real attribute values for frameRate acquisition result.
@@ -287,8 +243,8 @@ void Pco::read_frameRate(Tango::Attribute &attr)
 
     try
     {
-        char* frame_rate = m_camera->talk("frameRate");
-        *attr_frameRate_read = yat::StringUtil::to_num(string(*frame_rate));
+        dev_string_val = m_camera->talk("frameRate");
+        *attr_frameRate_read = yat::StringUtil::to_num<Tango::DevDouble>(std::string(dev_string_val));
         attr.set_value(attr_frameRate_read);
     }
     catch(Tango::DevFailed& df)
@@ -324,8 +280,8 @@ void Pco::read_maxNbImage(Tango::Attribute &attr)
 
     try
     {
-        char* mx_nb_img = m_camera->talk("maxNbImages");
-        *attr_maxNbImage_read = yat::StringUtil::to_num(string(*mx_nb_img));
+        dev_string_val = m_camera->talk("maxNbImages");
+        *attr_maxNbImage_read = yat::StringUtil::to_num<Tango::DevShort>(std::string(dev_string_val));
         attr.set_value(attr_maxNbImage_read);
     }
     catch(Tango::DevFailed& df)
@@ -348,7 +304,6 @@ void Pco::read_maxNbImage(Tango::Attribute &attr)
     }
 }
 
-
 //+----------------------------------------------------------------------------
 //
 // method : 		Pco::read_shutterMode
@@ -364,13 +319,13 @@ void Pco::read_shutterMode(Tango::Attribute &attr)
     {
         *attr_shutterMode_read = m_camera->talk("rollingShutter");
         //- this return a number as char*: we want to transform it into readable text
-        short rolling_shutter = yat::StringUtil::to_num(string(*attr_shutterMode_read));
+        short rolling_shutter = yat::StringUtil::to_num<short>(std::string(*attr_shutterMode_read));
         
 		switch(rolling_shutter)
 		{
 			case -1 : strcpy(*attr_shutterMode_read, "NOT_AVAILABLE_FOR_THIS_CAM");
 			break;
-            case 0 : strcpy(*attr_shutterMode_read "GLOBAL");
+            case 0 : strcpy(*attr_shutterMode_read, "GLOBAL");
 			break;
             case 1 : strcpy(*attr_shutterMode_read, "ROLLING");
 			break;
@@ -431,7 +386,7 @@ void Pco::write_shutterMode(Tango::WAttribute &attr)
                                             (const char*) ("Pco::write_shutterMode"));
         }
 
-        char* value_to_write[2];
+        std::string value_to_write;
         //- THIS IS AN AVAILABLE SHUTTER MODE
         if(current == "NOT_AVAILABLE")
         {
@@ -448,7 +403,7 @@ void Pco::write_shutterMode(Tango::WAttribute &attr)
 			value_to_write = "1";
         }
 
-        std::string cmd = "rollingShutter " + std::string(value_to_write); 
+        std::string cmd = "rollingShutter " + value_to_write; 
         m_camera->talk((char*)cmd.c_str());
     }
     catch(Tango::DevFailed& df)
@@ -486,13 +441,13 @@ void Pco::read_pixelScanRate(Tango::Attribute &attr)
     {
         *attr_pixelScanRate_read = m_camera->talk("pixelRate");
         //- this return a number as char*: we want to transform it into readable text
-        long pixel_rate = yat::StringUtil::to_num(string(*attr_pixelScanRate_read));
+        long pixel_rate = yat::StringUtil::to_num<long>(std::string(*attr_pixelScanRate_read));
         
 		switch(pixel_rate)
 		{
             case 95333333 : strcpy(*attr_pixelScanRate_read, "SLOW: 95.3 MHz");
 			break;
-            case 286000000 : strcpy(*attr_pixelScanRate_read "FAST: 286 MHz");
+            case 286000000 : strcpy(*attr_pixelScanRate_read, "FAST: 286 MHz");
 			break;
             default : strcpy(*attr_pixelScanRate_read, "Not Supported");
 			break;
@@ -531,7 +486,6 @@ void Pco::write_pixelScanRate(Tango::WAttribute &attr)
 {
 	DEBUG_STREAM << "Pco::write_pixelScanRate(Tango::WAttribute &attr) entering... "<< endl;
 
-    //- TODO : comme pour shutterMode ( cf princeton)
 	try
     {
         std::string previous = *attr_pixelScanRate_read;
@@ -540,16 +494,21 @@ void Pco::write_pixelScanRate(Tango::WAttribute &attr)
 
         /*check user input*/
         if((current != "SLOW") && 
-           (current != "FAST")
+           (current != "FAST"))
         {
             m_pixel_scan_rate = previous;
             attr_pixelScanRate_write = new char [m_pixel_scan_rate.size()+1];
             strcpy (attr_pixelScanRate_write, m_pixel_scan_rate.c_str());
 
             Tango::Except::throw_exception( (const char*) ("CONFIGURATION_ERROR"),
-                                            (const char*) ("Available Pixel Scan Ratew are: \n- SLOW \n- FAST"),
+                                            (const char*) ("Available Pixel Scan Rate are: \n- SLOW \n- FAST"),
                                             (const char*) ("Pco::write_pixelScanRate"));
         }
+
+        if (current == "SLOW")
+            current = "95333333";
+        if (current == "FAST")
+            current = "286000000";
 
         std::string cmd = "pixelRate " + current; 
         m_camera->talk((char*)cmd.c_str());
@@ -589,7 +548,6 @@ void Pco::write_pixelScanRate(Tango::WAttribute &attr)
  *	maxNbImages
  *	timestamp
  *	" "
- *	
  *
  * @param	argin	str argin
  * @return	str argout
@@ -625,7 +583,6 @@ Tango::DevString Pco::talk(Tango::DevString argin)
     }
 }
 
-
 //+------------------------------------------------------------------
 /**
  *	method:	Pco::get_cam_info
@@ -633,15 +590,27 @@ Tango::DevString Pco::talk(Tango::DevString argin)
  *	description:	method to execute "GetCamInfo"
  *	Get Camera Infos
  *
+ * @return	cam infos
  *
  */
 //+------------------------------------------------------------------
-void Pco::get_cam_info()
+Tango::DevString Pco::get_cam_info()
 {
+	//	POGO has generated a method core with argout allocation.
+	//	If you would like to use a static reference without copying,
+	//	See "TANGO Device Server Programmer's Manual"
+	//		(chapter : Writing a TANGO DS / Exchanging data)
+	//------------------------------------------------------------
+	Tango::DevString	argout  = new char[MAX_ATTRIBUTE_STRING_LENGTH];
+	strcpy(argout, "dummy");
 	DEBUG_STREAM << "Pco::get_cam_info(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
+    argout = talk("camInfo");
+
+
+	return argout;
 }
 
 //+------------------------------------------------------------------
@@ -651,15 +620,26 @@ void Pco::get_cam_info()
  *	description:	method to execute "GetCamType"
  *	Get Camera Type
  *
+ * @return	cam type
  *
  */
 //+------------------------------------------------------------------
-void Pco::get_cam_type()
+Tango::DevString Pco::get_cam_type()
 {
+	//	POGO has generated a method core with argout allocation.
+	//	If you would like to use a static reference without copying,
+	//	See "TANGO Device Server Programmer's Manual"
+	//		(chapter : Writing a TANGO DS / Exchanging data)
+	//------------------------------------------------------------
+	Tango::DevString	argout  = new char[MAX_ATTRIBUTE_STRING_LENGTH];
+	strcpy(argout, "dummy");
 	DEBUG_STREAM << "Pco::get_cam_type(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
+    argout = talk("camType");
+
+	return argout;
 }
 
 //+------------------------------------------------------------------
@@ -669,17 +649,26 @@ void Pco::get_cam_type()
  *	description:	method to execute "GetInfo"
  *	Get Infos
  *
+ * @return	infos
  *
  */
 //+------------------------------------------------------------------
-void Pco::get_info()
+Tango::DevString Pco::get_info()
 {
+	//	POGO has generated a method core with argout allocation.
+	//	If you would like to use a static reference without copying,
+	//	See "TANGO Device Server Programmer's Manual"
+	//		(chapter : Writing a TANGO DS / Exchanging data)
+	//------------------------------------------------------------
+	Tango::DevString	argout  = new char[MAX_ATTRIBUTE_STRING_LENGTH];
+	strcpy(argout, "dummy");
 	DEBUG_STREAM << "Pco::get_info(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
+    argout = talk(" ");
+
+	return argout;
 }
-
-
 
 }	//	namespace

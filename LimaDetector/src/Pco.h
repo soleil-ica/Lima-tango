@@ -248,7 +248,6 @@ namespace Pco_ns
  *	maxNbImages
  *	timestamp
  *	" "
- *	
  *	@param	argin	str argin
  *	@return	str argout
  *	@exception DevFailed
@@ -256,19 +255,22 @@ namespace Pco_ns
 	Tango::DevString	talk(Tango::DevString);
 /**
  * Get Camera Infos
+ *	@return	cam infos
  *	@exception DevFailed
  */
-	void	get_cam_info();
+	Tango::DevString	get_cam_info();
 /**
  * Get Camera Type
+ *	@return	cam type
  *	@exception DevFailed
  */
-	void	get_cam_type();
+	Tango::DevString	get_cam_type();
 /**
  * Get Infos
+ *	@return	infos
  *	@exception DevFailed
  */
-	void	get_info();
+	Tango::DevString	get_info();
 
 /**
  *	Read the device properties from database
@@ -312,6 +314,7 @@ namespace Pco_ns
 
         std::string             m_pixel_scan_rate; //pixel scan rate 	(SLOW, FAST)
         std::string             m_shutter_mode; //shutter mode name 	(GLOBAL, ROLLING)
+        Tango::DevString        dev_string_val;
     };
 
 } // namespace_ns
