@@ -101,10 +101,10 @@ public:
 //=========================================
 //	Define classes for commands
 //=========================================
-class GetInfoClass : public Tango::Command
+class GetInfoCmd : public Tango::Command
 {
 public:
-	GetInfoClass(const char   *name,
+	GetInfoCmd(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out,
 				   const char        *in_desc,
@@ -112,11 +112,11 @@ public:
 				   Tango::DispLevel  level)
 	:Command(name,in,out,in_desc,out_desc, level)	{};
 
-	GetInfoClass(const char   *name,
+	GetInfoCmd(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out)
 	:Command(name,in,out)	{};
-	~GetInfoClass() {};
+	~GetInfoCmd() {};
 	
 	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
 	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
@@ -125,10 +125,10 @@ public:
 
 
 
-class GetCamTypeClass : public Tango::Command
+class GetCamTypeCmd : public Tango::Command
 {
 public:
-	GetCamTypeClass(const char   *name,
+	GetCamTypeCmd(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out,
 				   const char        *in_desc,
@@ -136,11 +136,11 @@ public:
 				   Tango::DispLevel  level)
 	:Command(name,in,out,in_desc,out_desc, level)	{};
 
-	GetCamTypeClass(const char   *name,
+	GetCamTypeCmd(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out)
 	:Command(name,in,out)	{};
-	~GetCamTypeClass() {};
+	~GetCamTypeCmd() {};
 	
 	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
 	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
@@ -149,10 +149,10 @@ public:
 
 
 
-class GetCamInfoClass : public Tango::Command
+class GetCamInfoCmd : public Tango::Command
 {
 public:
-	GetCamInfoClass(const char   *name,
+	GetCamInfoCmd(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out,
 				   const char        *in_desc,
@@ -160,11 +160,11 @@ public:
 				   Tango::DispLevel  level)
 	:Command(name,in,out,in_desc,out_desc, level)	{};
 
-	GetCamInfoClass(const char   *name,
+	GetCamInfoCmd(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out)
 	:Command(name,in,out)	{};
-	~GetCamInfoClass() {};
+	~GetCamInfoCmd() {};
 	
 	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
 	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)

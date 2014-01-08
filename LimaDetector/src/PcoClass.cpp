@@ -61,7 +61,7 @@ namespace Pco_ns
 {
 //+----------------------------------------------------------------------------
 //
-// method : 		GetInfoClass::execute()
+// method : 		GetInfoCmd::execute()
 // 
 // description : 	method to trigger the execution of the command.
 //                PLEASE DO NOT MODIFY this method core without pogo   
@@ -72,18 +72,17 @@ namespace Pco_ns
 // returns : The command output data (packed in the Any object)
 //
 //-----------------------------------------------------------------------------
-CORBA::Any *GetInfoClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+CORBA::Any *GetInfoCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
 {
 
-	cout2 << "GetInfoClass::execute(): arrived" << endl;
+	cout2 << "GetInfoCmd::execute(): arrived" << endl;
 
-	((static_cast<Pco *>(device))->get_info());
-	return new CORBA::Any();
+	return insert((static_cast<Pco *>(device))->get_info());
 }
 
 //+----------------------------------------------------------------------------
 //
-// method : 		GetCamTypeClass::execute()
+// method : 		GetCamTypeCmd::execute()
 // 
 // description : 	method to trigger the execution of the command.
 //                PLEASE DO NOT MODIFY this method core without pogo   
@@ -94,18 +93,17 @@ CORBA::Any *GetInfoClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in
 // returns : The command output data (packed in the Any object)
 //
 //-----------------------------------------------------------------------------
-CORBA::Any *GetCamTypeClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+CORBA::Any *GetCamTypeCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
 {
 
-	cout2 << "GetCamTypeClass::execute(): arrived" << endl;
+	cout2 << "GetCamTypeCmd::execute(): arrived" << endl;
 
-	((static_cast<Pco *>(device))->get_cam_type());
-	return new CORBA::Any();
+	return insert((static_cast<Pco *>(device))->get_cam_type());
 }
 
 //+----------------------------------------------------------------------------
 //
-// method : 		GetCamInfoClass::execute()
+// method : 		GetCamInfoCmd::execute()
 // 
 // description : 	method to trigger the execution of the command.
 //                PLEASE DO NOT MODIFY this method core without pogo   
@@ -116,14 +114,14 @@ CORBA::Any *GetCamTypeClass::execute(Tango::DeviceImpl *device,const CORBA::Any 
 // returns : The command output data (packed in the Any object)
 //
 //-----------------------------------------------------------------------------
-CORBA::Any *GetCamInfoClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+CORBA::Any *GetCamInfoCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
 {
 
-	cout2 << "GetCamInfoClass::execute(): arrived" << endl;
+	cout2 << "GetCamInfoCmd::execute(): arrived" << endl;
 
-	((static_cast<Pco *>(device))->get_cam_info());
-	return new CORBA::Any();
+	return insert((static_cast<Pco *>(device))->get_cam_info());
 }
+
 
 //+----------------------------------------------------------------------------
 //
@@ -243,20 +241,20 @@ void PcoClass::command_factory()
 		"str argin",
 		"str argout",
 		Tango::EXPERT));
-	command_list.push_back(new GetCamInfoClass("GetCamInfo",
-		Tango::DEV_VOID, Tango::DEV_VOID,
+	command_list.push_back(new GetCamInfoCmd("GetCamInfo",
+		Tango::DEV_VOID, Tango::DEV_STRING,
 		"",
-		"",
+		"cam infos",
 		Tango::OPERATOR));
-	command_list.push_back(new GetCamTypeClass("GetCamType",
-		Tango::DEV_VOID, Tango::DEV_VOID,
+	command_list.push_back(new GetCamTypeCmd("GetCamType",
+		Tango::DEV_VOID, Tango::DEV_STRING,
 		"",
-		"",
+		"cam type",
 		Tango::OPERATOR));
-	command_list.push_back(new GetInfoClass("GetInfo",
-		Tango::DEV_VOID, Tango::DEV_VOID,
+	command_list.push_back(new GetInfoCmd("GetInfo",
+		Tango::DEV_VOID, Tango::DEV_STRING,
 		"",
-		"",
+		"infos",
 		Tango::OPERATOR));
 
 	//	add polling if any
@@ -387,6 +385,7 @@ void PcoClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	Tango::UserDefaultAttrProp	max_nb_image_prop;
 	max_nb_image_prop.set_label("Max Nb Image");
 	max_nb_image_prop.set_unit(" ");
+	max_nb_image_prop.set_format("%d");
 	max_nb_image_prop.set_description("Max Nb Image");
 	max_nb_image->set_default_properties(max_nb_image_prop);
 	att_list.push_back(max_nb_image);

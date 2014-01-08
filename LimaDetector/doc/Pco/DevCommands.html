@@ -104,13 +104,64 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <Br>
 <A NAME="Talk"><!-- --></A>
 <A NAME="Talk"><!-- --></A>
-<h2>4 - Talk</h2>
+<h2>4 - Talk (for expert only)</h2>
 <ul>
-<Li><Strong>Description: </Strong> A direct command to talk to de camera<Br>&nbsp
+<Li><Strong>Description: </Strong> Availables values are:
+lasterror
+camInfo
+camType
+clTransferParam
+cocRunTime
+frameRate
+maxNbImages
+timestamp
+" "<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_STRING</Strong>
  : str argin<Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_STRING</Strong>
  : str argout<Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::INIT<Li>Tango::STANDBY<Li>Tango::FAULT<Li>Tango::RUNNING</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
+<A NAME="GetCamInfo"><!-- --></A>
+<A NAME="GetCamInfo"><!-- --></A>
+<h2>5 - GetCamInfo</h2>
+<ul>
+<Li><Strong>Description: </Strong> Get Camera Infos<Br>&nbsp
+<Li><Strong>Argin:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_STRING</Strong>
+ : cam infos<Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::INIT<Li>Tango::STANDBY<Li>Tango::FAULT<Li>Tango::RUNNING</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
+<A NAME="GetCamType"><!-- --></A>
+<A NAME="GetCamType"><!-- --></A>
+<h2>6 - GetCamType</h2>
+<ul>
+<Li><Strong>Description: </Strong> Get Camera Type<Br>&nbsp
+<Li><Strong>Argin:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_STRING</Strong>
+ : cam type<Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::INIT<Li>Tango::STANDBY<Li>Tango::FAULT<Li>Tango::RUNNING</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
+<A NAME="GetInfo"><!-- --></A>
+<A NAME="GetInfo"><!-- --></A>
+<h2>7 - GetInfo</h2>
+<ul>
+<Li><Strong>Description: </Strong> Get Infos<Br>&nbsp
+<Li><Strong>Argin:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_STRING</Strong>
+ : infos<Br>&nbsp
 <Li><Strong>Command allowed for: </Strong><Ul>
 <Li>Tango::INIT<Li>Tango::STANDBY<Li>Tango::FAULT<Li>Tango::RUNNING</Ul>
 <Br>&nbsp

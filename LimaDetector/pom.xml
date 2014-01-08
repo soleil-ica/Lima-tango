@@ -111,13 +111,13 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.soleil.lib</groupId>
-				<artifactId>YAT4Tango-${aol}-static-${mode}</artifactId>
-				<version>1.6.13-vc9</version>
+				<artifactId>YAT-${aol}-static-${mode}</artifactId>
+				<version>1.7.18</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.soleil.lib</groupId>
-				<artifactId>YAT-${aol}-static-${mode}</artifactId>
-				<version>1.7.18-vc9</version>
+				<artifactId>YAT4Tango-${aol}-static-${mode}</artifactId>
+				<version>1.6.13</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.soleil.lib</groupId>
