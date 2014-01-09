@@ -59,7 +59,20 @@
 #include "Factory.h"
 #endif
 
+#include <AviexInterface.h>
+#include <AviexCamera.h>
 #define MAX_ATTRIBUTE_STRING_LENGTH     256
+
+const int MASK_CORRECTION_BIT_POSITION	= 0;
+const int BIAS_CORRECTION_BIT_POSITION	= 1;
+const int DARK_CORRECTION_BIT_POSITION	= 2;
+const int FLOOD_CORRECTION_BIT_POSITION	= 3;
+const int GEOM_CORRECTION_BIT_POSITION	= 12;
+
+#define SET(var, bit) ( var|=  (1 << bit)  )       /* positionne le bit numero 'bit' -> 1 dans une variable*/
+#define CLR(var, bit) ( var&= ~(1 << bit)  )       /* positionne le bit numero 'bit' -> 0 dans une variable*/
+#define GET(var, bit) ((var&   (1 << bit))?1:0 )   /* retourne la valeur du bit numero 'bit' dans une variable*/
+
 
 using namespace lima;
 using namespace std;
@@ -97,6 +110,26 @@ public :
 //@{
 		Tango::DevString	*attr_internalAcquisitionMode_read;
 		Tango::DevString	attr_internalAcquisitionMode_write;
+		Tango::DevDouble	*attr_initialDelayTime_read;
+		Tango::DevDouble	attr_initialDelayTime_write;
+		Tango::DevDouble	*attr_readoutDelayTime_read;
+		Tango::DevDouble	attr_readoutDelayTime_write;
+		Tango::DevDouble	*attr_exposureMultiplier_read;
+		Tango::DevDouble	attr_exposureMultiplier_write;
+		Tango::DevDouble	*attr_gapMultiplier_read;
+		Tango::DevDouble	attr_gapMultiplier_write;
+		Tango::DevBoolean	*attr_maskCorrection_read;
+		Tango::DevBoolean	attr_maskCorrection_write;
+		Tango::DevBoolean	*attr_biasCorrection_read;
+		Tango::DevBoolean	attr_biasCorrection_write;
+		Tango::DevBoolean	*attr_darkCorrection_read;
+		Tango::DevBoolean	attr_darkCorrection_write;
+		Tango::DevBoolean	*attr_floodCorrection_read;
+		Tango::DevBoolean	attr_floodCorrection_write;
+		Tango::DevBoolean	*attr_geomCorrection_read;
+		Tango::DevBoolean	attr_geomCorrection_write;
+		Tango::DevBoolean	*attr_readoutSpeed_read;
+		Tango::DevBoolean	attr_readoutSpeed_write;
 //@}
 
 /**
@@ -116,10 +149,37 @@ public :
 /**
  *	Memorize/Define the internalAcquisitionMode attribute at Init device<br>
  *	Availables values :<br>
- *	- STANDARD<br>
- *	- FOCUS<br>
+ *	- ONESHOT<br>
+ *	- CONTINUOUS<br>
+ *	- MULTIFRAME<br>
+ *	- GEOMETRICAL<br>
+ *	- MEASURE_DARK_FRAME<br>
  */
 	string	memorizedInternalAcquisitionMode;
+/**
+ *	
+ */
+	Tango::DevULong	memorizedCorrectionFlags;
+/**
+ *	
+ */
+	Tango::DevDouble	memorizedInitialDelayTime;
+/**
+ *	
+ */
+	Tango::DevDouble	memorizedReadoutDelayTime;
+/**
+ *	
+ */
+	Tango::DevDouble	memorizedExposureMultiplier;
+/**
+ *	
+ */
+	Tango::DevDouble	memorizedGapMultiplier;
+/**
+ *	
+ */
+	Tango::DevBoolean	memorizedReadoutSpeed;
 //@}
 
 /**
@@ -201,9 +261,129 @@ public :
  */
 	virtual void write_internalAcquisitionMode(Tango::WAttribute &attr);
 /**
+ *	Extract real attribute values for initialDelayTime acquisition result.
+ */
+	virtual void read_initialDelayTime(Tango::Attribute &attr);
+/**
+ *	Write initialDelayTime attribute values to hardware.
+ */
+	virtual void write_initialDelayTime(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for readoutDelayTime acquisition result.
+ */
+	virtual void read_readoutDelayTime(Tango::Attribute &attr);
+/**
+ *	Write readoutDelayTime attribute values to hardware.
+ */
+	virtual void write_readoutDelayTime(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for exposureMultiplier acquisition result.
+ */
+	virtual void read_exposureMultiplier(Tango::Attribute &attr);
+/**
+ *	Write exposureMultiplier attribute values to hardware.
+ */
+	virtual void write_exposureMultiplier(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for gapMultiplier acquisition result.
+ */
+	virtual void read_gapMultiplier(Tango::Attribute &attr);
+/**
+ *	Write gapMultiplier attribute values to hardware.
+ */
+	virtual void write_gapMultiplier(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for maskCorrection acquisition result.
+ */
+	virtual void read_maskCorrection(Tango::Attribute &attr);
+/**
+ *	Write maskCorrection attribute values to hardware.
+ */
+	virtual void write_maskCorrection(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for biasCorrection acquisition result.
+ */
+	virtual void read_biasCorrection(Tango::Attribute &attr);
+/**
+ *	Write biasCorrection attribute values to hardware.
+ */
+	virtual void write_biasCorrection(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for darkCorrection acquisition result.
+ */
+	virtual void read_darkCorrection(Tango::Attribute &attr);
+/**
+ *	Write darkCorrection attribute values to hardware.
+ */
+	virtual void write_darkCorrection(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for floodCorrection acquisition result.
+ */
+	virtual void read_floodCorrection(Tango::Attribute &attr);
+/**
+ *	Write floodCorrection attribute values to hardware.
+ */
+	virtual void write_floodCorrection(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for geomCorrection acquisition result.
+ */
+	virtual void read_geomCorrection(Tango::Attribute &attr);
+/**
+ *	Write geomCorrection attribute values to hardware.
+ */
+	virtual void write_geomCorrection(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for readoutSpeed acquisition result.
+ */
+	virtual void read_readoutSpeed(Tango::Attribute &attr);
+/**
+ *	Write readoutSpeed attribute values to hardware.
+ */
+	virtual void write_readoutSpeed(Tango::WAttribute &attr);
+/**
  *	Read/Write allowed for internalAcquisitionMode attribute.
  */
 	virtual bool is_internalAcquisitionMode_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for initialDelayTime attribute.
+ */
+	virtual bool is_initialDelayTime_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for readoutDelayTime attribute.
+ */
+	virtual bool is_readoutDelayTime_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for exposureMultiplier attribute.
+ */
+	virtual bool is_exposureMultiplier_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for gapMultiplier attribute.
+ */
+	virtual bool is_gapMultiplier_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for maskCorrection attribute.
+ */
+	virtual bool is_maskCorrection_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for biasCorrection attribute.
+ */
+	virtual bool is_biasCorrection_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for darkCorrection attribute.
+ */
+	virtual bool is_darkCorrection_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for floodCorrection attribute.
+ */
+	virtual bool is_floodCorrection_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for geomCorrection attribute.
+ */
+	virtual bool is_geomCorrection_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for readoutSpeed attribute.
+ */
+	virtual bool is_readoutSpeed_allowed(Tango::AttReqType type);
 /**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code
@@ -246,6 +426,7 @@ protected :
     Aviex::Camera*    m_camera;	
 	
     std::string                 m_acquisition_mode;	//aquisition mode name 	(STANDARD, CONTINUOUS, FOCUS)
+	unsigned long				m_correction_flags;
     
 };
 

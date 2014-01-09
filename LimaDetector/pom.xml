@@ -76,11 +76,19 @@
 				<artifactId>LimaAdsc-${aol}-shared-${mode}</artifactId>
 				<version>1.3.0</version>
 			</dependency>
+			
 			<dependency>
 				<groupId>fr.soleil.lib.Lima.Camera</groupId>
 				<artifactId>LimaProsilica-${aol}-shared-${mode}</artifactId>
 				<version>1.3.0</version>
 			</dependency>
+						
+			<dependency>
+				<groupId>fr.soleil.lib.Lima.Camera</groupId>
+				<artifactId>LimaAviex-${aol}-shared-${mode}</artifactId>
+				<version>1.3.0</version>
+			</dependency>	
+				
 			<!--<dependency> WIP
 				<groupId>fr.soleil.lib.Lima.Camera</groupId>
 				<artifactId>LimaAndor3-${aol}-shared-${mode}</artifactId>
@@ -170,7 +178,6 @@
 						  </activation>
 						  <cpp>
 							<excludes>
-								<exclude>Aviex*.*</exclude> <!-- WIP -->
 								<exclude>Princeton*.*</exclude>
 								<exclude>Pco*.*</exclude>
 								<exclude>PerkinElmer*.*</exclude>
@@ -179,8 +186,9 @@
 							</excludes>
 							<defines>
 								<define>USE_GIGE</define>	
+								<define>OS_UNIX</define>								
 								<!-- define wich detector you need to ENABLE -->
-								<!--<define>AVIEX_ENABLED</define>-->   <!-- WIP -->
+								<define>AVIEX_ENABLED</define>
 								<define>BASLER_ENABLED</define>												 
 								<define>MARCCD_ENABLED</define>
 								<define>PILATUS_ENABLED</define>

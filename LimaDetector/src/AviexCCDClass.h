@@ -50,6 +50,146 @@ namespace AviexCCD_ns
 {//=====================================
 //	Define classes for attributes
 //=====================================
+class readoutSpeedAttrib: public Tango::Attr
+{
+public:
+	readoutSpeedAttrib():Attr("readoutSpeed", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
+	~readoutSpeedAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_readoutSpeed(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_readoutSpeed(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_readoutSpeed_allowed(ty);}
+};
+
+class geomCorrectionAttrib: public Tango::Attr
+{
+public:
+	geomCorrectionAttrib():Attr("geomCorrection", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
+	~geomCorrectionAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_geomCorrection(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_geomCorrection(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_geomCorrection_allowed(ty);}
+};
+
+class floodCorrectionAttrib: public Tango::Attr
+{
+public:
+	floodCorrectionAttrib():Attr("floodCorrection", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
+	~floodCorrectionAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_floodCorrection(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_floodCorrection(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_floodCorrection_allowed(ty);}
+};
+
+class darkCorrectionAttrib: public Tango::Attr
+{
+public:
+	darkCorrectionAttrib():Attr("darkCorrection", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
+	~darkCorrectionAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_darkCorrection(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_darkCorrection(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_darkCorrection_allowed(ty);}
+};
+
+class biasCorrectionAttrib: public Tango::Attr
+{
+public:
+	biasCorrectionAttrib():Attr("biasCorrection", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
+	~biasCorrectionAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_biasCorrection(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_biasCorrection(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_biasCorrection_allowed(ty);}
+};
+
+class maskCorrectionAttrib: public Tango::Attr
+{
+public:
+	maskCorrectionAttrib():Attr("maskCorrection", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
+	~maskCorrectionAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_maskCorrection(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_maskCorrection(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_maskCorrection_allowed(ty);}
+};
+
+class gapMultiplierAttrib: public Tango::Attr
+{
+public:
+	gapMultiplierAttrib():Attr("gapMultiplier", Tango::DEV_DOUBLE, Tango::READ_WRITE) {};
+	~gapMultiplierAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_gapMultiplier(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_gapMultiplier(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_gapMultiplier_allowed(ty);}
+};
+
+class exposureMultiplierAttrib: public Tango::Attr
+{
+public:
+	exposureMultiplierAttrib():Attr("exposureMultiplier", Tango::DEV_DOUBLE, Tango::READ_WRITE) {};
+	~exposureMultiplierAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_exposureMultiplier(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_exposureMultiplier(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_exposureMultiplier_allowed(ty);}
+};
+
+class readoutDelayTimeAttrib: public Tango::Attr
+{
+public:
+	readoutDelayTimeAttrib():Attr("readoutDelayTime", Tango::DEV_DOUBLE, Tango::READ_WRITE) {};
+	~readoutDelayTimeAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_readoutDelayTime(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_readoutDelayTime(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_readoutDelayTime_allowed(ty);}
+};
+
+class initialDelayTimeAttrib: public Tango::Attr
+{
+public:
+	initialDelayTimeAttrib():Attr("initialDelayTime", Tango::DEV_DOUBLE, Tango::READ_WRITE) {};
+	~initialDelayTimeAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_initialDelayTime(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_initialDelayTime(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_initialDelayTime_allowed(ty);}
+};
+
 class internalAcquisitionModeAttrib: public Tango::Attr
 {
 public:
