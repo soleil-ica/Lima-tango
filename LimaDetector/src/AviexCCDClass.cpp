@@ -251,9 +251,49 @@ void AviexCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : internalAcquisitionMode
 	internalAcquisitionModeAttrib	*internal_acquisition_mode = new internalAcquisitionModeAttrib();
 	Tango::UserDefaultAttrProp	internal_acquisition_mode_prop;
-	internal_acquisition_mode_prop.set_description("Available Internal Acquisition Modes are :<br>\nCONTINUOUS<br>\nMULTIFRAME<br>\nGEOMETRICAL<br>\nMAJOR_DARK_FRAME<br>");
+	internal_acquisition_mode_prop.set_description("Available Internal Acquisition Modes are :<br>\nONESHOT<br>\nCONTINUOUS<br>\nMULTIFRAME<br>\nGEOMETRICAL<br>\nMAJOR_DARK_FRAME<br>");
 	internal_acquisition_mode->set_default_properties(internal_acquisition_mode_prop);
 	att_list.push_back(internal_acquisition_mode);
+
+	//	Attribute : initialDelayTime
+	initialDelayTimeAttrib	*initial_delay_time = new initialDelayTimeAttrib();
+	att_list.push_back(initial_delay_time);
+
+	//	Attribute : readoutDelayTime
+	readoutDelayTimeAttrib	*readout_delay_time = new readoutDelayTimeAttrib();
+	att_list.push_back(readout_delay_time);
+
+	//	Attribute : exposureMultiplier
+	exposureMultiplierAttrib	*exposure_multiplier = new exposureMultiplierAttrib();
+	att_list.push_back(exposure_multiplier);
+
+	//	Attribute : gapMultiplier
+	gapMultiplierAttrib	*gap_multiplier = new gapMultiplierAttrib();
+	att_list.push_back(gap_multiplier);
+
+	//	Attribute : maskCorrection
+	maskCorrectionAttrib	*mask_correction = new maskCorrectionAttrib();
+	att_list.push_back(mask_correction);
+
+	//	Attribute : biasCorrection
+	biasCorrectionAttrib	*bias_correction = new biasCorrectionAttrib();
+	att_list.push_back(bias_correction);
+
+	//	Attribute : darkCorrection
+	darkCorrectionAttrib	*dark_correction = new darkCorrectionAttrib();
+	att_list.push_back(dark_correction);
+
+	//	Attribute : floodCorrection
+	floodCorrectionAttrib	*flood_correction = new floodCorrectionAttrib();
+	att_list.push_back(flood_correction);
+
+	//	Attribute : geomCorrection
+	geomCorrectionAttrib	*geom_correction = new geomCorrectionAttrib();
+	att_list.push_back(geom_correction);
+
+	//	Attribute : readoutSpeed
+	readoutSpeedAttrib	*readout_speed = new readoutSpeedAttrib();
+	att_list.push_back(readout_speed);
 
 	//	End of Automatic code generation
 	//-------------------------------------------------------------
@@ -352,10 +392,100 @@ void AviexCCDClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "MemorizedInternalAcquisitionMode";
-	prop_desc = "Memorize/Define the internalAcquisitionMode attribute at Init device<br>\nAvailables values :<br>\n- STANDARD<br>\n- FOCUS<br>";
-	prop_def  = "STANDARD";
+	prop_desc = "Memorize/Define the internalAcquisitionMode attribute at Init device<br>\nAvailables values :<br>\n- ONESHOT<br>\n- CONTINUOUS<br>\n- MULTIFRAME<br>\n- GEOMETRICAL<br>\n- MEASURE_DARK_FRAME<br>";
+	prop_def  = "MULTIFRAME";
 	vect_data.clear();
-	vect_data.push_back("STANDARD");
+	vect_data.push_back("MULTIFRAME");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedCorrectionFlags";
+	prop_desc = "";
+	prop_def  = "0";
+	vect_data.clear();
+	vect_data.push_back("0");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedInitialDelayTime";
+	prop_desc = "";
+	prop_def  = "0";
+	vect_data.clear();
+	vect_data.push_back("0");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedReadoutDelayTime";
+	prop_desc = "";
+	prop_def  = "0";
+	vect_data.clear();
+	vect_data.push_back("0");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedExposureMultiplier";
+	prop_desc = "";
+	prop_def  = "1.0";
+	vect_data.clear();
+	vect_data.push_back("1.0");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedGapMultiplier";
+	prop_desc = "";
+	prop_def  = "1.0";
+	vect_data.clear();
+	vect_data.push_back("1.0");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedReadoutSpeed";
+	prop_desc = "";
+	prop_def  = "false";
+	vect_data.clear();
+	vect_data.push_back("false");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
