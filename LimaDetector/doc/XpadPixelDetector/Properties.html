@@ -63,13 +63,13 @@ Revision:  - Author:
 <Td><Center><b>Property type</b></td></Center>
 <Td><Center><b>Description</b></td></Center>
 <Tr><Td><b><a href=#Dev_DefaultValues>AcquisitionType </a></b></Td>
-<Td><Font Size=-1>Tango::DEV_SHORT</Font></Td>
+<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
 <Td><Font Size=-1>Type of Acquisition:<BR>
-0->SYNC<BR>
-1->ASYNC (not supported yet)</Font></Td></Tr>
+SYNC -> Synchrone<BR>
+ASYNC-> Asynchrone<BR></Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>XpadModel </a></b></Td>
-<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
+<Td><Font Size=-1>string</Font></Td>
 <Td><Font Size=-1>Define the model of the XPAD (architecture)<BR>
 Availables models :<BR>
 - BACKPLANE<BR>
@@ -79,8 +79,8 @@ Availables models :<BR>
 - IMXPAD_S540<BR></Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>CalibrationPath </a></b></Td>
-<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
-<Td><Font Size=-1>Path where the calibration files will be save, and from where the calibrations will be uploaded via an UploadCalibration command</Font></Td></Tr>
+<Td><Font Size=-1>string</Font></Td>
+<Td><Font Size=-1>Path where the calibration files will be saved, and from where the calibrations will be uploaded via an UploadCalibration command</Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>CalibrationAdjustingNumber </a></b></Td>
 <Td><Font Size=-1>Tango::DEV_ULONG</Font></Td>
@@ -101,7 +101,7 @@ Availables models :<BR>
     </Tr>
     <Tr>
         <Td>AcquisitionType</Td>
-        <td>0</td>
+        <td>SYNC</td>
     </Tr>
     <Tr>
         <Td>XpadModel</Td>
