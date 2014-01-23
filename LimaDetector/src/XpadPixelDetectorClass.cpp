@@ -492,12 +492,12 @@ void XpadPixelDetectorClass::command_factory()
 		Tango::DEV_VOID, Tango::DEVVAR_USHORTARRAY,
 		"",
 		"array of DACL data",
-		Tango::OPERATOR));
+		Tango::EXPERT));
 	command_list.push_back(new GetIthlCmd("GetIthl",
 		Tango::DEV_VOID, Tango::DEVVAR_USHORTARRAY,
 		"",
 		"array of ITHL data",
-		Tango::OPERATOR));
+		Tango::EXPERT));
 	command_list.push_back(new CalibrateOTNSlowCmd("CalibrateOTNSlow",
 		Tango::DEV_VOID, Tango::DEV_VOID,
 		"",
@@ -661,7 +661,7 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : n
 	nAttrib	*n = new nAttrib();
 	Tango::UserDefaultAttrProp	n_prop;
-	n_prop.set_unit("µs");
+	n_prop.set_unit(" ");
 	n_prop.set_format("%d");
 	n_prop.set_description("?	");
 	n->set_default_properties(n_prop);
@@ -671,11 +671,22 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : p
 	pAttrib	*p = new pAttrib();
 	Tango::UserDefaultAttrProp	p_prop;
-	p_prop.set_unit("µs");
+	p_prop.set_unit(" ");
 	p_prop.set_format("%d");
+	p_prop.set_description("?");
 	p->set_default_properties(p_prop);
 	p->set_disp_level(Tango::EXPERT);
 	att_list.push_back(p);
+
+	//	Attribute : busyOut
+	busyOutAttrib	*busy_out = new busyOutAttrib();
+	Tango::UserDefaultAttrProp	busy_out_prop;
+	busy_out_prop.set_unit(" ");
+	busy_out_prop.set_format("%1d");
+	busy_out_prop.set_description("Selection of the busy out:\n0-busy, 1-busy shutter, 2-read img ena, 3-ovf updt ena, 4- exp ceg(0), 5-xpad proc busy, 6-gpout(img transfer), 7-dsfifo full, 8-ext gate, 9-init ovf update");
+	busy_out->set_default_properties(busy_out_prop);
+	busy_out->set_disp_level(Tango::EXPERT);
+	att_list.push_back(busy_out);
 
 	//	Attribute : gp1
 	gp1Attrib	*gp1 = new gp1Attrib();
@@ -716,6 +727,17 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	gp4->set_default_properties(gp4_prop);
 	gp4->set_disp_level(Tango::EXPERT);
 	att_list.push_back(gp4);
+
+	//	Attribute : enableGeometricalCorrection
+	enableGeometricalCorrectionAttrib	*enable_geometrical_correction = new enableGeometricalCorrectionAttrib();
+	Tango::UserDefaultAttrProp	enable_geometrical_correction_prop;
+	enable_geometrical_correction_prop.set_label("Enable Geom Corr");
+	enable_geometrical_correction_prop.set_description("Enable/disable Geometrical Correction");
+	enable_geometrical_correction->set_default_properties(enable_geometrical_correction_prop);
+	enable_geometrical_correction->set_disp_level(Tango::EXPERT);
+	enable_geometrical_correction->set_memorized();
+	enable_geometrical_correction->set_memorized_init(true);
+	att_list.push_back(enable_geometrical_correction);
 
 	//	Attribute : dacl
 	daclAttrib	*dacl = new daclAttrib();
@@ -785,10 +807,10 @@ void XpadPixelDetectorClass::set_default_property()
 	//	Set Default Class Properties
 	//	Set Default Device Properties
 	prop_name = "AcquisitionType";
-	prop_desc = "Type of Acquisition:<BR>\n0->SYNC<BR>\n1->ASYNC (not supported yet)";
-	prop_def  = "0";
+	prop_desc = "Type of Acquisition:<BR>\nSYNC -> Synchrone<BR>\nASYNC-> Asynchrone<BR>";
+	prop_def  = "SYNC";
 	vect_data.clear();
-	vect_data.push_back("0");
+	vect_data.push_back("SYNC");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -815,7 +837,7 @@ void XpadPixelDetectorClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "CalibrationPath";
-	prop_desc = "Path where the calibration files will be save, and from where the calibrations will be uploaded via an UploadCalibration command";
+	prop_desc = "Path where the calibration files will be saved, and from where the calibrations will be uploaded via an UploadCalibration command";
 	prop_def  = "/no/path/defined";
 	vect_data.clear();
 	vect_data.push_back("/no/path/defined");
