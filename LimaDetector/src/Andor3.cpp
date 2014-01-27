@@ -51,18 +51,11 @@ static const char *RcsId = "$Id:  $";
 //  Status  |  dev_status()
 //
 //===================================================================
-#ifdef WIN32
 #include <tango.h>
 #include <PogoHelper.h>
-#endif
 
 #include <Andor3.h>
 #include <Andor3Class.h>
-
-#ifndef WIN32
-#include "tango.h"
-#include <PogoHelper.h>
-#endif
 
 namespace Andor3_ns
 {

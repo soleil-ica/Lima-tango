@@ -64,20 +64,11 @@ static const char *RcsId = "$Id:  $";
 //  DecrementITHL      |  decrement_ithl()
 //
 //===================================================================
-//- Workaround to a include order problem win32 vs linux
-#ifdef WIN32
 #include "tango.h"
 #include <PogoHelper.h>
-#endif
 
 #include <XpadPixelDetector.h>
 #include <XpadPixelDetectorClass.h>
-
-#ifndef WIN32
-#include "tango.h"
-#include <PogoHelper.h>
-#endif
-
 
 namespace XpadPixelDetector_ns
 {
@@ -153,6 +144,7 @@ void XpadPixelDetector::init_device()
 	attr_gp2_write = 0;
 	attr_gp3_write = 0;
 	attr_gp4_write = 0;
+    attr_enableGeometricalCorrection_write = 0;
 
     try
     {
@@ -331,6 +323,8 @@ void XpadPixelDetector::read_attr_hardware(vector<long> &attr_list)
 void XpadPixelDetector::read_enableGeometricalCorrection(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_enableGeometricalCorrection(Tango::Attribute &attr) entering... "<< endl;
+
+    //- NOTHING: WRITE_ONLY Attribute !!
 }
 
 //+----------------------------------------------------------------------------
@@ -343,6 +337,9 @@ void XpadPixelDetector::read_enableGeometricalCorrection(Tango::Attribute &attr)
 void XpadPixelDetector::write_enableGeometricalCorrection(Tango::WAttribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::write_enableGeometricalCorrection(Tango::WAttribute &attr) entering... "<< endl;
+
+    attr.get_write_value(attr_enableGeometricalCorrection_write);
+	set_specific_parameters();
 }
 
 //+----------------------------------------------------------------------------
@@ -967,6 +964,7 @@ void XpadPixelDetector::set_specific_parameters()
 							            attr_shutter_write,attr_ovf_write,
 							            attr_n_write,attr_p_write,
                                         attr_busyOut_write,
+                                        attr_enableGeometricalCorrection_write,
 							            attr_gp1_write,attr_gp2_write,attr_gp3_write,attr_gp4_write);
 	}
 	catch(Exception& e)

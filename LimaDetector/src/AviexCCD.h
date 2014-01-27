@@ -43,24 +43,17 @@
 
  //    Add your own constant definitions here.
  //-----------------------------------------------
-#ifdef WIN32
 #include "tango.h"
 #include "Factory.h"
-#endif
-
 
 #include "HwInterface.h"
 #include "CtControl.h"
 #include "CtAcquisition.h"
 #include "CtImage.h"
 
-#ifndef WIN32
-#include "tango.h"
-#include "Factory.h"
-#endif
-
 #include <AviexInterface.h>
 #include <AviexCamera.h>
+
 #define MAX_ATTRIBUTE_STRING_LENGTH     256
 
 const int MASK_CORRECTION_BIT_POSITION	= 0;

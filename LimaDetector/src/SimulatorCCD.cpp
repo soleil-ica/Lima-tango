@@ -51,18 +51,11 @@ static const char *RcsId = "$Id:  $";
 //  Status  |  dev_status()
 //
 //===================================================================
-#ifdef WIN32
-#include <tango.h>
-#include <PogoHelper.h>
-#endif
-
 #include <SimulatorCCD.h>
 #include <SimulatorCCDClass.h>
 
-#ifndef WIN32
 #include <tango.h>
 #include <PogoHelper.h>
-#endif
 
 
 namespace SimulatorCCD_ns
@@ -143,7 +136,7 @@ void SimulatorCCD::init_device()
         m_ct = ControlFactory::instance().get_control("SimulatorCCD");
 
         //- get interface to specific camera
-        m_hw = dynamic_cast<Simulator::Interface*>(m_ct->hwInterface());
+        m_hw = dynamic_cast<lima::Simulator::Interface*>(m_ct->hwInterface());
         if(m_hw==0)
         {
             INFO_STREAM<<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"SimulatorCCD"<<") !"<< endl;
@@ -154,7 +147,7 @@ void SimulatorCCD::init_device()
         }
 
     }
-    catch(Exception& e)
+    catch(lima::Exception& e)
     {
         INFO_STREAM<<"Initialization Failed : "<<e.getErrMsg()<<endl;
         m_status_message <<"Initialization Failed : "<<e.getErrMsg( )<< endl;

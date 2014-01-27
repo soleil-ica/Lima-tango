@@ -51,11 +51,9 @@ static const char *RcsId = "$Id:  $";
 //  Status  |  dev_status()
 //
 //===================================================================
-
-
-
 #include <VieworksVP.h>
 #include <VieworksVPClass.h>
+
 #include <tango.h>
 #include <PogoHelper.h>
 

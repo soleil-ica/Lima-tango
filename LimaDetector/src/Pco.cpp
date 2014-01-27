@@ -55,18 +55,12 @@ static const char *RcsId = "$Id:  $";
 //  GetInfo     |  get_info()
 //
 //===================================================================
-
-#ifdef WIN32
 #include <tango.h>
 #include <PogoHelper.h>
-#endif
+
 #include "Pco.h"
 #include <PcoClass.h>
 
-#ifndef WIN32
-#include <tango.h>
-#include <PogoHelper.h>
-#endif
 
 namespace Pco_ns
 {

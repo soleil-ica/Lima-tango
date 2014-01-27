@@ -103,9 +103,9 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         {
             if(!ControlFactory::is_created)
             {       
-                my_camera_simulator         = new Simulator::Camera();
-                my_interface_simulator      = new Simulator::Interface(*my_camera_simulator);
-                my_control                  = new CtControl(my_interface_simulator);
+                my_camera_simulator         = new lima::Simulator::Camera();
+                my_interface_simulator      = new lima::Simulator::Interface(*my_camera_simulator);
+                my_control                  = new lima::CtControl(my_interface_simulator);
                 ControlFactory::is_created  = true;
                 return my_control;
             }
@@ -125,11 +125,10 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 std::string database_file;
                 db_data[0] >> detector_id;
                 db_data[1] >> database_file;
-                my_camera_aviex            = new Aviex::Camera(detector_id, database_file);                
-                
-                my_interface_aviex         = new Aviex::Interface(*my_camera_aviex);
-                my_control                  = new CtControl(my_interface_aviex);          
-                ControlFactory::is_created  = true;
+                my_camera_aviex            = new lima::Aviex::Camera(detector_id, database_file);                
+                my_interface_aviex         = new lima::Aviex::Interface(*my_camera_aviex);
+                my_control                 = new lima::CtControl(my_interface_aviex);          
+                ControlFactory::is_created = true;
                 return my_control;
             }
         }
@@ -151,11 +150,10 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[1] >> detector_timeout;                
                 long packet_size = -1;
                 db_data[2] >> packet_size;
-                my_camera_basler            = new Basler::Camera(camera_ip, packet_size);                
+                my_camera_basler            = new lima::Basler::Camera(camera_ip, packet_size);                
                 my_camera_basler->setTimeout(detector_timeout);      
-                
-                my_interface_basler         = new Basler::Interface(*my_camera_basler);
-                my_control                  = new CtControl(my_interface_basler);          
+                my_interface_basler         = new lima::Basler::Interface(*my_camera_basler);
+                my_control                  = new lima::CtControl(my_interface_basler);          
                 ControlFactory::is_created  = true;
                 return my_control;
             }
@@ -178,11 +176,11 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[0] >> xpad_model;
                 db_data[1] >> calibration_adjusting_number;
 
-                my_camera_xpad                = new Xpad::Camera(xpad_model);
+                my_camera_xpad                = new lima::Xpad::Camera(xpad_model);
                 my_camera_xpad->setCalibrationAdjustingNumber(calibration_adjusting_number);
 
-                my_interface_xpad             = new Xpad::Interface(*my_camera_xpad);
-                my_control                    = new CtControl(my_interface_xpad);
+                my_interface_xpad             = new lima::Xpad::Interface(*my_camera_xpad);
+                my_control                    = new lima::CtControl(my_interface_xpad);
                 ControlFactory::is_created    = true;
                 return my_control;
             }
@@ -207,13 +205,13 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[1] >> camera_port;
                 db_data[2] >> use_reader;
 
-                my_camera_pilatus           = new Pilatus::Camera(camera_ip.c_str(), camera_port);
+                my_camera_pilatus           = new lima::Pilatus::Camera(camera_ip.c_str(), camera_port);
                 if(my_camera_pilatus && use_reader)
                     my_camera_pilatus->enableDirectoryWatcher();
                 if(my_camera_pilatus && !use_reader)
                     my_camera_pilatus->disableDirectoryWatcher();
-                my_interface_pilatus        = new Pilatus::Interface(*my_camera_pilatus);
-                my_control                  = new CtControl(my_interface_pilatus);
+                my_interface_pilatus        = new lima::Pilatus::Interface(*my_camera_pilatus);
+                my_control                  = new lima::CtControl(my_interface_pilatus);
                 ControlFactory::is_created  = true;
                 return my_control;
             }
@@ -242,11 +240,11 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[2] >> img_path;
                 db_data[3] >> reader_timeout;
 
-                my_camera_marccd           = new Marccd::Camera(camera_ip.c_str(), camera_port, img_path);
-                my_interface_marccd        = new Marccd::Interface(*my_camera_marccd);
+                my_camera_marccd           = new lima::Marccd::Camera(camera_ip.c_str(), camera_port, img_path);
+                my_interface_marccd        = new lima::Marccd::Interface(*my_camera_marccd);
                 if(my_interface_marccd)
                     my_interface_marccd->setTimeout(reader_timeout/1000);
-                my_control                 = new CtControl(my_interface_marccd);
+                my_control                 = new lima::CtControl(my_interface_marccd);
                 ControlFactory::is_created = true;
                 return my_control;
             }
@@ -267,15 +265,15 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 bool use_reader;
                 db_data[0] >> reader_timeout;
                 db_data[1] >> use_reader;
-                my_camera_adsc                = new Adsc::Camera();
-                my_interface_adsc             = new Adsc::Interface(*my_camera_adsc);
+                my_camera_adsc                = new lima::Adsc::Camera();
+                my_interface_adsc             = new lima::Adsc::Interface(*my_camera_adsc);
                 if(my_interface_adsc && use_reader)
                     my_interface_adsc->enableReader();
                 if(my_interface_adsc && !use_reader)
                     my_interface_adsc->disableReader();
                 if(my_interface_adsc)
                     my_interface_adsc->setTimeout(reader_timeout);
-                my_control                    = new CtControl(my_interface_adsc);
+                my_control                    = new lima::CtControl(my_interface_adsc);
                 ControlFactory::is_created    = true;
                 return my_control;
             }
@@ -294,9 +292,9 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 std::string camera_ip;
                 db_data[0] >> camera_ip;
 
-                my_camera_prosilica           	= new Prosilica::Camera(camera_ip.c_str());
-                my_interface_prosilica        	= new Prosilica::Interface(my_camera_prosilica);
-                my_control                  	= new CtControl(my_interface_prosilica);
+                my_camera_prosilica           	= new lima::Prosilica::Camera(camera_ip.c_str());
+                my_interface_prosilica        	= new lima::Prosilica::Interface(my_camera_prosilica);
+                my_control                  	= new lima::CtControl(my_interface_prosilica);
                 ControlFactory::is_created  	= true;
                 return my_control;
             }
@@ -314,9 +312,9 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 long camera_num;
                 db_data[0] >> camera_num;
-                my_camera_princeton           	= new RoperScientific::Camera(camera_num);
-                my_interface_princeton        	= new RoperScientific::Interface(*my_camera_princeton);
-                my_control                  	= new CtControl(my_interface_princeton);
+                my_camera_princeton           	= new lima::RoperScientific::Camera(camera_num);
+                my_interface_princeton        	= new lima::RoperScientific::Interface(*my_camera_princeton);
+                my_control                  	= new lima::CtControl(my_interface_princeton);
                 ControlFactory::is_created  	= true;
                 return my_control;
             }
@@ -328,9 +326,9 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         {
             if(!ControlFactory::is_created)
             {
-                my_camera_pco               = new Pco::Camera("");
-                my_interface_pco            = new Pco::Interface(my_camera_pco);
-                my_control                  = new CtControl(my_interface_pco);
+                my_camera_pco               = new lima::Pco::Camera("");
+                my_interface_pco            = new lima::Pco::Interface(my_camera_pco);
+                my_control                  = new lima::CtControl(my_interface_pco);
                 ControlFactory::is_created  = true;
                 return my_control;
             }
@@ -342,8 +340,8 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         {
             if(!ControlFactory::is_created)
             {
-                my_interface_perkinelmer    = new PerkinElmer::Interface();
-                my_control                  = new CtControl(my_interface_perkinelmer);
+                my_interface_perkinelmer    = new lima::PerkinElmer::Interface();
+                my_control                  = new lima::CtControl(my_interface_perkinelmer);
                 ControlFactory::is_created  = true;
                 return my_control;
             }
@@ -364,9 +362,9 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[0] >> bit_flow_path;
                 db_data[1] >> camera_number;
                 
-                my_camera_andor3            = new Andor3::Camera(bit_flow_path,camera_number);
-                my_interface_andor3         = new Andor3::Interface(*my_camera_andor3);
-                my_control                  = new CtControl(my_interface_andor3);
+                my_camera_andor3            = new lima::Andor3::Camera(bit_flow_path,camera_number);
+                my_interface_andor3         = new lima::Andor3::Interface(*my_camera_andor3);
+                my_control                  = new lima::CtControl(my_interface_andor3);
                 ControlFactory::is_created  = true;
                 return my_control;
             }
@@ -397,9 +395,9 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[3] >> applet_name;
                 db_data[4] >> dma_index;
                 
-                my_camera_vieworksvp        = new VieworksVP::Camera(siso_path,board_index,camera_port,applet_name,dma_index);
-                my_interface_vieworksvp     = new VieworksVP::Interface(*my_camera_vieworksvp);
-                my_control                  = new CtControl(my_interface_vieworksvp);
+                my_camera_vieworksvp        = new lima::VieworksVP::Camera(siso_path,board_index,camera_port,applet_name,dma_index);
+                my_interface_vieworksvp     = new lima::VieworksVP::Interface(*my_camera_vieworksvp);
+                my_control                  = new lima::CtControl(my_interface_vieworksvp);
                 ControlFactory::is_created  = true;
                 return my_control;
             }
