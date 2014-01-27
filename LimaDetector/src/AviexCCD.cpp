@@ -51,17 +51,11 @@ static const char *RcsId = "$Id:  $";
 //  Status  |  dev_status()
 //
 //===================================================================
-#ifdef WIN32
 #include "tango.h"
 #include <PogoHelper.h>
-#endif
+
 #include <AviexCCD.h>
 #include <AviexCCDClass.h>
-
-#ifndef WIN32
-#include "tango.h"
-#include <PogoHelper.h>
-#endif
 
 namespace AviexCCD_ns
 {

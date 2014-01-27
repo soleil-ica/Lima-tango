@@ -61,18 +61,11 @@ static const char *RcsId = "$Id:  $";
 //  CloseShutter                 |  close_shutter()
 //
 //===================================================================
-#ifdef WIN32
 #include <tango.h>
 #include <PogoHelper.h>
-#endif
 
 #include <LimaDetector.h>
 #include <LimaDetectorClass.h>
-
-#ifndef WIN32
-#include <tango.h>
-#include <PogoHelper.h>
-#endif
 
 
 #define MAX_ATTRIBUTE_STRING_LENGTH     256

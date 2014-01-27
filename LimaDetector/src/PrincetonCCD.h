@@ -43,22 +43,14 @@
 
  //    Add your own constant definitions here.
  //-----------------------------------------------
-#ifdef WIN32
 #include "tango.h"
 #include "Factory.h"
-#endif
-
 
 #include "HwInterface.h"
 #include "CtControl.h"
 #include "CtAcquisition.h"
 #include "CtImage.h"
 #include <RoperScientificInterface.h>
-
-#ifndef WIN32
-#include "tango.h"
-#include "Factory.h"
-#endif
 
 #define MAX_ATTRIBUTE_STRING_LENGTH     256
 

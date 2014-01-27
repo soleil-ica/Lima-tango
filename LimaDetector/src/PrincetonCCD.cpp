@@ -52,17 +52,12 @@ static const char *RcsId = "$Id:  $";
 //  SetADCMode  |  set_adcmode()
 //
 //===================================================================
-#ifdef WIN32
 #include "tango.h"
 #include <PogoHelper.h>
-#endif
+
 #include <PrincetonCCD.h>
 #include <PrincetonCCDClass.h>
 
-#ifndef WIN32
-#include "tango.h"
-#include <PogoHelper.h>
-#endif
 
 namespace PrincetonCCD_ns
 {
