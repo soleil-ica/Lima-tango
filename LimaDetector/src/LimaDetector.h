@@ -697,6 +697,10 @@ public :
  */
 	virtual bool is_CloseShutter_allowed(const CORBA::Any &any);
 /**
+ *	Execution allowed for NexusResetBufferIndex command.
+ */
+	virtual bool is_NexusResetBufferIndex_allowed(const CORBA::Any &any);
+/**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code
  *	@exception DevFailed
@@ -759,6 +763,11 @@ public :
  *	@exception DevFailed
  */
 	void	close_shutter();
+/**
+ * Reset the nexus buffer index to index 1.
+ *	@exception DevFailed
+ */
+	void	nexus_reset_buffer_index();
 
 /**
  *	Read the device properties from database
