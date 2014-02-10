@@ -75,10 +75,24 @@ public:
 	{return (static_cast<XpadPixelDetector *>(dev))->is_dacl_allowed(ty);}
 };
 
+class enableGeometricalCorrectionAttrib: public Tango::Attr
+{
+public:
+	enableGeometricalCorrectionAttrib():Attr("enableGeometricalCorrection", Tango::DEV_BOOLEAN, Tango::WRITE) {};
+	~enableGeometricalCorrectionAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<XpadPixelDetector *>(dev))->read_enableGeometricalCorrection(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<XpadPixelDetector *>(dev))->write_enableGeometricalCorrection(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<XpadPixelDetector *>(dev))->is_enableGeometricalCorrection_allowed(ty);}
+};
+
 class gp4Attrib: public Tango::Attr
 {
 public:
-	gp4Attrib():Attr("gp4", Tango::DEV_ULONG, Tango::READ_WRITE) {};
+	gp4Attrib():Attr("gp4", Tango::DEV_ULONG, Tango::WRITE) {};
 	~gp4Attrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
@@ -92,7 +106,7 @@ public:
 class gp3Attrib: public Tango::Attr
 {
 public:
-	gp3Attrib():Attr("gp3", Tango::DEV_ULONG, Tango::READ_WRITE) {};
+	gp3Attrib():Attr("gp3", Tango::DEV_ULONG, Tango::WRITE) {};
 	~gp3Attrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
@@ -106,7 +120,7 @@ public:
 class gp2Attrib: public Tango::Attr
 {
 public:
-	gp2Attrib():Attr("gp2", Tango::DEV_ULONG, Tango::READ_WRITE) {};
+	gp2Attrib():Attr("gp2", Tango::DEV_ULONG, Tango::WRITE) {};
 	~gp2Attrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
@@ -120,7 +134,7 @@ public:
 class gp1Attrib: public Tango::Attr
 {
 public:
-	gp1Attrib():Attr("gp1", Tango::DEV_ULONG, Tango::READ_WRITE) {};
+	gp1Attrib():Attr("gp1", Tango::DEV_ULONG, Tango::WRITE) {};
 	~gp1Attrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
@@ -131,10 +145,24 @@ public:
 	{return (static_cast<XpadPixelDetector *>(dev))->is_gp1_allowed(ty);}
 };
 
+class busyOutAttrib: public Tango::Attr
+{
+public:
+	busyOutAttrib():Attr("busyOut", Tango::DEV_ULONG, Tango::WRITE) {};
+	~busyOutAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<XpadPixelDetector *>(dev))->read_busyOut(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<XpadPixelDetector *>(dev))->write_busyOut(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<XpadPixelDetector *>(dev))->is_busyOut_allowed(ty);}
+};
+
 class pAttrib: public Tango::Attr
 {
 public:
-	pAttrib():Attr("p", Tango::DEV_ULONG, Tango::READ_WRITE) {};
+	pAttrib():Attr("p", Tango::DEV_ULONG, Tango::WRITE) {};
 	~pAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
@@ -148,7 +176,7 @@ public:
 class nAttrib: public Tango::Attr
 {
 public:
-	nAttrib():Attr("n", Tango::DEV_ULONG, Tango::READ_WRITE) {};
+	nAttrib():Attr("n", Tango::DEV_ULONG, Tango::WRITE) {};
 	~nAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
@@ -162,7 +190,7 @@ public:
 class ovfAttrib: public Tango::Attr
 {
 public:
-	ovfAttrib():Attr("ovf", Tango::DEV_ULONG, Tango::READ_WRITE) {};
+	ovfAttrib():Attr("ovf", Tango::DEV_ULONG, Tango::WRITE) {};
 	~ovfAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
@@ -176,7 +204,7 @@ public:
 class shutterAttrib: public Tango::Attr
 {
 public:
-	shutterAttrib():Attr("shutter", Tango::DEV_ULONG, Tango::READ_WRITE) {};
+	shutterAttrib():Attr("shutter", Tango::DEV_ULONG, Tango::WRITE) {};
 	~shutterAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
@@ -190,7 +218,7 @@ public:
 class initAttrib: public Tango::Attr
 {
 public:
-	initAttrib():Attr("init", Tango::DEV_ULONG, Tango::READ_WRITE) {};
+	initAttrib():Attr("init", Tango::DEV_ULONG, Tango::WRITE) {};
 	~initAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
@@ -204,7 +232,7 @@ public:
 class deadTimeAttrib: public Tango::Attr
 {
 public:
-	deadTimeAttrib():Attr("deadTime", Tango::DEV_ULONG, Tango::READ_WRITE) {};
+	deadTimeAttrib():Attr("deadTime", Tango::DEV_ULONG, Tango::WRITE) {};
 	~deadTimeAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)

@@ -38,6 +38,7 @@
 #define _PCOCLASS_H
 
 #include <tango.h>
+#include <Pco.h>
 #include "Pco.h"
 
 
@@ -45,6 +46,30 @@ namespace Pco_ns
 {//=====================================
 //	Define classes for attributes
 //=====================================
+class maxNbImageAttrib: public Tango::Attr
+{
+public:
+	maxNbImageAttrib():Attr("maxNbImage", Tango::DEV_SHORT, Tango::READ) {};
+	~maxNbImageAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<Pco *>(dev))->read_maxNbImage(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<Pco *>(dev))->is_maxNbImage_allowed(ty);}
+};
+
+class frameRateAttrib: public Tango::Attr
+{
+public:
+	frameRateAttrib():Attr("frameRate", Tango::DEV_DOUBLE, Tango::READ) {};
+	~frameRateAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<Pco *>(dev))->read_frameRate(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<Pco *>(dev))->is_frameRate_allowed(ty);}
+};
+
 class pixelScanRateAttrib: public Tango::Attr
 {
 public:
@@ -76,10 +101,10 @@ public:
 //=========================================
 //	Define classes for commands
 //=========================================
-class TalkClass : public Tango::Command
+class GetInfoCmd : public Tango::Command
 {
 public:
-	TalkClass(const char   *name,
+	GetInfoCmd(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out,
 				   const char        *in_desc,
@@ -87,11 +112,83 @@ public:
 				   Tango::DispLevel  level)
 	:Command(name,in,out,in_desc,out_desc, level)	{};
 
-	TalkClass(const char   *name,
+	GetInfoCmd(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out)
 	:Command(name,in,out)	{};
-	~TalkClass() {};
+	~GetInfoCmd() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<Pco *>(dev))->is_GetInfo_allowed(any);}
+};
+
+
+
+class GetCamTypeCmd : public Tango::Command
+{
+public:
+	GetCamTypeCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	GetCamTypeCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~GetCamTypeCmd() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<Pco *>(dev))->is_GetCamType_allowed(any);}
+};
+
+
+
+class GetCamInfoCmd : public Tango::Command
+{
+public:
+	GetCamInfoCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	GetCamInfoCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~GetCamInfoCmd() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<Pco *>(dev))->is_GetCamInfo_allowed(any);}
+};
+
+
+
+class TalkCmd : public Tango::Command
+{
+public:
+	TalkCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	TalkCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~TalkCmd() {};
 	
 	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
 	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)

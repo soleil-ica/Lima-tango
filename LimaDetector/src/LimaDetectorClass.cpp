@@ -65,6 +65,50 @@ __declspec(dllexport)
 
 namespace LimaDetector_ns
 {
+//+----------------------------------------------------------------------------
+//
+// method : 		NexusResetBufferIndexClass::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *NexusResetBufferIndexClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "NexusResetBufferIndexClass::execute(): arrived" << endl;
+
+	((static_cast<LimaDetector *>(device))->nexus_reset_buffer_index());
+	return new CORBA::Any();
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		ResetBinningCmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *ResetBinningCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "ResetBinningCmd::execute(): arrived" << endl;
+
+	((static_cast<LimaDetector *>(device))->reset_binning());
+	return new CORBA::Any();
+}
+
 
 //+----------------------------------------------------------------------------
 //
@@ -391,6 +435,11 @@ void LimaDetectorClass::command_factory()
 		"",
 		"",
 		Tango::OPERATOR));
+	command_list.push_back(new ResetBinningCmd("ResetBinning",
+		Tango::DEV_VOID, Tango::DEV_VOID,
+		"",
+		"",
+		Tango::OPERATOR));
 	command_list.push_back(new ResetROICmd("ResetROI",
 		Tango::DEV_VOID, Tango::DEV_VOID,
 		"",
@@ -407,6 +456,11 @@ void LimaDetectorClass::command_factory()
 		"",
 		Tango::EXPERT));
 	command_list.push_back(new CloseShutterCmd("CloseShutter",
+		Tango::DEV_VOID, Tango::DEV_VOID,
+		"",
+		"",
+		Tango::EXPERT));
+	command_list.push_back(new NexusResetBufferIndexClass("NexusResetBufferIndex",
 		Tango::DEV_VOID, Tango::DEV_VOID,
 		"",
 		"",

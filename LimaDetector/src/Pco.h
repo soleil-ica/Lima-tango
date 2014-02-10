@@ -41,21 +41,15 @@
 
 //	Add your own constant definitions here.
 //-----------------------------------------------
-#ifdef WIN32
 #include "tango.h"
 #include "Factory.h"
-#endif
 
 #include "HwInterface.h"
 #include "CtControl.h"
 #include "CtAcquisition.h"
 #include "CtImage.h"
 #include <PcoInterface.h>
-
-#ifndef WIN32
-#include "tango.h"
-#include "Factory.h"
-#endif
+#include <yat/utils/String.h>
 
 #define MAX_ATTRIBUTE_STRING_LENGTH     256
 
@@ -66,15 +60,15 @@ namespace Pco_ns
     /**
      * Class Description:
      * 
-     */
+ */
 
-    /*
-     *	Device States Description:
-     *  Tango::INIT :
-     *  Tango::STANDBY :
-     *  Tango::FAULT :
-     *  Tango::RUNNING :
-     */
+/*
+ *	Device States Description:
+*  Tango::INIT :
+*  Tango::STANDBY :
+*  Tango::FAULT :
+*  Tango::RUNNING :
+ */
 
 
     class Pco : public Tango::Device_4Impl
@@ -91,18 +85,20 @@ namespace Pco_ns
          *	Attribute member data.
          */
         //@{
-        Tango::DevString *attr_shutterMode_read;
-        Tango::DevString attr_shutterMode_write;
-        Tango::DevString *attr_pixelScanRate_read;
-        Tango::DevString attr_pixelScanRate_write;
-        //@}
+		Tango::DevString	*attr_shutterMode_read;
+		Tango::DevString	attr_shutterMode_write;
+		Tango::DevString	*attr_pixelScanRate_read;
+		Tango::DevString	attr_pixelScanRate_write;
+		Tango::DevDouble	*attr_frameRate_read;
+		Tango::DevShort	*attr_maxNbImage_read;
+//@}
 
         /**
          * @name Device properties
          * Device properties member data.
          */
         //@{
-        //@}
+//@}
 
         /**
          *	@name Device properties
@@ -167,58 +163,113 @@ namespace Pco_ns
          */
         virtual void always_executed_hook();
 
-        //@}
+//@}
 
-        /**
-         * @name Pco methods prototypes
-         */
+/**
+ * @name Pco methods prototypes
+ */
 
-        //@{
-        /**
-         *	Hardware acquisition for attributes.
-         */
-        virtual void read_attr_hardware(vector<long> &attr_list);
-        /**
-         *	Extract real attribute values for shutterMode acquisition result.
-         */
-        virtual void read_shutterMode(Tango::Attribute &attr);
-        /**
-         *	Write shutterMode attribute values to hardware.
-         */
-        virtual void write_shutterMode(Tango::WAttribute &attr);
-        /**
-         *	Extract real attribute values for pixelScanRate acquisition result.
-         */
-        virtual void read_pixelScanRate(Tango::Attribute &attr);
-        /**
-         *	Write pixelScanRate attribute values to hardware.
-         */
-        virtual void write_pixelScanRate(Tango::WAttribute &attr);
-        /**
-         *	Read/Write allowed for shutterMode attribute.
-         */
-        virtual bool is_shutterMode_allowed(Tango::AttReqType type);
-        /**
-         *	Read/Write allowed for pixelScanRate attribute.
-         */
-        virtual bool is_pixelScanRate_allowed(Tango::AttReqType type);
-        /**
-         *	Execution allowed for Talk command.
-         */
-        virtual bool is_Talk_allowed(const CORBA::Any &any);
-        /**
-         * A direct command to talk to de camera
-         *	@param	argin	str argin
-         *	@return	str argout
-         *	@exception DevFailed
-         */
-        Tango::DevString talk(Tango::DevString);
+//@{
+/**
+ *	Hardware acquisition for attributes.
+ */
+	virtual void read_attr_hardware(vector<long> &attr_list);
+/**
+ *	Extract real attribute values for shutterMode acquisition result.
+ */
+	virtual void read_shutterMode(Tango::Attribute &attr);
+/**
+ *	Write shutterMode attribute values to hardware.
+ */
+	virtual void write_shutterMode(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for pixelScanRate acquisition result.
+ */
+	virtual void read_pixelScanRate(Tango::Attribute &attr);
+/**
+ *	Write pixelScanRate attribute values to hardware.
+ */
+	virtual void write_pixelScanRate(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for frameRate acquisition result.
+ */
+	virtual void read_frameRate(Tango::Attribute &attr);
+/**
+ *	Extract real attribute values for maxNbImage acquisition result.
+ */
+	virtual void read_maxNbImage(Tango::Attribute &attr);
+/**
+ *	Read/Write allowed for shutterMode attribute.
+ */
+	virtual bool is_shutterMode_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for pixelScanRate attribute.
+ */
+	virtual bool is_pixelScanRate_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for frameRate attribute.
+ */
+	virtual bool is_frameRate_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for maxNbImage attribute.
+ */
+	virtual bool is_maxNbImage_allowed(Tango::AttReqType type);
+/**
+ *	Execution allowed for Talk command.
+ */
+	virtual bool is_Talk_allowed(const CORBA::Any &any);
+/**
+ *	Execution allowed for GetCamInfo command.
+ */
+	virtual bool is_GetCamInfo_allowed(const CORBA::Any &any);
+/**
+ *	Execution allowed for GetCamType command.
+ */
+	virtual bool is_GetCamType_allowed(const CORBA::Any &any);
+/**
+ *	Execution allowed for GetInfo command.
+ */
+	virtual bool is_GetInfo_allowed(const CORBA::Any &any);
+/**
+ * Availables values are:
+ *	lasterror
+ *	camInfo
+ *	camType
+ *	clTransferParam
+ *	cocRunTime
+ *	frameRate
+ *	maxNbImages
+ *	timestamp
+ *	" "
+ *	@param	argin	str argin
+ *	@return	str argout
+ *	@exception DevFailed
+ */
+	Tango::DevString	talk(Tango::DevString);
+/**
+ * Get Camera Infos
+ *	@return	cam infos
+ *	@exception DevFailed
+ */
+	Tango::DevString	get_cam_info();
+/**
+ * Get Camera Type
+ *	@return	cam type
+ *	@exception DevFailed
+ */
+	Tango::DevString	get_cam_type();
+/**
+ * Get Infos
+ *	@return	infos
+ *	@exception DevFailed
+ */
+	Tango::DevString	get_info();
 
-        /**
-         *	Read the device properties from database
-         */
-        void get_device_property();
-        //@}
+/**
+ *	Read the device properties from database
+ */
+	 void get_device_property();
+//@}
 
         //	Here is the end of the automatic code generation part
         //-------------------------------------------------------------	
@@ -256,6 +307,7 @@ namespace Pco_ns
 
         std::string             m_pixel_scan_rate; //pixel scan rate 	(SLOW, FAST)
         std::string             m_shutter_mode; //shutter mode name 	(GLOBAL, ROLLING)
+        Tango::DevString        dev_string_val;
     };
 
 } // namespace_ns

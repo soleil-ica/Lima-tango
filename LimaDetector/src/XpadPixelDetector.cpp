@@ -64,20 +64,11 @@ static const char *RcsId = "$Id:  $";
 //  DecrementITHL      |  decrement_ithl()
 //
 //===================================================================
-//- Workaround to a include order problem win32 vs linux
-#ifdef WIN32
 #include "tango.h"
 #include <PogoHelper.h>
-#endif
 
 #include <XpadPixelDetector.h>
 #include <XpadPixelDetectorClass.h>
-
-#ifndef WIN32
-#include "tango.h"
-#include <PogoHelper.h>
-#endif
-
 
 namespace XpadPixelDetector_ns
 {
@@ -121,18 +112,6 @@ void XpadPixelDetector::delete_device()
 	//	Delete device allocated objects
 	INFO_STREAM << "XpadPixelDetector::delete_device() " << device_name << endl;
 
-	DELETE_SCALAR_ATTRIBUTE(attr_deadTime_read);
-	DELETE_SCALAR_ATTRIBUTE(attr_init_read);
-	DELETE_SCALAR_ATTRIBUTE(attr_shutter_read);
-	DELETE_SCALAR_ATTRIBUTE(attr_ovf_read);
-	DELETE_SCALAR_ATTRIBUTE(attr_n_read);
-	DELETE_SCALAR_ATTRIBUTE(attr_p_read);
-	DELETE_SCALAR_ATTRIBUTE(attr_gp1_read);
-	DELETE_SCALAR_ATTRIBUTE(attr_gp2_read);
-	DELETE_SCALAR_ATTRIBUTE(attr_gp3_read);
-	DELETE_SCALAR_ATTRIBUTE(attr_gp4_read);
-
-
 }
 
 //+----------------------------------------------------------------------------
@@ -150,17 +129,6 @@ void XpadPixelDetector::init_device()
 	//--------------------------------------------
 	get_device_property();
 
-	CREATE_SCALAR_ATTRIBUTE(attr_deadTime_read);
-	CREATE_SCALAR_ATTRIBUTE(attr_init_read);
-	CREATE_SCALAR_ATTRIBUTE(attr_shutter_read);
-	CREATE_SCALAR_ATTRIBUTE(attr_ovf_read);
-	CREATE_SCALAR_ATTRIBUTE(attr_n_read);
-	CREATE_SCALAR_ATTRIBUTE(attr_p_read);
-	CREATE_SCALAR_ATTRIBUTE(attr_gp1_read);
-	CREATE_SCALAR_ATTRIBUTE(attr_gp2_read);
-	CREATE_SCALAR_ATTRIBUTE(attr_gp3_read);
-	CREATE_SCALAR_ATTRIBUTE(attr_gp4_read);
-
 	m_is_device_initialized = true;
     //By default INIT, need to ensure that all objets are OK before set the device to STANDBY
     set_state(Tango::INIT);
@@ -176,6 +144,7 @@ void XpadPixelDetector::init_device()
 	attr_gp2_write = 0;
 	attr_gp3_write = 0;
 	attr_gp4_write = 0;
+    attr_enableGeometricalCorrection_write = 0;
 
     try
     {
@@ -185,7 +154,7 @@ void XpadPixelDetector::init_device()
         m_ct = ControlFactory::instance().get_control("XpadPixelDetector");
 
         //- get interface to specific camera
-        m_hw = dynamic_cast<Xpad::Interface*>(m_ct->hwInterface());
+        m_hw = dynamic_cast<lima::Xpad::Interface*>(m_ct->hwInterface());
         if(m_hw==0)
         {
             INFO_STREAM<<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"XpadPixelDetector"<<") !"<< endl;
@@ -206,6 +175,11 @@ void XpadPixelDetector::init_device()
 			return;			
 		}
 
+        if (acquisitionType == "SYNC")
+            m_camera->setAcquisitionType(lima::Xpad::Camera::SYNC);
+        else
+            m_camera->setAcquisitionType(lima::Xpad::Camera::ASYNC);
+
     }
     catch(Exception& e)
     {
@@ -223,6 +197,7 @@ void XpadPixelDetector::init_device()
         m_is_device_initialized = false;
         return;
     }
+
     m_is_device_initialized = true;
     set_state(Tango::STANDBY);
     this->dev_state();
@@ -307,7 +282,7 @@ void XpadPixelDetector::get_device_property()
 	//	End of Automatic code generation
 	//------------------------------------------------------------------
     
-	create_property_if_empty(dev_prop,"0","AcquisitionType");
+	create_property_if_empty(dev_prop,"SYNC","AcquisitionType");
     create_property_if_empty(dev_prop,"TO_BE_DEFINED","XpadModel");
     create_property_if_empty(dev_prop,"/no/path/defined","CalibrationPath");
     create_property_if_empty(dev_prop,"1","CalibrationAdjustingNumber");
@@ -321,36 +296,10 @@ void XpadPixelDetector::get_device_property()
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::always_executed_hook()
 {
-	try
-    {
-	    m_status_message.str("");
-		//- get the singleton control objet used to pilot the lima framework
-        m_ct = ControlFactory::instance().get_control("XpadPixelDetector");
-
-        //- get interface to specific detector
-        if(m_ct!=0)
-            m_hw = dynamic_cast<Xpad::Interface*>(m_ct->hwInterface());
-        m_camera = &(m_hw->getCamera());
-
-    }
-    catch(Exception& e)
-    {
-        ERROR_STREAM << e.getErrMsg() << endl;
-        m_status_message <<"Initialization Failed : "<<e.getErrMsg( )<< endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;
-        return;
-    }
-    catch(...)
-    {
-        ERROR_STREAM<<"Initialization Failed : UNKNOWN"<<endl;
-        m_status_message <<"Initialization Failed : UNKNOWN"<< endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;
-        return;
-    }
+	DEBUG_STREAM << "XpadPixelDetector::always_executed_hook() entering... "<< endl;
+	
+    //- update state
+    dev_state();
 }
 //+----------------------------------------------------------------------------
 //
@@ -366,6 +315,64 @@ void XpadPixelDetector::read_attr_hardware(vector<long> &attr_list)
 }
 //+----------------------------------------------------------------------------
 //
+// method : 		XpadPixelDetector::read_enableGeometricalCorrection
+// 
+// description : 	Extract real attribute values for enableGeometricalCorrection acquisition result.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::read_enableGeometricalCorrection(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "XpadPixelDetector::read_enableGeometricalCorrection(Tango::Attribute &attr) entering... "<< endl;
+
+    //- NOTHING: WRITE_ONLY Attribute !!
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		XpadPixelDetector::write_enableGeometricalCorrection
+// 
+// description : 	Write enableGeometricalCorrection attribute values to hardware.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::write_enableGeometricalCorrection(Tango::WAttribute &attr)
+{
+	DEBUG_STREAM << "XpadPixelDetector::write_enableGeometricalCorrection(Tango::WAttribute &attr) entering... "<< endl;
+
+    attr.get_write_value(attr_enableGeometricalCorrection_write);
+	set_specific_parameters();
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		XpadPixelDetector::read_busyOut
+// 
+// description : 	Extract real attribute values for busyOut acquisition result.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::read_busyOut(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "XpadPixelDetector::read_busyOut(Tango::Attribute &attr) entering... "<< endl;
+
+    //- NOTHING: WRITE_ONLY Attribute !!
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		XpadPixelDetector::write_busyOut
+// 
+// description : 	Write busyOut attribute values to hardware.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::write_busyOut(Tango::WAttribute &attr)
+{
+	DEBUG_STREAM << "XpadPixelDetector::write_busyOut(Tango::WAttribute &attr) entering... "<< endl;
+
+    attr.get_write_value(attr_busyOut_write);
+	set_specific_parameters();
+}
+
+//+----------------------------------------------------------------------------
+//
 // method : 		XpadPixelDetector::read_dacl
 // 
 // description : 	Extract real attribute values for dacl acquisition result.
@@ -374,6 +381,8 @@ void XpadPixelDetector::read_attr_hardware(vector<long> &attr_list)
 void XpadPixelDetector::read_dacl(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_dacl(Tango::Attribute &attr) entering... "<< endl;
+
+    //- TODO
 }
 
 //+----------------------------------------------------------------------------
@@ -386,6 +395,8 @@ void XpadPixelDetector::read_dacl(Tango::Attribute &attr)
 void XpadPixelDetector::read_ithl(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_ithl(Tango::Attribute &attr) entering... "<< endl;
+
+    //- TODO
 }
 
 //+----------------------------------------------------------------------------
@@ -399,8 +410,7 @@ void XpadPixelDetector::read_gp2(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_gp2(Tango::Attribute &attr) entering... "<< endl;
 
-	*attr_gp2_read = attr_gp2_write;
-	attr.set_value(attr_gp2_read);
+	//- NOTHING: WRITE_ONLY Attribute !!
 }
 
 //+----------------------------------------------------------------------------
@@ -429,8 +439,7 @@ void XpadPixelDetector::read_gp3(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_gp3(Tango::Attribute &attr) entering... "<< endl;
 
-	*attr_gp3_read = attr_gp3_write;
-	attr.set_value(attr_gp3_read);
+	//- NOTHING: WRITE_ONLY Attribute !!
 }
 
 //+----------------------------------------------------------------------------
@@ -459,8 +468,7 @@ void XpadPixelDetector::read_gp4(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_gp4(Tango::Attribute &attr) entering... "<< endl;
 
-	*attr_gp4_read = attr_gp4_write;
-	attr.set_value(attr_gp4_read);
+	//- NOTHING: WRITE_ONLY Attribute !!
 }
 
 //+----------------------------------------------------------------------------
@@ -489,8 +497,7 @@ void XpadPixelDetector::read_deadTime(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_deadTime(Tango::Attribute &attr) entering... "<< endl;
 
-	*attr_deadTime_read = attr_deadTime_write;
-	attr.set_value(attr_deadTime_read);
+	//- NOTHING: WRITE_ONLY Attribute !!
 }
 
 //+----------------------------------------------------------------------------
@@ -519,8 +526,7 @@ void XpadPixelDetector::read_init(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_init(Tango::Attribute &attr) entering... "<< endl;
 
-	*attr_init_read = attr_init_write;
-	attr.set_value(attr_init_read);
+	//- NOTHING: WRITE_ONLY Attribute !!
 }
 
 //+----------------------------------------------------------------------------
@@ -549,8 +555,7 @@ void XpadPixelDetector::read_shutter(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_shutter(Tango::Attribute &attr) entering... "<< endl;
 
-	*attr_shutter_read = attr_shutter_write;
-	attr.set_value(attr_shutter_read);
+	//- NOTHING: WRITE_ONLY Attribute !!
 }
 
 //+----------------------------------------------------------------------------
@@ -579,8 +584,7 @@ void XpadPixelDetector::read_ovf(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_ovf(Tango::Attribute &attr) entering... "<< endl;
 
-	*attr_ovf_read = attr_ovf_write;
-	attr.set_value(attr_ovf_read);
+	//- NOTHING: WRITE_ONLY Attribute !!
 }
 
 //+----------------------------------------------------------------------------
@@ -609,8 +613,7 @@ void XpadPixelDetector::read_n(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_n(Tango::Attribute &attr) entering... "<< endl;
 
-	*attr_n_read = attr_n_write;
-	attr.set_value(attr_n_read);
+	//- NOTHING: WRITE_ONLY Attribute !!
 }
 
 //+----------------------------------------------------------------------------
@@ -639,8 +642,7 @@ void XpadPixelDetector::read_p(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_p(Tango::Attribute &attr) entering... "<< endl;
 
-	*attr_p_read = attr_p_write;
-	attr.set_value(attr_p_read);
+	//- NOTHING: WRITE_ONLY Attribute !!
 }
 
 //+----------------------------------------------------------------------------
@@ -669,8 +671,7 @@ void XpadPixelDetector::read_gp1(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_gp1(Tango::Attribute &attr) entering... "<< endl;
 
-	*attr_gp1_read = attr_gp1_write;
-	attr.set_value(attr_gp1_read);
+	//- NOTHING: WRITE_ONLY Attribute !!
 }
 
 //+----------------------------------------------------------------------------
@@ -693,6 +694,7 @@ void XpadPixelDetector::write_gp1(Tango::WAttribute &attr)
  *	method:	XpadPixelDetector::load_flat_config
  *
  *	description:	method to execute "LoadFlatConfig"
+ *	Load a Flat value to all pixels
  *
  * @param	argin	Flat value to be loaded
  *
@@ -763,6 +765,7 @@ Tango::DevState XpadPixelDetector::dev_state()
  *	method:	XpadPixelDetector::save_config_l
  *
  *	description:	method to execute "SaveConfigL"
+ *	?
  *
  * @param	argin	modNum(1..8), calibId(0..6), chipId(0..7), curRow (0..119), values (80 values)
  *
@@ -802,6 +805,7 @@ void XpadPixelDetector::save_config_l(const Tango::DevVarULongArray *argin)
  *	method:	XpadPixelDetector::save_config_g
  *
  *	description:	method to execute "SaveConfigG"
+ *	?
  *
  * @param	argin	modNum(1..8), calibId(0..6), reg, values (7 values)
  *
@@ -841,6 +845,7 @@ void XpadPixelDetector::save_config_g(const Tango::DevVarULongArray *argin)
  *	method:	XpadPixelDetector::load_config
  *
  *	description:	method to execute "LoadConfig"
+ *	?
  *
  * @param	argin	modNum(1..8), calibId(0..6)
  *
@@ -879,6 +884,7 @@ void XpadPixelDetector::load_config(const Tango::DevVarULongArray *argin)
  *	method:	XpadPixelDetector::reset
  *
  *	description:	method to execute "Reset"
+ *	Reset the Xpad
  *
  *
  */
@@ -908,6 +914,7 @@ void XpadPixelDetector::reset()
  *	method:	XpadPixelDetector::load_all_config_g
  *
  *	description:	method to execute "LoadAllConfigG"
+ *	Load the config G(lobal) to a module and a chip
  *
  * @param	argin	modNum(1..8), chipId(0..6), config_values (11 values)
  *
@@ -956,6 +963,8 @@ void XpadPixelDetector::set_specific_parameters()
 		m_camera->setSpecificParameters(attr_deadTime_write,attr_init_write,
 							            attr_shutter_write,attr_ovf_write,
 							            attr_n_write,attr_p_write,
+                                        attr_busyOut_write,
+                                        attr_enableGeometricalCorrection_write,
 							            attr_gp1_write,attr_gp2_write,attr_gp3_write,attr_gp4_write);
 	}
 	catch(Exception& e)
@@ -973,6 +982,7 @@ void XpadPixelDetector::set_specific_parameters()
  *	method:	XpadPixelDetector::calibrate_otnslow
  *
  *	description:	method to execute "CalibrateOTNSlow"
+ *	Start the Over The Noise Slow calibration
  *
  *
  */
@@ -1003,6 +1013,7 @@ void XpadPixelDetector::calibrate_otnslow()
  *	method:	XpadPixelDetector::upload_calibration
  *
  *	description:	method to execute "UploadCalibration"
+ *	Upload a calibration from a file defined in the property CalibrationPath
  *
  *
  */
@@ -1032,6 +1043,7 @@ void XpadPixelDetector::upload_calibration()
  *	method:	XpadPixelDetector::upload_wait_times
  *
  *	description:	method to execute "UploadWaitTimes"
+ *	Upload a tralectory of wait times, instead of having always the same value
  *
  * @param	argin	the wait times
  *
@@ -1078,6 +1090,7 @@ void XpadPixelDetector::upload_wait_times(const Tango::DevVarULongArray *argin)
  *	method:	XpadPixelDetector::increment_ithl
  *
  *	description:	method to execute "IncrementITHL"
+ *	Increment the ITHL of 1 unit
  *
  *
  */
@@ -1108,6 +1121,7 @@ void XpadPixelDetector::increment_ithl()
  *	method:	XpadPixelDetector::decrement_ithl
  *
  *	description:	method to execute "DecrementITHL"
+ *	Decrement the ITHL of 1 unit
  *
  *
  */
@@ -1358,6 +1372,10 @@ int XpadPixelDetector::find_index_from_property_name(Tango::DbData& dev_prop, st
     if (i == iNbProperties) return -1;
     return i;
 }
+
+
+
+
 
 
 

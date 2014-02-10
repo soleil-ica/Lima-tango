@@ -33,20 +33,15 @@
 #ifndef _XPADPIXELDETECTOR_H
 #define _XPADPIXELDETECTOR_H
 
-#ifdef WIN32
 #include "tango.h"
-#endif
 
 #include "HwInterface.h"
 #include "CtControl.h"
 #include "CtAcquisition.h"
 #include "CtImage.h"
 #include <XpadInterface.h>
+#include <XpadCamera.h>
 #include "Factory.h"
-
-#ifndef WIN32
-#include "tango.h"
-#endif
 
 //using namespace Tango;
 
@@ -58,7 +53,6 @@
 //	Add your own constant definitions here.
 //-----------------------------------------------
 
-using namespace lima;
 using namespace std;
 
 namespace XpadPixelDetector_ns
@@ -93,26 +87,18 @@ namespace XpadPixelDetector_ns
          *	Attribute member data.
          */
         //@{
-		Tango::DevULong	*attr_deadTime_read;
 		Tango::DevULong	attr_deadTime_write;
-		Tango::DevULong	*attr_init_read;
 		Tango::DevULong	attr_init_write;
-		Tango::DevULong	*attr_shutter_read;
 		Tango::DevULong	attr_shutter_write;
-		Tango::DevULong	*attr_ovf_read;
 		Tango::DevULong	attr_ovf_write;
-		Tango::DevULong	*attr_n_read;
 		Tango::DevULong	attr_n_write;
-		Tango::DevULong	*attr_p_read;
 		Tango::DevULong	attr_p_write;
-		Tango::DevULong	*attr_gp1_read;
+		Tango::DevULong	attr_busyOut_write;
 		Tango::DevULong	attr_gp1_write;
-		Tango::DevULong	*attr_gp2_read;
 		Tango::DevULong	attr_gp2_write;
-		Tango::DevULong	*attr_gp3_read;
 		Tango::DevULong	attr_gp3_write;
-		Tango::DevULong	*attr_gp4_read;
 		Tango::DevULong	attr_gp4_write;
+		Tango::DevBoolean	attr_enableGeometricalCorrection_write;
 		Tango::DevULong	*attr_dacl_read;
 		Tango::DevULong	*attr_ithl_read;
 //@}
@@ -124,10 +110,10 @@ namespace XpadPixelDetector_ns
         //@{
 /**
  *	Type of Acquisition:<BR>
- *	0->SYNC<BR>
- *	1->ASYNC (not supported yet)
+ *	SYNC -> Synchrone<BR>
+ *	ASYNC-> Asynchrone<BR>
  */
-	Tango::DevShort	acquisitionType;
+	string	acquisitionType;
 /**
  *	Define the model of the XPAD (architecture)<BR>
  *	Availables models :<BR>
@@ -139,7 +125,7 @@ namespace XpadPixelDetector_ns
  */
 	string	xpadModel;
 /**
- *	Path where the calibration files will be save, and from where the calibrations will be uploaded via an UploadCalibration command
+ *	Path where the calibration files will be saved, and from where the calibrations will be uploaded via an UploadCalibration command
  */
 	string	calibrationPath;
 /**
@@ -271,6 +257,14 @@ namespace XpadPixelDetector_ns
  */
 	virtual void write_p(Tango::WAttribute &attr);
 /**
+ *	Extract real attribute values for busyOut acquisition result.
+ */
+	virtual void read_busyOut(Tango::Attribute &attr);
+/**
+ *	Write busyOut attribute values to hardware.
+ */
+	virtual void write_busyOut(Tango::WAttribute &attr);
+/**
  *	Extract real attribute values for gp1 acquisition result.
  */
 	virtual void read_gp1(Tango::Attribute &attr);
@@ -302,6 +296,14 @@ namespace XpadPixelDetector_ns
  *	Write gp4 attribute values to hardware.
  */
 	virtual void write_gp4(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for enableGeometricalCorrection acquisition result.
+ */
+	virtual void read_enableGeometricalCorrection(Tango::Attribute &attr);
+/**
+ *	Write enableGeometricalCorrection attribute values to hardware.
+ */
+	virtual void write_enableGeometricalCorrection(Tango::WAttribute &attr);
 /**
  *	Extract real attribute values for dacl acquisition result.
  */
@@ -335,6 +337,10 @@ namespace XpadPixelDetector_ns
  */
 	virtual bool is_p_allowed(Tango::AttReqType type);
 /**
+ *	Read/Write allowed for busyOut attribute.
+ */
+	virtual bool is_busyOut_allowed(Tango::AttReqType type);
+/**
  *	Read/Write allowed for gp1 attribute.
  */
 	virtual bool is_gp1_allowed(Tango::AttReqType type);
@@ -350,6 +356,10 @@ namespace XpadPixelDetector_ns
  *	Read/Write allowed for gp4 attribute.
  */
 	virtual bool is_gp4_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for enableGeometricalCorrection attribute.
+ */
+	virtual bool is_enableGeometricalCorrection_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for dacl attribute.
  */
@@ -417,37 +427,37 @@ namespace XpadPixelDetector_ns
  */
 	virtual Tango::DevState	dev_state();
 /**
- * 
+ * Load a Flat value to all pixels
  *	@param	argin	Flat value to be loaded
  *	@exception DevFailed
  */
 	void	load_flat_config(Tango::DevULong);
 /**
- * 
+ * Load the config G(lobal) to a module and a chip
  *	@param	argin	modNum(1..8), chipId(0..6), config_values (11 values)
  *	@exception DevFailed
  */
 	void	load_all_config_g(const Tango::DevVarULongArray *);
 /**
- * 
+ * ?
  *	@param	argin	modNum(1..8), calibId(0..6), chipId(0..7), curRow (0..119), values (80 values)
  *	@exception DevFailed
  */
 	void	save_config_l(const Tango::DevVarULongArray *);
 /**
- * 
+ * ?
  *	@param	argin	modNum(1..8), calibId(0..6), reg, values (7 values)
  *	@exception DevFailed
  */
 	void	save_config_g(const Tango::DevVarULongArray *);
 /**
- * 
+ * ?
  *	@param	argin	modNum(1..8), calibId(0..6)
  *	@exception DevFailed
  */
 	void	load_config(const Tango::DevVarULongArray *);
 /**
- * 
+ * Reset the Xpad
  *	@exception DevFailed
  */
 	void	reset();
@@ -464,28 +474,28 @@ namespace XpadPixelDetector_ns
  */
 	Tango::DevVarUShortArray	*get_ithl();
 /**
- * 
+ * Start the Over The Noise Slow calibration
  *	@exception DevFailed
  */
 	void	calibrate_otnslow();
 /**
- * 
+ * Upload a calibration from a file defined in the property CalibrationPath
  *	@exception DevFailed
  */
 	void	upload_calibration();
 /**
- * 
+ * Upload a tralectory of wait times, instead of having always the same value
  *	@param	argin	the wait times
  *	@exception DevFailed
  */
 	void	upload_wait_times(const Tango::DevVarULongArray *);
 /**
- * 
+ * Increment the ITHL of 1 unit
  *	@exception DevFailed
  */
 	void	increment_ithl();
 /**
- * 
+ * Decrement the ITHL of 1 unit
  *	@exception DevFailed
  */
 	void	decrement_ithl();

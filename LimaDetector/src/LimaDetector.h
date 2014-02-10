@@ -33,26 +33,18 @@
 #ifndef _LimaDetector_H
 #define _LimaDetector_H
 
-#ifdef WIN32
 #include "Factory.h"
-
 //- Tango
 #include <tango.h>
 
 //- YAT/YAT4TANGO
 #include <yat4tango/InnerAppender.h>
 #include <yat4tango/DynamicAttributeManager.h>
-#include <yat/utils/XString.h>
 
-#endif
-
-
-
-
+//- STL 
 #include <algorithm>
 #include <string>
 #include <iostream>
-
 
 //- LIMA
 #include "Debug.h"
@@ -71,21 +63,6 @@
 //- This Device
 #include "AcquisitionTask.h"
 
-
-#ifndef WIN32
-#include "Factory.h"
-//- Tango
-#include <tango.h>
-
-//- YAT/YAT4TANGO
-#include <yat4tango/InnerAppender.h>
-#include <yat4tango/DynamicAttributeManager.h>
-#include <yat/utils/XString.h>
-
-#endif
-
-
-
 using namespace lima;
 using namespace std;
 using namespace yat4tango;
@@ -98,6 +75,8 @@ using namespace yat4tango;
  //    Add your own constant definitions here.
  //-----------------------------------------------
 
+#define MAX_ATTRIBUTE_STRING_LENGTH     256
+const size_t LOG_BUFFER_DEPTH           = 1024;
 
 namespace LimaDetector_ns
 {
@@ -698,6 +677,10 @@ public :
  */
 	virtual bool is_SetBinning_allowed(const CORBA::Any &any);
 /**
+ *	Execution allowed for ResetBinning command.
+ */
+	virtual bool is_ResetBinning_allowed(const CORBA::Any &any);
+/**
  *	Execution allowed for ResetROI command.
  */
 	virtual bool is_ResetROI_allowed(const CORBA::Any &any);
@@ -713,6 +696,10 @@ public :
  *	Execution allowed for CloseShutter command.
  */
 	virtual bool is_CloseShutter_allowed(const CORBA::Any &any);
+/**
+ *	Execution allowed for NexusResetBufferIndex command.
+ */
+	virtual bool is_NexusResetBufferIndex_allowed(const CORBA::Any &any);
 /**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code
@@ -750,6 +737,11 @@ public :
  */
 	void	set_binning(const Tango::DevVarULongArray *);
 /**
+ * Use the binning Hrizontal=1 & Verical=1 of the detector according to current Roi.
+ *	@exception DevFailed
+ */
+	void	reset_binning();
+/**
  * Use the full frame of the detector according to current Binning.
  *	@exception DevFailed
  */
@@ -771,6 +763,11 @@ public :
  *	@exception DevFailed
  */
 	void	close_shutter();
+/**
+ * Reset the nexus buffer index to index 1.
+ *	@exception DevFailed
+ */
+	void	nexus_reset_buffer_index();
 
 /**
  *	Read the device properties from database

@@ -59,10 +59,9 @@ __declspec(dllexport)
 
 namespace Pco_ns
 {
-
 //+----------------------------------------------------------------------------
 //
-// method : 		TalkClass::execute()
+// method : 		GetInfoCmd::execute()
 // 
 // description : 	method to trigger the execution of the command.
 //                PLEASE DO NOT MODIFY this method core without pogo   
@@ -73,16 +72,82 @@ namespace Pco_ns
 // returns : The command output data (packed in the Any object)
 //
 //-----------------------------------------------------------------------------
-CORBA::Any *TalkClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+CORBA::Any *GetInfoCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
 {
 
-	cout2 << "TalkClass::execute(): arrived" << endl;
+	cout2 << "GetInfoCmd::execute(): arrived" << endl;
+
+	return insert((static_cast<Pco *>(device))->get_info());
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		GetCamTypeCmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *GetCamTypeCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "GetCamTypeCmd::execute(): arrived" << endl;
+
+	return insert((static_cast<Pco *>(device))->get_cam_type());
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		GetCamInfoCmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *GetCamInfoCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "GetCamInfoCmd::execute(): arrived" << endl;
+
+	return insert((static_cast<Pco *>(device))->get_cam_info());
+}
+
+
+//+----------------------------------------------------------------------------
+//
+// method : 		TalkCmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *TalkCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "TalkCmd::execute(): arrived" << endl;
 
 	Tango::DevString	argin;
 	extract(in_any, argin);
 
 	return insert((static_cast<Pco *>(device))->talk(argin));
 }
+
+
 
 
 //
@@ -171,10 +236,25 @@ PcoClass *PcoClass::instance()
 //-----------------------------------------------------------------------------
 void PcoClass::command_factory()
 {
-	command_list.push_back(new TalkClass("Talk",
+	command_list.push_back(new TalkCmd("Talk",
 		Tango::DEV_STRING, Tango::DEV_STRING,
 		"str argin",
 		"str argout",
+		Tango::EXPERT));
+	command_list.push_back(new GetCamInfoCmd("GetCamInfo",
+		Tango::DEV_VOID, Tango::DEV_STRING,
+		"",
+		"cam infos",
+		Tango::OPERATOR));
+	command_list.push_back(new GetCamTypeCmd("GetCamType",
+		Tango::DEV_VOID, Tango::DEV_STRING,
+		"",
+		"cam type",
+		Tango::OPERATOR));
+	command_list.push_back(new GetInfoCmd("GetInfo",
+		Tango::DEV_VOID, Tango::DEV_STRING,
+		"",
+		"infos",
 		Tango::OPERATOR));
 
 	//	add polling if any
@@ -274,16 +354,41 @@ void PcoClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : shutterMode
 	shutterModeAttrib	*shutter_mode = new shutterModeAttrib();
 	Tango::UserDefaultAttrProp	shutter_mode_prop;
-	shutter_mode_prop.set_description("Available Shutter Modes are :<br>\nGLOBAL<br>\nROLLING<br>");
+	shutter_mode_prop.set_label("Shutter Mode");
+	shutter_mode_prop.set_unit(" ");
+	shutter_mode_prop.set_format("%1d");
+	shutter_mode_prop.set_description("Available Shutter Modes are :<br>\n-1-> Not available\n0 -> GLOBAL<br>\n1 -> ROLLING<br>");
 	shutter_mode->set_default_properties(shutter_mode_prop);
 	att_list.push_back(shutter_mode);
 
 	//	Attribute : pixelScanRate
 	pixelScanRateAttrib	*pixel_scan_rate = new pixelScanRateAttrib();
 	Tango::UserDefaultAttrProp	pixel_scan_rate_prop;
-	pixel_scan_rate_prop.set_description("Available Pixel Scan Rates are :<br>\nSLOW<br>\nFAST<br>\n\nSLOW mean 95.3 MHz <br>\nFAST mean 286 MHz\n");
+	pixel_scan_rate_prop.set_label("Pixel Scan Rate");
+	pixel_scan_rate_prop.set_unit(" ");
+	pixel_scan_rate_prop.set_format("%1d");
+	pixel_scan_rate_prop.set_description("Available Pixel Scan Rates are :<br>\n1 -> LOW (95.3 MHz)<br>\n2 -> HIGH (286 MHz)<br>");
 	pixel_scan_rate->set_default_properties(pixel_scan_rate_prop);
 	att_list.push_back(pixel_scan_rate);
+
+	//	Attribute : frameRate
+	frameRateAttrib	*frame_rate = new frameRateAttrib();
+	Tango::UserDefaultAttrProp	frame_rate_prop;
+	frame_rate_prop.set_label("Frame Rate");
+	frame_rate_prop.set_unit("fps");
+	frame_rate_prop.set_description("Give the current Frame Rate");
+	frame_rate->set_default_properties(frame_rate_prop);
+	att_list.push_back(frame_rate);
+
+	//	Attribute : maxNbImage
+	maxNbImageAttrib	*max_nb_image = new maxNbImageAttrib();
+	Tango::UserDefaultAttrProp	max_nb_image_prop;
+	max_nb_image_prop.set_label("Max Nb Image");
+	max_nb_image_prop.set_unit(" ");
+	max_nb_image_prop.set_format("%d");
+	max_nb_image_prop.set_description("Max Nb Image");
+	max_nb_image->set_default_properties(max_nb_image_prop);
+	att_list.push_back(max_nb_image);
 
 	//	End of Automatic code generation
 	//-------------------------------------------------------------

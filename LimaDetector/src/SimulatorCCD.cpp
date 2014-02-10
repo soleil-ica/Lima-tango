@@ -51,18 +51,11 @@ static const char *RcsId = "$Id:  $";
 //  Status  |  dev_status()
 //
 //===================================================================
-#ifdef WIN32
-#include <tango.h>
-#include <PogoHelper.h>
-#endif
-
 #include <SimulatorCCD.h>
 #include <SimulatorCCDClass.h>
 
-#ifndef WIN32
 #include <tango.h>
 #include <PogoHelper.h>
-#endif
 
 
 namespace SimulatorCCD_ns
@@ -143,7 +136,7 @@ void SimulatorCCD::init_device()
         m_ct = ControlFactory::instance().get_control("SimulatorCCD");
 
         //- get interface to specific camera
-        m_hw = dynamic_cast<Simulator::Interface*>(m_ct->hwInterface());
+        m_hw = dynamic_cast<lima::Simulator::Interface*>(m_ct->hwInterface());
         if(m_hw==0)
         {
             INFO_STREAM<<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"SimulatorCCD"<<") !"<< endl;
@@ -154,7 +147,7 @@ void SimulatorCCD::init_device()
         }
 
     }
-    catch(Exception& e)
+    catch(lima::Exception& e)
     {
         INFO_STREAM<<"Initialization Failed : "<<e.getErrMsg()<<endl;
         m_status_message <<"Initialization Failed : "<<e.getErrMsg( )<< endl;
@@ -185,35 +178,10 @@ void SimulatorCCD::init_device()
 void SimulatorCCD::always_executed_hook()
 {
 	DEBUG_STREAM << "SimulatorCCD::always_executed_hook() entering... "<< endl;
-	try
-    {
-	    m_status_message.str("");
-		//- get the singleton control objet used to pilot the lima framework
-        m_ct = ControlFactory::instance().get_control("SimulatorCCD");
+	
+    //- update state
+    dev_state();
 
-        //- get interface to specific detector
-        if(m_ct!=0)
-            m_hw = dynamic_cast<Simulator::Interface*>(m_ct->hwInterface());
-        this->dev_state();
-
-    }
-    catch(Exception& e)
-    {
-        ERROR_STREAM << e.getErrMsg() << endl;
-        m_status_message <<"Initialization Failed : "<<e.getErrMsg( )<< endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;        
-    }
-    catch(...)
-    {
-        ERROR_STREAM<<"Initialization Failed : UNKNOWN"<<endl;
-        m_status_message <<"Initialization Failed : UNKNOWN"<< endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;
-    }
-	DEBUG_STREAM << "SimulatorCCD::always_executed_hook() ending... "<< endl;	
 }
 //+----------------------------------------------------------------------------
 //
@@ -255,7 +223,7 @@ void SimulatorCCD::read_exposureTime(Tango::Attribute &attr)
                         static_cast<const char*> (string(df.errors[0].desc).c_str()),
                         static_cast<const char*> ("SimulatorCCD::read_exposureTime"));
         }
-        catch(Exception& e)
+        catch(lima::Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
@@ -294,7 +262,7 @@ void SimulatorCCD::write_exposureTime(Tango::WAttribute &attr)
                         static_cast<const char*> (string(df.errors[0].desc).c_str()),
                         static_cast<const char*> ("SimulatorCCD::write_exposureTime"));
         }
-        catch(Exception& e)
+        catch(lima::Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception

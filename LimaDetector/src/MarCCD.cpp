@@ -52,18 +52,11 @@ static const char *RcsId = "$Id:  $";
 //  TakeBackground  |  take_background()
 //
 //===================================================================
-#ifdef WIN32
 #include "tango.h"
 #include <PogoHelper.h>
-#endif
 
 #include <MarCCD.h>
 #include <MarCCDClass.h>
-
-#ifndef WIN32
-#include "tango.h"
-#include <PogoHelper.h>
-#endif
 
 const size_t MAX_STRING_LENGTH = 256;
 
@@ -111,6 +104,7 @@ void MarCCD::delete_device()
     //	Delete device allocated objects
     DELETE_DEVSTRING_ATTRIBUTE(attr_imageName_read);
     DELETE_SCALAR_ATTRIBUTE(attr_imageIndex_read);
+    DELETE_SCALAR_ATTRIBUTE(attr_waitFileOnDiskTime_read);    
 
     //!!!! ONLY LimaDetector device can do this !!!!
     //if(m_ct!=0)
@@ -136,6 +130,8 @@ void MarCCD::init_device()
     //--------------------------------------------
     CREATE_DEVSTRING_ATTRIBUTE(attr_imageName_read, MAX_STRING_LENGTH);
     CREATE_SCALAR_ATTRIBUTE(attr_imageIndex_read);
+    CREATE_SCALAR_ATTRIBUTE(attr_waitFileOnDiskTime_read);
+    
 
     get_device_property();
 
@@ -157,6 +153,17 @@ void MarCCD::init_device()
         {
             INFO_STREAM << "Initialization Failed : Unable to get the interface of camera plugin !" << std::endl;
             m_status_message << "Initialization Failed : Unable to get the interface of camera plugin !" << std::endl;
+            m_is_device_initialized = false;
+            set_state(Tango::FAULT);
+            return;
+        }
+
+        //- get camera to specific detector
+        m_camera = &(m_hw->getCamera());
+        if (m_camera == 0)
+        {
+            INFO_STREAM << "Initialization Failed : Unable to get the camera of plugin !" << endl;
+            m_status_message << "Initialization Failed : Unable to get the camera object !" << endl;
             m_is_device_initialized = false;
             set_state(Tango::FAULT);
             return;
@@ -208,60 +215,56 @@ void MarCCD::get_device_property()
 
     //	Call database and extract values
     //--------------------------------------------
-    if (Tango::Util::instance()->_UseDb == true)
+	if (Tango::Util::instance()->_UseDb==true)
         get_db_device()->get_property(dev_prop);
     Tango::DbDatum def_prop, cl_prop;
     MarCCDClass *ds_class =
-        (static_cast<MarCCDClass *> (get_device_class()));
+		(static_cast<MarCCDClass *>(get_device_class()));
     int i = -1;
 
     //	Try to initialize DetectorIP from class property
     cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-    if (cl_prop.is_empty() == false) cl_prop >> detectorIP;
-    else
-    {
+	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorIP;
+	else {
         //	Try to initialize DetectorIP from default device value
         def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-        if (def_prop.is_empty() == false) def_prop >> detectorIP;
+		if (def_prop.is_empty()==false)	def_prop  >>  detectorIP;
     }
     //	And try to extract DetectorIP value from database
-    if (dev_prop[i].is_empty() == false) dev_prop[i] >> detectorIP;
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorIP;
 
     //	Try to initialize DetectorPort from class property
     cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-    if (cl_prop.is_empty() == false) cl_prop >> detectorPort;
-    else
-    {
+	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorPort;
+	else {
         //	Try to initialize DetectorPort from default device value
         def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-        if (def_prop.is_empty() == false) def_prop >> detectorPort;
+		if (def_prop.is_empty()==false)	def_prop  >>  detectorPort;
     }
     //	And try to extract DetectorPort value from database
-    if (dev_prop[i].is_empty() == false) dev_prop[i] >> detectorPort;
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorPort;
 
     //	Try to initialize DetectorTargetPath from class property
     cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-    if (cl_prop.is_empty() == false) cl_prop >> detectorTargetPath;
-    else
-    {
+	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorTargetPath;
+	else {
         //	Try to initialize DetectorTargetPath from default device value
         def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-        if (def_prop.is_empty() == false) def_prop >> detectorTargetPath;
+		if (def_prop.is_empty()==false)	def_prop  >>  detectorTargetPath;
     }
     //	And try to extract DetectorTargetPath value from database
-    if (dev_prop[i].is_empty() == false) dev_prop[i] >> detectorTargetPath;
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorTargetPath;
 
     //	Try to initialize ReaderTimeout from class property
     cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-    if (cl_prop.is_empty() == false) cl_prop >> readerTimeout;
-    else
-    {
+	if (cl_prop.is_empty()==false)	cl_prop  >>  readerTimeout;
+	else {
         //	Try to initialize ReaderTimeout from default device value
         def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-        if (def_prop.is_empty() == false) def_prop >> readerTimeout;
+		if (def_prop.is_empty()==false)	def_prop  >>  readerTimeout;
     }
     //	And try to extract ReaderTimeout value from database
-    if (dev_prop[i].is_empty() == false) dev_prop[i] >> readerTimeout;
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  readerTimeout;
 
 
 
@@ -288,13 +291,13 @@ void MarCCD::always_executed_hook()
         m_status_message.str("");
         //- get the singleton control objet used to pilot the lima framework
         m_ct = ControlFactory::instance().get_control("MarCCD");
-
+   
         //- get interface to specific detector
         if (m_ct != 0)
             m_hw = dynamic_cast<Marccd::Interface*> (m_ct->hwInterface());
         this->dev_state();
 
-    }
+}
     catch (Exception& e)
     {
         ERROR_STREAM << e.getErrMsg() << endl;
@@ -327,6 +330,72 @@ void MarCCD::read_attr_hardware(vector<long> &attr_list)
     DEBUG_STREAM << "MarCCD::read_attr_hardware(vector<long> &attr_list) entering... " << endl;
     //	Add your own code here
 }
+//+----------------------------------------------------------------------------
+//
+// method : 		MarCCD::read_waitFileOnDiskTime
+// 
+// description : 	Extract real attribute values for waitFileOnDiskTime acquisition result.
+//
+//-----------------------------------------------------------------------------
+void MarCCD::read_waitFileOnDiskTime(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "MarCCD::read_waitFileOnDiskTime(Tango::Attribute &attr) entering... "<< endl;
+    try
+    {
+        *attr_waitFileOnDiskTime_read = m_hw->getWaitFileOnDiskTime();
+        attr.set_value(attr_waitFileOnDiskTime_read);
+    }
+    catch (Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
+                                          static_cast<const char*> ("MarCCD::read_waitFileOnDiskTime"));
+    }
+    catch (...)
+    {
+        Tango::Except::throw_exception(
+                                       static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                       static_cast<const char*> ("Unknown exception caught."),
+                                       static_cast<const char*> ("MarCCD::read_waitFileOnDiskTime"));
+    }    
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		MarCCD::write_waitFileOnDiskTime
+// 
+// description : 	Write waitFileOnDiskTime attribute values to hardware.
+//
+//-----------------------------------------------------------------------------
+void MarCCD::write_waitFileOnDiskTime(Tango::WAttribute &attr)
+{
+	DEBUG_STREAM << "MarCCD::write_waitFileOnDiskTime(Tango::WAttribute &attr) entering... "<< endl;
+    try
+    {
+        attr.get_write_value(attr_waitFileOnDiskTime_write);
+        m_hw->setWaitFileOnDiskTime(attr_waitFileOnDiskTime_write);
+    }
+    catch (Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
+                                          static_cast<const char*> ("MarCCD::write_waitFileOnDiskTime"));
+    }
+    catch (...)
+    {
+        Tango::Except::throw_exception(
+                                       static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                       static_cast<const char*> ("Unknown exception caught."),
+                                       static_cast<const char*> ("MarCCD::write_waitFileOnDiskTime"));
+    }    
+}
+
 
 //+----------------------------------------------------------------------------
 //
@@ -343,7 +412,7 @@ void MarCCD::read_imageName(Tango::Attribute &attr)
 
     try
     {
-        imgName = m_hw->getImageFileName();
+        imgName = m_camera->getImageFileName();
         ::strcpy(*attr_imageName_read, imgName.c_str());
         attr.set_value(attr_imageName_read);
     }
@@ -381,7 +450,7 @@ void MarCCD::write_imageName(Tango::WAttribute &attr)
     try
     {
         attr.get_write_value(attr_imageName_write);
-        m_hw->setImageFileName(attr_imageName_write);
+        m_camera->setImageFileName(attr_imageName_write);
     }
     catch (Tango::DevFailed& df)
     {
@@ -414,7 +483,7 @@ void MarCCD::read_imageIndex(Tango::Attribute &attr)
     DEBUG_STREAM << "MarCCD::read_imageIndex(Tango::Attribute &attr) entering... " << endl;
     try
     {
-        *attr_imageIndex_read = m_hw->getImageIndex();
+        *attr_imageIndex_read = m_camera->getImageIndex();
         attr.set_value(attr_imageIndex_read);
     }
     catch (Tango::DevFailed& df)
@@ -449,7 +518,7 @@ void MarCCD::write_imageIndex(Tango::WAttribute &attr)
     try
     {
         attr.get_write_value(attr_imageIndex_write);
-        m_hw->setImageIndex(attr_imageIndex_write);
+        m_camera->setImageIndex(attr_imageIndex_write);
     }
     catch (Tango::DevFailed& df)
     {
@@ -479,7 +548,6 @@ void MarCCD::write_imageIndex(Tango::WAttribute &attr)
  *
  */
 //+------------------------------------------------------------------
-
 void MarCCD::take_background()
 {
     DEBUG_STREAM << "MarCCD::take_background(): entering... !" << endl;
@@ -489,8 +557,8 @@ void MarCCD::take_background()
     {
         try
         {
-            if (m_hw != 0)
-                m_hw->takeBackgroundFrame();
+            if (m_camera!= 0)
+                m_camera->takeBackgroundFrame();
         }
         catch (Tango::DevFailed& df)
         {
@@ -680,6 +748,7 @@ int MarCCD::find_index_from_property_name(Tango::DbData& dev_prop, string proper
     if (i == iNbProperties) return -1;
     return i;
 }
+
 
 
 
