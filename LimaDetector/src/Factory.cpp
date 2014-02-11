@@ -13,24 +13,30 @@ ControlFactory::ControlFactory()
 	my_camera_simulator 	= 0;
 	my_interface_simulator 	= 0;
 
+#ifdef BASLER_ENABLED 
 	my_camera_basler 		= 0;
 	my_interface_basler 	= 0;
-
+#endif
+#ifdef XPAD_ENABLED
 	my_camera_xpad 			= 0;
 	my_interface_xpad 		= 0;
-
+#endif
+#ifdef PILATUS_ENABLED
 	my_camera_pilatus 		= 0;
 	my_interface_pilatus 	= 0;
-
+#endif
+#ifdef MARCCD_ENABLED 
 	my_camera_marccd 		= 0;
 	my_interface_marccd 	= 0;
-
+#endif
+#ifdef ADSC_ENABLED 
 	my_camera_adsc 			= 0;
 	my_interface_adsc 		= 0;
-
+#endif
+#ifdef PROSILICA_ENABLED 
 	my_camera_prosilica 	= 0;
 	my_interface_prosilica 	= 0;
-
+#endif
 	my_server_name 			= "none";
 	my_device_name 			= "none";
 }
