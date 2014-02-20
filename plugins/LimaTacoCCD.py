@@ -508,6 +508,8 @@ class LimaTacoCCDs(PyTango.Device_4Impl, object):
             pars.fileFormat = Core.CtSaving.EDF
         elif pars.suffix.lower()[-6:] == '.edfgz':
             pars.fileFormat = Core.CtSaving.EDFGZ
+        elif pars.suffix.lower()[-7:] == '.edf.gz':
+            pars.fileFormat = Core.CtSaving.EDFGZ
         elif pars.suffix.lower()[-4:] == '.cbf':
             pars.fileFormat = Core.CtSaving.CBFFormat
         else:
@@ -783,9 +785,12 @@ class LimaTacoCCDs(PyTango.Device_4Impl, object):
     @Core.DEB_MEMBER_FUNCT
     def DevCcdWriteFile(self, frame_nb):
         synchronous = not self.ManualAsynchronousWrite
-	control = _control_ref()
+        control = _control_ref()
         saving = control.saving()
-        saving.writeFrame(frame_nb,1,synchronous)
+        try:
+                saving.writeFrame(frame_nb,1,synchronous)
+        except TypeError:
+                saving.writeFrame(frame_nb,1)
 
 #------------------------------------------------------------------
 #    DevCcdWriteAll command:
