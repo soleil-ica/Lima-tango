@@ -810,7 +810,8 @@ bool LimaDetector::is_GetAttributeAvailableValues_allowed(const CORBA::Any &any)
 bool LimaDetector::is_OpenShutter_allowed(const CORBA::Any &any)
 {
 	if (get_state() == Tango::INIT	||
-		get_state() == Tango::FAULT)
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
 	{
 		//	End of Generated Code
 
@@ -829,7 +830,8 @@ bool LimaDetector::is_OpenShutter_allowed(const CORBA::Any &any)
 bool LimaDetector::is_CloseShutter_allowed(const CORBA::Any &any)
 {
 	if (get_state() == Tango::INIT	||
-		get_state() == Tango::FAULT)
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
 	{
 		//	End of Generated Code
 
@@ -870,7 +872,9 @@ bool LimaDetector::is_ResetBinning_allowed(const CORBA::Any &any)
 //-----------------------------------------------------------------------------
 bool LimaDetector::is_NexusResetBufferIndex_allowed(const CORBA::Any &any)
 {
-	if (get_state() == Tango::RUNNING)
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
 	{
 		//	End of Generated Code
 
