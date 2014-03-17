@@ -146,10 +146,10 @@ public :
 		Tango::DevUShort	*attr_y_read;
 		Tango::DevUShort	*attr_width_read;
 		Tango::DevUShort	*attr_height_read;
-		Tango::DevShort		*attr_binning_read;
-		Tango::DevLong		*attr_nbFrames_read;
-		Tango::DevLong		attr_nbFrames_write;
-		Tango::DevULong		*attr_currentFrame_read;
+		Tango::DevShort	*attr_binning_read;
+		Tango::DevLong	*attr_nbFrames_read;
+		Tango::DevLong	attr_nbFrames_write;
+		Tango::DevULong	*attr_currentFrame_read;
 		Tango::DevBoolean	*attr_fileGeneration_read;
 		Tango::DevBoolean	attr_fileGeneration_write;
 //@}
@@ -298,6 +298,14 @@ public :
  *	- 8<br>
  */
 	Tango::DevUShort	memorizedBinning;
+/**
+ *	Memorize/Define the nbFrames attribute  at Init device<br>
+ */
+	Tango::DevLong	memorizedNbFrames;
+/**
+ *	Memorize/Define the fileGeneration attribute at Init device<br>
+ */
+	Tango::DevBoolean	memorizedFileGeneration;
 //@}
 
 /**
@@ -559,6 +567,10 @@ public :
  */
 	virtual bool is_SetBinning_allowed(const CORBA::Any &any);
 /**
+ *	Execution allowed for NexusResetBufferIndex command.
+ */
+	virtual bool is_NexusResetBufferIndex_allowed(const CORBA::Any &any);
+/**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code
  *	@exception DevFailed
@@ -598,6 +610,11 @@ public :
  *	@exception DevFailed
  */
 	void	set_binning(Tango::DevUShort);
+/**
+ * Reset the nexus buffer index to index 1.
+ *	@exception DevFailed
+ */
+	void	nexus_reset_buffer_index();
 
 /**
  *	Read the device properties from database

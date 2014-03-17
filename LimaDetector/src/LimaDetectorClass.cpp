@@ -63,6 +63,28 @@ namespace LimaDetector_ns
 {
 //+----------------------------------------------------------------------------
 //
+// method : 		NexusResetBufferIndexCmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *NexusResetBufferIndexCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "NexusResetBufferIndexCmd::execute(): arrived" << endl;
+
+	((static_cast<LimaDetector *>(device))->nexus_reset_buffer_index());
+	return new CORBA::Any();
+}
+
+//+----------------------------------------------------------------------------
+//
 // method : 		SetBinningCmd::execute()
 // 
 // description : 	method to trigger the execution of the command.
@@ -295,6 +317,11 @@ void LimaDetectorClass::command_factory()
 		"",
 		"",
 		Tango::OPERATOR));
+	command_list.push_back(new NexusResetBufferIndexCmd("NexusResetBufferIndex",
+		Tango::DEV_VOID, Tango::DEV_VOID,
+		"",
+		"",
+		Tango::EXPERT));
 
 	//	add polling if any
 	for (unsigned int i=0 ; i<command_list.size(); i++)
@@ -544,8 +571,6 @@ void LimaDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	nb_frames_prop.set_format("%6d");
 	nb_frames_prop.set_description("Define the number of frames to acquire.");
 	nb_frames->set_default_properties(nb_frames_prop);
-	nb_frames->set_memorized();
-	nb_frames->set_memorized_init(true);
 	att_list.push_back(nb_frames);
 
 	//	Attribute : currentFrame
@@ -565,8 +590,6 @@ void LimaDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	file_generation_prop.set_description("Allow to save grabbed frames into a file on disk.<br>\nAvailable formats for the file are:  EDF, RAW, NXS<br>\nThe format is fixed in FileFormat property.<br>");
 	file_generation->set_default_properties(file_generation_prop);
 	file_generation->set_disp_level(Tango::EXPERT);
-	file_generation->set_memorized();
-	file_generation->set_memorized_init(true);
 	att_list.push_back(file_generation);
 
 	//	End of Automatic code generation
@@ -829,6 +852,36 @@ void LimaDetectorClass::set_default_property()
 	prop_def  = "1";
 	vect_data.clear();
 	vect_data.push_back("1");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedNbFrames";
+	prop_desc = "Memorize/Define the nbFrames attribute  at Init device<br>";
+	prop_def  = "1";
+	vect_data.clear();
+	vect_data.push_back("1");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedFileGeneration";
+	prop_desc = "Memorize/Define the fileGeneration attribute at Init device<br>";
+	prop_def  = "false";
+	vect_data.clear();
+	vect_data.push_back("false");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);

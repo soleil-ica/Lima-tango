@@ -502,7 +502,8 @@ bool LimaDetector::is_Stop_allowed(const CORBA::Any &any)
 //-----------------------------------------------------------------------------
 bool LimaDetector::is_Start_allowed(const CORBA::Any &any)
 {
-	if (get_state() == Tango::INIT)
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::RUNNING)
 	{
 		//	End of Generated Code
 
@@ -538,6 +539,25 @@ bool LimaDetector::is_SetROI_allowed(const CORBA::Any &any)
 //
 //-----------------------------------------------------------------------------
 bool LimaDetector::is_SetBinning_allowed(const CORBA::Any &any)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::RUNNING)
+	{
+		//	End of Generated Code
+
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		LimaDetector::is_NexusResetBufferIndex_allowed
+// 
+// description : 	Execution allowed for NexusResetBufferIndex command.
+//
+//-----------------------------------------------------------------------------
+bool LimaDetector::is_NexusResetBufferIndex_allowed(const CORBA::Any &any)
 {
 	if (get_state() == Tango::INIT	||
 		get_state() == Tango::RUNNING)

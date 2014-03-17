@@ -45,33 +45,31 @@ static const char *RcsId = "$Id:  $";
 //	The following table gives the correspondence
 //	between commands and method name.
 //
-//  Command name|  Method name
+//  Command name           |  Method name
 //	----------------------------------------
-//  State       |  dev_state()
-//  Status      |  dev_status()
-//  Snap        |  snap()
-//  Start       |  start()
-//  Stop        |  stop()
-//  SetROI      |  set_roi()
-//  SetBinning  |  set_binning()
+//  State                  |  dev_state()
+//  Status                 |  dev_status()
+//  Snap                   |  snap()
+//  Start                  |  start()
+//  Stop                   |  stop()
+//  SetROI                 |  set_roi()
+//  SetBinning             |  set_binning()
+//  NexusResetBufferIndex  |  nexus_reset_buffer_index()
 //
 //===================================================================
-
-
 
 #include <LimaDetector.h>
 #include <LimaDetectorClass.h>
 
 #include <tango.h>
 #include <PogoHelper.h>
+#include <yat4tango/PropertyHelper.h>
 
 #define MAX_ATTRIBUTE_STRING_LENGTH     256
 
-
-
 namespace LimaDetector_ns
 {
-
+using yat4tango::PropertyHelper; // for create_property_if_empty and set_property
 bool  LimaDetector::m_is_created = false;
 
 //+----------------------------------------------------------------------------
@@ -197,7 +195,7 @@ void LimaDetector::init_device()
     catch( Tango::DevFailed& df )
     {
         ERROR_STREAM << df << endl;
-        this->set_state(Tango::INIT);
+        set_state(Tango::INIT);
         m_status_message <<"Initialization Failed :  could not instanciate the InnerAppender ! "<< endl;
         return;
     }
@@ -458,9 +456,22 @@ void LimaDetector::init_device()
     // everything seems ok
     m_is_device_initialized = true;
     LimaDetector::m_is_created = true;
-    set_state(Tango::STANDBY);
-    this->dev_state();
 
+    //write at init, only if device is correctly initialized
+    INFO_STREAM << "Write tango hardware at Init - nbFrames." << endl;
+	Tango::WAttribute &nbFrames = dev_attr->get_w_attr_by_name("nbFrames");
+	*attr_nbFrames_read = memorizedNbFrames;
+	nbFrames.set_write_value(*attr_nbFrames_read);
+	write_nbFrames(nbFrames);
+
+	INFO_STREAM << "Write tango hardware at Init - fileGeneration." << endl;
+	Tango::WAttribute &fileGeneration = dev_attr->get_w_attr_by_name("fileGeneration");
+	*attr_fileGeneration_read = memorizedFileGeneration;
+	fileGeneration.set_write_value(*attr_fileGeneration_read);
+	write_fileGeneration(fileGeneration);
+
+    set_state(Tango::STANDBY);
+    dev_state();
 }
 
 
@@ -493,6 +504,8 @@ void LimaDetector::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("DebugFormats"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedRoi"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedBinning"));
+	dev_prop.push_back(Tango::DbDatum("MemorizedNbFrames"));
+	dev_prop.push_back(Tango::DbDatum("MemorizedFileGeneration"));
 
 	//	Call database and extract values
 	//--------------------------------------------
@@ -657,6 +670,28 @@ void LimaDetector::get_device_property()
 	//	And try to extract MemorizedBinning value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedBinning;
 
+	//	Try to initialize MemorizedNbFrames from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedNbFrames;
+	else {
+		//	Try to initialize MemorizedNbFrames from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedNbFrames;
+	}
+	//	And try to extract MemorizedNbFrames value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedNbFrames;
+
+	//	Try to initialize MemorizedFileGeneration from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedFileGeneration;
+	else {
+		//	Try to initialize MemorizedFileGeneration from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedFileGeneration;
+	}
+	//	And try to extract MemorizedFileGeneration value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedFileGeneration;
+
 
 
     //    End of Automatic code generation
@@ -692,8 +727,6 @@ void LimaDetector::get_device_property()
     myVector.push_back("Type");
     create_property_if_empty(dev_prop,myVector,"DebugFormats");
 
-
-
 	myVector.clear();
 	myVector.push_back("-1");
 	myVector.push_back("-1");
@@ -702,6 +735,9 @@ void LimaDetector::get_device_property()
 	create_property_if_empty(dev_prop,myVector,"MemorizedRoi");
 	
 	create_property_if_empty(dev_prop,"1","MemorizedBinning");
+
+    PropertyHelper::create_property_if_empty(this, dev_prop, "1", "MemorizedNbFrames");
+    PropertyHelper::create_property_if_empty(this, dev_prop, "false", "MemorizedFileGeneration");
 
 }
 //+----------------------------------------------------------------------------
@@ -1610,6 +1646,7 @@ void LimaDetector::write_nbFrames(Tango::WAttribute &attr)
     {
         attr.get_write_value(attr_nbFrames_write);
         m_ct->acquisition()->setAcqNbFrames(attr_nbFrames_write);
+        PropertyHelper::set_property(this, "MemorizedNbFrames", attr_nbFrames_write);
     }
     catch(Tango::DevFailed& df)
     {
@@ -1827,6 +1864,7 @@ void LimaDetector::write_fileGeneration(Tango::WAttribute &attr)
             m_ct->saving()->setSavingMode(CtSaving::AutoFrame);
         else
             m_ct->saving()->setSavingMode(CtSaving::Manual);
+        PropertyHelper::set_property(this, "MemorizedFileGeneration", attr_fileGeneration_write);
     }
     catch(Tango::DevFailed& df)
     {
@@ -2420,7 +2458,25 @@ int LimaDetector::find_index_from_property_name(Tango::DbData& dev_prop, string 
     return i;
 }
 
+//+------------------------------------------------------------------
+/**
+ *	method:	LimaDetector::nexus_reset_buffer_index
+ *
+ *	description:	method to execute "NexusResetBufferIndex"
+ *	Reset the nexus buffer index to index 1.
+ *
+ *
+ */
+//+------------------------------------------------------------------
+void LimaDetector::nexus_reset_buffer_index()
+{
+	DEBUG_STREAM << "LimaDetector::nexus_reset_buffer_index(): entering... !" << endl;
 
+	//	Add your own code to control device here
+
+    m_ct->saving()->clear();
+
+}
 
 
 
