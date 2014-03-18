@@ -346,19 +346,111 @@ bool AviexCCD::is_geomCorrection_allowed(Tango::AttReqType type)
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCD::is_readoutSpeed_allowed
+// method : 		AviexCCD::is_highSpeed_allowed
 // 
-// description : 	Read/Write allowed for readoutSpeed attribute.
+// description : 	Read/Write allowed for highSpeed attribute.
 //
 //-----------------------------------------------------------------------------
-bool AviexCCD::is_readoutSpeed_allowed(Tango::AttReqType type)
+bool AviexCCD::is_highSpeed_allowed(Tango::AttReqType type)
 {
 	if (get_state() == Tango::INIT	||
 		get_state() == Tango::FAULT	||
 		get_state() == Tango::RUNNING)
 	{
 		//	End of Generated Code
-
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
+		
+		if ( get_state()==Tango::FAULT && is_device_initialized() )
+		{
+           return true;
+		}	
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		AviexCCD::is_mxLibraryVersion_allowed
+// 
+// description : 	Read/Write allowed for mxLibraryVersion attribute.
+//
+//-----------------------------------------------------------------------------
+bool AviexCCD::is_mxLibraryVersion_allowed(Tango::AttReqType type)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
+	{
+		//	End of Generated Code
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
+		
+		if ( get_state()==Tango::FAULT && is_device_initialized() )
+		{
+           return true;
+		}	
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		AviexCCD::is_offsetCorrection_allowed
+// 
+// description : 	Read/Write allowed for offsetCorrection attribute.
+//
+//-----------------------------------------------------------------------------
+bool AviexCCD::is_offsetCorrection_allowed(Tango::AttReqType type)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
+	{
+		//	End of Generated Code
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
+		
+		if ( get_state()==Tango::FAULT && is_device_initialized() )
+		{
+           return true;
+		}	
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		AviexCCD::is_linearization_allowed
+// 
+// description : 	Read/Write allowed for linearization attribute.
+//
+//-----------------------------------------------------------------------------
+bool AviexCCD::is_linearization_allowed(Tango::AttReqType type)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
+	{
+		//	End of Generated Code
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
+		
+		if ( get_state()==Tango::FAULT && is_device_initialized() )
+		{
+           return true;
+		}	
 		//	Re-Start of Generated Code
 		return false;
 	}

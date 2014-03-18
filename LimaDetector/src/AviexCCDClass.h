@@ -50,18 +50,46 @@ namespace AviexCCD_ns
 {//=====================================
 //	Define classes for attributes
 //=====================================
-class readoutSpeedAttrib: public Tango::Attr
+class highSpeedAttrib: public Tango::Attr
 {
 public:
-	readoutSpeedAttrib():Attr("readoutSpeed", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
-	~readoutSpeedAttrib() {};
+	highSpeedAttrib():Attr("highSpeed", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
+	~highSpeedAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<AviexCCD *>(dev))->read_readoutSpeed(att);}
+	{(static_cast<AviexCCD *>(dev))->read_highSpeed(att);}
 	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-	{(static_cast<AviexCCD *>(dev))->write_readoutSpeed(att);}
+	{(static_cast<AviexCCD *>(dev))->write_highSpeed(att);}
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<AviexCCD *>(dev))->is_readoutSpeed_allowed(ty);}
+	{return (static_cast<AviexCCD *>(dev))->is_highSpeed_allowed(ty);}
+};
+
+class linearizationAttrib: public Tango::Attr
+{
+public:
+	linearizationAttrib():Attr("linearization", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
+	~linearizationAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_linearization(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_linearization(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_linearization_allowed(ty);}
+};
+
+class offsetCorrectionAttrib: public Tango::Attr
+{
+public:
+	offsetCorrectionAttrib():Attr("offsetCorrection", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
+	~offsetCorrectionAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_offsetCorrection(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<AviexCCD *>(dev))->write_offsetCorrection(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_offsetCorrection_allowed(ty);}
 };
 
 class geomCorrectionAttrib: public Tango::Attr
@@ -202,6 +230,18 @@ public:
 	{(static_cast<AviexCCD *>(dev))->write_internalAcquisitionMode(att);}
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
 	{return (static_cast<AviexCCD *>(dev))->is_internalAcquisitionMode_allowed(ty);}
+};
+
+class mxLibraryVersionAttrib: public Tango::Attr
+{
+public:
+	mxLibraryVersionAttrib():Attr("mxLibraryVersion", Tango::DEV_STRING, Tango::READ) {};
+	~mxLibraryVersionAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<AviexCCD *>(dev))->read_mxLibraryVersion(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<AviexCCD *>(dev))->is_mxLibraryVersion_allowed(ty);}
 };
 
 //=========================================

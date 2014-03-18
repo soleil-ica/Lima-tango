@@ -104,7 +104,10 @@ void AviexCCD::delete_device()
 	DELETE_SCALAR_ATTRIBUTE(attr_darkCorrection_read);
 	DELETE_SCALAR_ATTRIBUTE(attr_floodCorrection_read);
 	DELETE_SCALAR_ATTRIBUTE(attr_geomCorrection_read);
-	DELETE_SCALAR_ATTRIBUTE(attr_readoutSpeed_read);		
+	DELETE_SCALAR_ATTRIBUTE(attr_highSpeed_read);		
+	DELETE_SCALAR_ATTRIBUTE(attr_offsetCorrection_read);	
+	DELETE_SCALAR_ATTRIBUTE(attr_linearization_read);		
+	DELETE_DEVSTRING_ATTRIBUTE(attr_mxLibraryVersion_read);	
 	DELETE_DEVSTRING_ATTRIBUTE(attr_internalAcquisitionMode_read);
 
 	//    Delete device allocated objects
@@ -140,7 +143,10 @@ void AviexCCD::init_device()
 	CREATE_SCALAR_ATTRIBUTE(attr_darkCorrection_read, false);
 	CREATE_SCALAR_ATTRIBUTE(attr_floodCorrection_read, false);
 	CREATE_SCALAR_ATTRIBUTE(attr_geomCorrection_read, false);
-	CREATE_SCALAR_ATTRIBUTE(attr_readoutSpeed_read, false);	
+	CREATE_SCALAR_ATTRIBUTE(attr_highSpeed_read, false);	
+	CREATE_SCALAR_ATTRIBUTE(attr_offsetCorrection_read, false);	
+	CREATE_SCALAR_ATTRIBUTE(attr_linearization_read, false);		
+	CREATE_DEVSTRING_ATTRIBUTE(attr_mxLibraryVersion_read, MAX_ATTRIBUTE_STRING_LENGTH);		
 	CREATE_DEVSTRING_ATTRIBUTE(attr_internalAcquisitionMode_read, MAX_ATTRIBUTE_STRING_LENGTH);
 
 	m_is_device_initialized = false;
@@ -260,12 +266,24 @@ void AviexCCD::init_device()
 		geom.set_write_value(attr_geomCorrection_write);
 		write_geomCorrection(geom);	
 		
-		//write readoutSpeed
-		attr_readoutSpeed_write = memorizedReadoutSpeed;
-		Tango::WAttribute &readoutSpeed = dev_attr->get_w_attr_by_name("readoutSpeed");
-		readoutSpeed.set_write_value(attr_readoutSpeed_write);
-		write_readoutSpeed(readoutSpeed);	
+		//write highSpeed
+		attr_highSpeed_write = memorizedHighSpeed;
+		Tango::WAttribute &highSpeed = dev_attr->get_w_attr_by_name("highSpeed");
+		highSpeed.set_write_value(attr_highSpeed_write);
+		write_highSpeed(highSpeed);	
 
+		//write offsetCorrection
+		attr_offsetCorrection_write = memorizedOffsetCorrection;
+		Tango::WAttribute &offsetCorrection = dev_attr->get_w_attr_by_name("offsetCorrection");
+		offsetCorrection.set_write_value(attr_offsetCorrection_write);
+		write_offsetCorrection(offsetCorrection);	
+
+		//write linearization
+		attr_linearization_write = memorizedLinearization;
+		Tango::WAttribute &linearization = dev_attr->get_w_attr_by_name("linearization");
+		linearization.set_write_value(attr_linearization_write);
+		write_linearization(linearization);	
+		
 		//write internalAcquisitionMode
 		Tango::WAttribute &acquisitionMode = dev_attr->get_w_attr_by_name("internalAcquisitionMode");
 		m_acquisition_mode = memorizedInternalAcquisitionMode;
@@ -320,7 +338,9 @@ void AviexCCD::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("MemorizedReadoutDelayTime"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedExposureMultiplier"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedGapMultiplier"));
-	dev_prop.push_back(Tango::DbDatum("MemorizedReadoutSpeed"));
+	dev_prop.push_back(Tango::DbDatum("MemorizedOffsetCorrection"));
+	dev_prop.push_back(Tango::DbDatum("MemorizedLinearization"));
+	dev_prop.push_back(Tango::DbDatum("MemorizedHighSpeed"));
 
 	//	Call database and extract values
 	//--------------------------------------------
@@ -419,32 +439,55 @@ void AviexCCD::get_device_property()
 	//	And try to extract MemorizedGapMultiplier value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedGapMultiplier;
 
-	//	Try to initialize MemorizedReadoutSpeed from class property
+	//	Try to initialize MemorizedOffsetCorrection from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedReadoutSpeed;
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedOffsetCorrection;
 	else {
-		//	Try to initialize MemorizedReadoutSpeed from default device value
+		//	Try to initialize MemorizedOffsetCorrection from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedReadoutSpeed;
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedOffsetCorrection;
 	}
-	//	And try to extract MemorizedReadoutSpeed value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedReadoutSpeed;
+	//	And try to extract MemorizedOffsetCorrection value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedOffsetCorrection;
+
+	//	Try to initialize MemorizedLinearization from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedLinearization;
+	else {
+		//	Try to initialize MemorizedLinearization from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedLinearization;
+	}
+	//	And try to extract MemorizedLinearization value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedLinearization;
+
+	//	Try to initialize MemorizedHighSpeed from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedHighSpeed;
+	else {
+		//	Try to initialize MemorizedHighSpeed from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedHighSpeed;
+	}
+	//	And try to extract MemorizedHighSpeed value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedHighSpeed;
 
 
 
 	//    End of Automatic code generation
 	//------------------------------------------------------------------
-	create_property_if_empty(dev_prop, "MUST_BE_DEFINED", "DetectorID");
-	create_property_if_empty(dev_prop, "MUST_BE_DEFINED", "MxDatabaseFileFullName");
-	create_property_if_empty(dev_prop, "STANDARD", "MemorizedInternalAcquisitionMode");
-	create_property_if_empty(dev_prop, "0", "MemorizedCorrectionFlags");
-	
-	create_property_if_empty(dev_prop, "0", "MemorizedInitialDelayTime");
-	create_property_if_empty(dev_prop, "0", "MemorizedReadoutDelayTime");
-	create_property_if_empty(dev_prop, "1", "MemorizedExposureMultiplier");
-	create_property_if_empty(dev_prop, "1", "MemorizedGapMultiplier");
-	create_property_if_empty(dev_prop, "false", "MemorizedReadoutSpeed");
-	
+	//create properties and theire default values
+	PropertyHelper::create_property_if_empty(this, dev_prop, "MUST_BE_DEFINED", "DetectorID");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "MUST_BE_DEFINED", "MxDatabaseFileFullName");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "STANDARD", "MemorizedInternalAcquisitionMode");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "0", "MemorizedCorrectionFlags");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "0", "MemorizedInitialDelayTime");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "0", "MemorizedReadoutDelayTime");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "1", "MemorizedExposureMultiplier");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "1", "MemorizedGapMultiplier");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "false", "MemorizedHighSpeed");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "false", "MemorizedOffsetCorrection");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "false", "MemorizedLinearization");	
 
 }
 //+----------------------------------------------------------------------------
@@ -496,6 +539,45 @@ void AviexCCD::read_attr_hardware(vector<long> &attr_list)
 	//    Add your own code here
 }
 
+//+----------------------------------------------------------------------------
+//
+// method : 		AviexCCD::read_mxLibraryVersion
+// 
+// description : 	Extract real attribute values for mxLibraryVersion acquisition result.
+//
+//-----------------------------------------------------------------------------
+void AviexCCD::read_mxLibraryVersion(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "AviexCCD::read_mxLibraryVersion(Tango::Attribute &attr) entering... "<< endl;
+	try
+	{
+		std::string mx_version;
+		m_camera->getMxLibraryVersion(mx_version);
+		strcpy(*attr_mxLibraryVersion_read, mx_version.c_str());
+
+		attr.set_value(attr_mxLibraryVersion_read);
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		//- rethrow exception
+		Tango::Except::re_throw_exception(df,
+										static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+										static_cast<const char*> (string(df.errors[0].desc).c_str()),
+										static_cast<const char*> ("AviexCCD::read_mxLibraryVersion"));
+	}
+	catch (Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		//- throw exception
+		Tango::Except::throw_exception(
+									static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+									static_cast<const char*> (e.getErrMsg().c_str()),
+									static_cast<const char*> ("AviexCCD::read_mxLibraryVersion"));
+	}	
+}
+
+
 
 //+----------------------------------------------------------------------------
 //
@@ -540,7 +622,7 @@ void AviexCCD::write_initialDelayTime(Tango::WAttribute &attr)
 	{
 		attr.get_write_value(attr_initialDelayTime_write);
 		m_camera->setInitialDelayTime(attr_initialDelayTime_write / 1000);
-		set_property("MemorizedInitialDelayTime", attr_initialDelayTime_write);		
+		PropertyHelper::set_property(this, "MemorizedInitialDelayTime", attr_initialDelayTime_write);		
 	}
 	catch (Tango::DevFailed& df)
 	{
@@ -595,7 +677,7 @@ void AviexCCD::write_readoutDelayTime(Tango::WAttribute &attr)
 	{
 		attr.get_write_value(attr_readoutDelayTime_write);
 		m_camera->setReadoutDelayTime(attr_readoutDelayTime_write / 1000);
-		set_property("MemorizedReadoutDelayTime", attr_readoutDelayTime_write);				
+		PropertyHelper::set_property(this, "MemorizedReadoutDelayTime", attr_readoutDelayTime_write);				
 	}
 	catch (Tango::DevFailed& df)
 	{
@@ -607,7 +689,6 @@ void AviexCCD::write_readoutDelayTime(Tango::WAttribute &attr)
 										static_cast<const char*> ("AviexCCD::write_readoutDelayTime"));
 	}
 }
-
 
 //+----------------------------------------------------------------------------
 //
@@ -649,7 +730,7 @@ void AviexCCD::write_exposureMultiplier(Tango::WAttribute &attr)
 	{
 		attr.get_write_value(attr_exposureMultiplier_write);
 		m_camera->setExpMultiplier(attr_exposureMultiplier_write);
-		set_property("MemorizedExposureMultiplier", attr_exposureMultiplier_write);			
+		PropertyHelper::set_property(this, "MemorizedExposureMultiplier", attr_exposureMultiplier_write);			
 	}
 	catch (Tango::DevFailed& df)
 	{
@@ -702,7 +783,7 @@ void AviexCCD::write_gapMultiplier(Tango::WAttribute &attr)
 	{
 		attr.get_write_value(attr_gapMultiplier_write);
 		m_camera->setGapMultiplier(attr_gapMultiplier_write);
-		set_property("MemorizedGapMultiplier", attr_gapMultiplier_write);					
+		PropertyHelper::set_property(this, "MemorizedGapMultiplier", attr_gapMultiplier_write);					
 	}
 	catch (Tango::DevFailed& df)
 	{
@@ -714,7 +795,6 @@ void AviexCCD::write_gapMultiplier(Tango::WAttribute &attr)
 										static_cast<const char*> ("AviexCCD::write_gapMultiplier"));
 	}
 }
-
 
 //+----------------------------------------------------------------------------
 //
@@ -757,7 +837,7 @@ void AviexCCD::write_maskCorrection(Tango::WAttribute &attr)
 		attr.get_write_value(attr_maskCorrection_write);
 		(attr_maskCorrection_write == true) ? SET(m_correction_flags,MASK_CORRECTION_BIT_POSITION) : CLR(m_correction_flags,MASK_CORRECTION_BIT_POSITION);
 		m_camera->setCorrectionFlags(m_correction_flags);
-		set_property("MemorizedCorrectionFlags", m_correction_flags);
+		PropertyHelper::set_property(this, "MemorizedCorrectionFlags", m_correction_flags);
 	}
 	catch (Tango::DevFailed& df)
 	{
@@ -811,7 +891,7 @@ void AviexCCD::write_biasCorrection(Tango::WAttribute &attr)
 		attr.get_write_value(attr_biasCorrection_write);
 		(attr_biasCorrection_write == true) ? SET(m_correction_flags,BIAS_CORRECTION_BIT_POSITION) : CLR(m_correction_flags,BIAS_CORRECTION_BIT_POSITION);
 		m_camera->setCorrectionFlags(m_correction_flags);
-		set_property("MemorizedCorrectionFlags", m_correction_flags);
+		PropertyHelper::set_property(this, "MemorizedCorrectionFlags", m_correction_flags);
 	}
 	catch (Tango::DevFailed& df)
 	{
@@ -865,7 +945,7 @@ void AviexCCD::write_darkCorrection(Tango::WAttribute &attr)
 		attr.get_write_value(attr_darkCorrection_write);
 		(attr_darkCorrection_write == true) ? SET(m_correction_flags,DARK_CORRECTION_BIT_POSITION) : CLR(m_correction_flags,DARK_CORRECTION_BIT_POSITION);
 		m_camera->setCorrectionFlags(m_correction_flags);
-		set_property("MemorizedCorrectionFlags", m_correction_flags);
+		PropertyHelper::set_property(this, "MemorizedCorrectionFlags", m_correction_flags);
 	}
 	catch (Tango::DevFailed& df)
 	{
@@ -919,7 +999,7 @@ void AviexCCD::write_floodCorrection(Tango::WAttribute &attr)
 		attr.get_write_value(attr_floodCorrection_write);
 		(attr_floodCorrection_write == true) ? SET(m_correction_flags,FLOOD_CORRECTION_BIT_POSITION) : CLR(m_correction_flags,FLOOD_CORRECTION_BIT_POSITION);
 		m_camera->setCorrectionFlags(m_correction_flags);
-		set_property("MemorizedCorrectionFlags", m_correction_flags);
+		PropertyHelper::set_property(this, "MemorizedCorrectionFlags", m_correction_flags);
 	}
 	catch (Tango::DevFailed& df)
 	{
@@ -973,7 +1053,7 @@ void AviexCCD::write_geomCorrection(Tango::WAttribute &attr)
 		attr.get_write_value(attr_geomCorrection_write);
 		(attr_geomCorrection_write == true) ? SET(m_correction_flags,GEOM_CORRECTION_BIT_POSITION) : CLR(m_correction_flags,GEOM_CORRECTION_BIT_POSITION);
 		m_camera->setCorrectionFlags(m_correction_flags);
-		set_property("MemorizedCorrectionFlags", m_correction_flags);
+		PropertyHelper::set_property(this, "MemorizedCorrectionFlags", m_correction_flags);
 	}
 	catch (Tango::DevFailed& df)
 	{
@@ -988,18 +1068,18 @@ void AviexCCD::write_geomCorrection(Tango::WAttribute &attr)
 
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCD::read_readoutSpeed
+// method : 		AviexCCD::read_highSpeed
 // 
-// description : 	Extract real attribute values for readoutSpeed acquisition result.
+// description : 	Extract real attribute values for highSpeed acquisition result.
 //
 //-----------------------------------------------------------------------------
-void AviexCCD::read_readoutSpeed(Tango::Attribute &attr)
+void AviexCCD::read_highSpeed(Tango::Attribute &attr)
 {
-	DEBUG_STREAM << "AviexCCD::read_readoutSpeed(Tango::Attribute &attr) entering... "<< endl;
+	DEBUG_STREAM << "AviexCCD::read_highSpeed(Tango::Attribute &attr) entering... "<< endl;
 	try
 	{
-		m_camera->getReadoutSpeed(*attr_readoutSpeed_read);
-		attr.set_value(attr_readoutSpeed_read);
+		m_camera->getReadoutSpeed(*attr_highSpeed_read);
+		attr.set_value(attr_highSpeed_read);
 	}
 	catch (Tango::DevFailed& df)
 	{
@@ -1008,25 +1088,25 @@ void AviexCCD::read_readoutSpeed(Tango::Attribute &attr)
 		Tango::Except::re_throw_exception(df,
 										static_cast<const char*> ("TANGO_DEVICE_ERROR"),
 										static_cast<const char*> (string(df.errors[0].desc).c_str()),
-										static_cast<const char*> ("AviexCCD::read_readoutSpeed"));
+										static_cast<const char*> ("AviexCCD::read_highSpeed"));
 	}	
 }
 
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCD::write_readoutSpeed
+// method : 		AviexCCD::write_highSpeed
 // 
-// description : 	Write readoutSpeed attribute values to hardware.
+// description : 	Write highSpeed attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
-void AviexCCD::write_readoutSpeed(Tango::WAttribute &attr)
+void AviexCCD::write_highSpeed(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "AviexCCD::write_readoutSpeed(Tango::WAttribute &attr) entering... "<< endl;
+	DEBUG_STREAM << "AviexCCD::write_highSpeed(Tango::WAttribute &attr) entering... "<< endl;
 	try
 	{
-		attr.get_write_value(attr_readoutSpeed_write);
-		m_camera->setReadoutSpeed(attr_readoutSpeed_write);
-		set_property("MemorizedReadoutSpeed", attr_readoutSpeed_write);
+		attr.get_write_value(attr_highSpeed_write);
+		m_camera->setReadoutSpeed(attr_highSpeed_write);
+		PropertyHelper::set_property(this, "MemorizedHighSpeed", attr_highSpeed_write);
 	}
 	catch (Tango::DevFailed& df)
 	{
@@ -1035,8 +1115,114 @@ void AviexCCD::write_readoutSpeed(Tango::WAttribute &attr)
 		Tango::Except::re_throw_exception(df,
 										static_cast<const char*> ("TANGO_DEVICE_ERROR"),
 										static_cast<const char*> (string(df.errors[0].desc).c_str()),
-										static_cast<const char*> ("AviexCCD::write_readoutSpeed"));
+										static_cast<const char*> ("AviexCCD::write_highSpeed"));
 	}	
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		AviexCCD::read_offsetCorrection
+// 
+// description : 	Extract real attribute values for offsetCorrection acquisition result.
+//
+//-----------------------------------------------------------------------------
+void AviexCCD::read_offsetCorrection(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "AviexCCD::read_offsetCorrection(Tango::Attribute &attr) entering... "<< endl;
+	try
+	{
+		m_camera->getOffsetCorrection(*attr_offsetCorrection_read);
+		attr.set_value(attr_offsetCorrection_read);
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		//- rethrow exception
+		Tango::Except::re_throw_exception(df,
+										static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+										static_cast<const char*> (string(df.errors[0].desc).c_str()),
+										static_cast<const char*> ("AviexCCD::read_offsetCorrection"));
+	}	
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		AviexCCD::write_offsetCorrection
+// 
+// description : 	Write offsetCorrection attribute values to hardware.
+//
+//-----------------------------------------------------------------------------
+void AviexCCD::write_offsetCorrection(Tango::WAttribute &attr)
+{
+	DEBUG_STREAM << "AviexCCD::write_offsetCorrection(Tango::WAttribute &attr) entering... "<< endl;
+	try
+	{
+		attr.get_write_value(attr_offsetCorrection_write);
+		m_camera->setOffsetCorrection(attr_offsetCorrection_write);
+		PropertyHelper::set_property(this, "MemorizedOffsetCorrection", attr_offsetCorrection_write);
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		//- rethrow exception
+		Tango::Except::re_throw_exception(df,
+										static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+										static_cast<const char*> (string(df.errors[0].desc).c_str()),
+										static_cast<const char*> ("AviexCCD::write_offsetCorrection"));
+	}		
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		AviexCCD::read_linearization
+// 
+// description : 	Extract real attribute values for linearization acquisition result.
+//
+//-----------------------------------------------------------------------------
+void AviexCCD::read_linearization(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "AviexCCD::read_linearization(Tango::Attribute &attr) entering... "<< endl;
+	try
+	{
+		m_camera->getLinearization(*attr_linearization_read);
+		attr.set_value(attr_linearization_read);
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		//- rethrow exception
+		Tango::Except::re_throw_exception(df,
+										static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+										static_cast<const char*> (string(df.errors[0].desc).c_str()),
+										static_cast<const char*> ("AviexCCD::read_linearization"));
+	}		
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		AviexCCD::write_linearization
+// 
+// description : 	Write linearization attribute values to hardware.
+//
+//-----------------------------------------------------------------------------
+void AviexCCD::write_linearization(Tango::WAttribute &attr)
+{
+	DEBUG_STREAM << "AviexCCD::write_linearization(Tango::WAttribute &attr) entering... "<< endl;
+	try
+	{
+		attr.get_write_value(attr_linearization_write);
+		m_camera->setLinearization(attr_linearization_write);
+		PropertyHelper::set_property(this, "MemorizedLinearization", attr_linearization_write);
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		//- rethrow exception
+		Tango::Except::re_throw_exception(df,
+										static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+										static_cast<const char*> (string(df.errors[0].desc).c_str()),
+										static_cast<const char*> ("AviexCCD::write_linearization"));
+	}		
 }
 
 //+----------------------------------------------------------------------------
@@ -1051,7 +1237,8 @@ void AviexCCD::read_internalAcquisitionMode(Tango::Attribute &attr)
 	DEBUG_STREAM << "AviexCCD::read_internalAcquisitionMode(Tango::Attribute &attr) entering... " << endl;
 	try
 	{
-		std::string acq_mode = m_camera->getInternalAcqMode();
+		std::string acq_mode;
+		m_camera->getInternalAcqMode(acq_mode);
 		strcpy(*attr_internalAcquisitionMode_read, acq_mode.c_str());
 
 		attr.set_value(attr_internalAcquisitionMode_read);
@@ -1093,11 +1280,12 @@ void AviexCCD::write_internalAcquisitionMode(Tango::WAttribute &attr)
 		attr.get_write_value(attr_internalAcquisitionMode_write);
 		string current = attr_internalAcquisitionMode_write;
 
-		if (current != "ONESHOT" &&
-			current != "CONTINUOUS" &&
-			current != "MULTIFRAME" &&
-			current != "GEOMETRICAL" &&
-			current != "MEASURE_DARK_FRAME")
+		if (current != "ONESHOT"					&&
+			current != "CONTINUOUS"					&&
+			current != "MULTIFRAME"					&&
+			current != "GEOMETRICAL"				&&
+			current != "MEASURE_DARK"				&&
+			current != "MEASURE_FLOOD_FIELD")
 		{
 			m_acquisition_mode = previous;
 			attr_internalAcquisitionMode_write = new char [m_acquisition_mode.size() + 1];
@@ -1109,7 +1297,8 @@ void AviexCCD::write_internalAcquisitionMode(Tango::WAttribute &attr)
 										"\n- CONTINUOUS"
 										"\n- MULTIFRAME"
 										"\n- GEOMETRICAL"
-										"\n- MEASURE_DARK_FRAME"),
+										"\n- MEASURE_DARK"
+										"\n- MEASURE_FLOOD_FIELD\n"),
 										(const char*) ("AviexCCD::write_internalAcquisitionMode"));
 		}
 
@@ -1117,7 +1306,7 @@ void AviexCCD::write_internalAcquisitionMode(Tango::WAttribute &attr)
 		m_acquisition_mode = attr_internalAcquisitionMode_write;
 
 		m_camera->setInternalAcqMode(m_acquisition_mode);
-		set_property("MemorizedInternalAcquisitionMode", m_acquisition_mode);
+		PropertyHelper::set_property(this, "MemorizedInternalAcquisitionMode", m_acquisition_mode);
 
 	}
 	catch (Tango::DevFailed& df)
@@ -1180,126 +1369,6 @@ Tango::DevState AviexCCD::dev_state()
 	argout = DeviceState;
 	return argout;
 }
-/*-------------------------------------------------------------------------
-//       AviexCCD::set_property
-/-------------------------------------------------------------------------*/
-template <class T>
-void AviexCCD::set_property(string property_name, T value)
-{
-	if (!Tango::Util::instance()->_UseDb)
-	{
-		//- rethrow exception
-		Tango::Except::throw_exception(static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-									static_cast<const char*> ("NO DB"),
-									static_cast<const char*> ("AviexCCD::set_property"));
-	}
-
-	Tango::DbDatum current_value(property_name);
-	current_value << value;
-	Tango::DbData db_data;
-	db_data.push_back(current_value);
-	try
-	{
-		get_db_device()->put_property(db_data);
-	}
-	catch (Tango::DevFailed &df)
-	{
-		string message = "Error in storing " + property_name + " in Configuration DataBase ";
-		LOG_ERROR((message));
-		ERROR_STREAM << df << endl;
-		//- rethrow exception
-		Tango::Except::re_throw_exception(df,
-										static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-										static_cast<const char*> (string(df.errors[0].desc).c_str()),
-										static_cast<const char*> ("AviexCCD::set_property"));
-	}
-}
-/*-------------------------------------------------------------------------
-//       AviexCCD::get_property
-/-------------------------------------------------------------------------*/
-template <class T>
-T AviexCCD::get_property(string property_name)
-{
-	if (!Tango::Util::instance()->_UseDb)
-	{
-		//- rethrow exception
-		Tango::Except::throw_exception(static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-									static_cast<const char*> ("NO DB"),
-									static_cast<const char*> ("AviexCCD::get_property"));
-	}
-
-	T value;
-	Tango::DbDatum current_value(property_name);
-	Tango::DbData db_data;
-	db_data.push_back(current_value);
-	try
-	{
-		get_db_device()->get_property(db_data);
-	}
-	catch (Tango::DevFailed &df)
-	{
-		string message = "Error in reading " + property_name + " in Configuration DataBase ";
-		LOG_ERROR((message));
-		ERROR_STREAM << df << endl;
-		//- rethrow exception
-		Tango::Except::re_throw_exception(df,
-										static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-										static_cast<const char*> (string(df.errors[0].desc).c_str()),
-										static_cast<const char*> ("AviexCCD::get_property"));
-	}
-	db_data[0] >> value;
-	return (value);
-}
-/*-------------------------------------------------------------------------
-//       AviexCCD::create_property_if_empty
-/-------------------------------------------------------------------------*/
-template <class T>
-void AviexCCD::create_property_if_empty(Tango::DbData& dev_prop, T value, string property_name)
-{
-	int iPropertyIndex = find_index_from_property_name(dev_prop, property_name);
-	if (iPropertyIndex == -1) return;
-	if (dev_prop[iPropertyIndex].is_empty())
-	{
-		Tango::DbDatum current_value(dev_prop[iPropertyIndex].name);
-		current_value << value;
-		Tango::DbData db_data;
-		db_data.push_back(current_value);
-
-		try
-		{
-			get_db_device()->put_property(db_data);
-		}
-		catch (Tango::DevFailed &df)
-		{
-			string message = "Error in storing " + property_name + " in Configuration DataBase ";
-			LOG_ERROR((message));
-			ERROR_STREAM << df << endl;
-			//- rethrow exception
-			Tango::Except::re_throw_exception(df,
-											static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-											static_cast<const char*> (string(df.errors[0].desc).c_str()),
-											static_cast<const char*> ("AviexCCD::create_property_if_empty"));
-		}
-	}
-}
-/*-------------------------------------------------------------------------
-//       AviexCCD::find_index_from_property_name
-/-------------------------------------------------------------------------*/
-int AviexCCD::find_index_from_property_name(Tango::DbData& dev_prop, string property_name)
-{
-	size_t iNbProperties = dev_prop.size();
-	unsigned int i;
-	for (i = 0; i < iNbProperties; i++)
-	{
-		string sPropertyName(dev_prop[i].name);
-		if (sPropertyName == property_name) return i;
-	}
-	if (i == iNbProperties) return -1;
-	return i;
-}
-
-
-
 
 
 

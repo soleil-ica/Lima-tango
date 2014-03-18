@@ -82,6 +82,10 @@ static const char *RcsId = "$Id:  $";
 #include <PerkinElmerClass.h>
 #endif
 
+#ifdef ANDOR_ENABLED
+#include <AndorCCDClass.h>
+#endif
+
 #ifdef ANDOR3_ENABLED
 #include <Andor3Class.h>
 #endif
@@ -146,6 +150,10 @@ void Tango::DServer::class_factory()
     add_class(PerkinElmer_ns::PerkinElmerClass::init("PerkinElmer"));
 #endif
 
+#ifdef ANDOR_ENABLED
+    add_class(AndorCCD_ns::AndorCCDClass::init("AndorCCD"));
+#endif
+	
 #ifdef ANDOR3_ENABLED
     add_class(Andor3_ns::Andor3Class::init("Andor3"));
 #endif

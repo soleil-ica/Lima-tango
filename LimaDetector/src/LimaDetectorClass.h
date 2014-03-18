@@ -257,28 +257,28 @@ public:
 	{return (static_cast<LimaDetector *>(dev))->is_detectorPixelDepth_allowed(ty);}
 };
 
-class detectorHeightMaxAttrib: public Tango::Attr
+class binnedHeightMaxAttrib: public Tango::Attr
 {
 public:
-	detectorHeightMaxAttrib():Attr("detectorHeightMax", Tango::DEV_USHORT, Tango::READ) {};
-	~detectorHeightMaxAttrib() {};
+	binnedHeightMaxAttrib():Attr("binnedHeightMax", Tango::DEV_USHORT, Tango::READ) {};
+	~binnedHeightMaxAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<LimaDetector *>(dev))->read_detectorHeightMax(att);}
+	{(static_cast<LimaDetector *>(dev))->read_binnedHeightMax(att);}
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<LimaDetector *>(dev))->is_detectorHeightMax_allowed(ty);}
+	{return (static_cast<LimaDetector *>(dev))->is_binnedHeightMax_allowed(ty);}
 };
 
-class detectorWidthMaxAttrib: public Tango::Attr
+class binnedWidthMaxAttrib: public Tango::Attr
 {
 public:
-	detectorWidthMaxAttrib():Attr("detectorWidthMax", Tango::DEV_USHORT, Tango::READ) {};
-	~detectorWidthMaxAttrib() {};
+	binnedWidthMaxAttrib():Attr("binnedWidthMax", Tango::DEV_USHORT, Tango::READ) {};
+	~binnedWidthMaxAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<LimaDetector *>(dev))->read_detectorWidthMax(att);}
+	{(static_cast<LimaDetector *>(dev))->read_binnedWidthMax(att);}
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<LimaDetector *>(dev))->is_detectorWidthMax_allowed(ty);}
+	{return (static_cast<LimaDetector *>(dev))->is_binnedWidthMax_allowed(ty);}
 };
 
 class detectorModelAttrib: public Tango::Attr
@@ -320,30 +320,6 @@ public:
 //=========================================
 //	Define classes for commands
 //=========================================
-class NexusResetBufferIndexClass : public Tango::Command
-{
-public:
-	NexusResetBufferIndexClass(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out,
-				   const char        *in_desc,
-				   const char        *out_desc,
-				   Tango::DispLevel  level)
-	:Command(name,in,out,in_desc,out_desc, level)	{};
-
-	NexusResetBufferIndexClass(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out)
-	:Command(name,in,out)	{};
-	~NexusResetBufferIndexClass() {};
-	
-	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
-	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
-	{return (static_cast<LimaDetector *>(dev))->is_NexusResetBufferIndex_allowed(any);}
-};
-
-
-
 class CloseShutterCmd : public Tango::Command
 {
 public:
