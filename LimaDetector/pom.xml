@@ -198,22 +198,22 @@
 								<!--<define>ANDOR3_ENABLED</define>--> 	<!-- WIP -->
 								<!--<define>VIEWORKSVP_ENABLED</define>--> 	<!-- WIP -->
 							</defines>
-							<systemIncludePaths>                
+							<!-- <systemIncludePaths>                
 								<systemIncludePath>/home/informatique/ica/langlois/ImXpad/xpix_2_1_0b/imxpad_lib/xpci_lib</systemIncludePath>
-							</systemIncludePaths>
+							</systemIncludePaths> -->
 							<!-- define less verbose mode for gcc-->
 							<options>
 								<option>-w</option>
 							</options>
 						  </cpp>
 						  <linker>
-							<libs>
+							<!-- <libs>
 								<lib>
 									<name>xpci_lib</name>
 									<type>static</type>
 									<directory>/home/informatique/ica/langlois/ImXpad/xpix_2_1_0b/imxpad_lib/xpci_lib</directory>
 								</lib>
-							</libs>
+							</libs> -->
 						</linker>
 						</specificConfiguration>
 						
