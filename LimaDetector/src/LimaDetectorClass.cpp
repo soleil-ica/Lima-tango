@@ -67,28 +67,6 @@ namespace LimaDetector_ns
 {
 //+----------------------------------------------------------------------------
 //
-// method : 		NexusResetBufferIndexClass::execute()
-// 
-// description : 	method to trigger the execution of the command.
-//                PLEASE DO NOT MODIFY this method core without pogo   
-//
-// in : - device : The device on which the command must be executed
-//		- in_any : The command input data
-//
-// returns : The command output data (packed in the Any object)
-//
-//-----------------------------------------------------------------------------
-CORBA::Any *NexusResetBufferIndexClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
-{
-
-	cout2 << "NexusResetBufferIndexClass::execute(): arrived" << endl;
-
-	((static_cast<LimaDetector *>(device))->nexus_reset_buffer_index());
-	return new CORBA::Any();
-}
-
-//+----------------------------------------------------------------------------
-//
 // method : 		ResetBinningCmd::execute()
 // 
 // description : 	method to trigger the execution of the command.
@@ -460,11 +438,6 @@ void LimaDetectorClass::command_factory()
 		"",
 		"",
 		Tango::EXPERT));
-	command_list.push_back(new NexusResetBufferIndexClass("NexusResetBufferIndex",
-		Tango::DEV_VOID, Tango::DEV_VOID,
-		"",
-		"",
-		Tango::EXPERT));
 
 	//	add polling if any
 	for (unsigned int i=0 ; i<command_list.size(); i++)
@@ -581,27 +554,27 @@ void LimaDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	detector_model->set_default_properties(detector_model_prop);
 	att_list.push_back(detector_model);
 
-	//	Attribute : detectorWidthMax
-	detectorWidthMaxAttrib	*detector_width_max = new detectorWidthMaxAttrib();
-	Tango::UserDefaultAttrProp	detector_width_max_prop;
-	detector_width_max_prop.set_unit(" ");
-	detector_width_max_prop.set_standard_unit(" ");
-	detector_width_max_prop.set_display_unit(" ");
-	detector_width_max_prop.set_format("%6d");
-	detector_width_max_prop.set_description("Detector width in pixels.");
-	detector_width_max->set_default_properties(detector_width_max_prop);
-	att_list.push_back(detector_width_max);
+	//	Attribute : binnedWidthMax
+	binnedWidthMaxAttrib	*binned_width_max = new binnedWidthMaxAttrib();
+	Tango::UserDefaultAttrProp	binned_width_max_prop;
+	binned_width_max_prop.set_unit(" ");
+	binned_width_max_prop.set_standard_unit(" ");
+	binned_width_max_prop.set_display_unit(" ");
+	binned_width_max_prop.set_format("%6d");
+	binned_width_max_prop.set_description("Detector max width taking into account the current Horizontal Binning.");
+	binned_width_max->set_default_properties(binned_width_max_prop);
+	att_list.push_back(binned_width_max);
 
-	//	Attribute : detectorHeightMax
-	detectorHeightMaxAttrib	*detector_height_max = new detectorHeightMaxAttrib();
-	Tango::UserDefaultAttrProp	detector_height_max_prop;
-	detector_height_max_prop.set_unit(" ");
-	detector_height_max_prop.set_standard_unit(" ");
-	detector_height_max_prop.set_display_unit(" ");
-	detector_height_max_prop.set_format("%6d");
-	detector_height_max_prop.set_description("Detector height in pixels.");
-	detector_height_max->set_default_properties(detector_height_max_prop);
-	att_list.push_back(detector_height_max);
+	//	Attribute : binnedHeightMax
+	binnedHeightMaxAttrib	*binned_height_max = new binnedHeightMaxAttrib();
+	Tango::UserDefaultAttrProp	binned_height_max_prop;
+	binned_height_max_prop.set_unit(" ");
+	binned_height_max_prop.set_standard_unit(" ");
+	binned_height_max_prop.set_display_unit(" ");
+	binned_height_max_prop.set_format("%6d");
+	binned_height_max_prop.set_description("Detector max width taking into account the current Vertical Binning.");
+	binned_height_max->set_default_properties(binned_height_max_prop);
+	att_list.push_back(binned_height_max);
 
 	//	Attribute : detectorPixelDepth
 	detectorPixelDepthAttrib	*detector_pixel_depth = new detectorPixelDepthAttrib();

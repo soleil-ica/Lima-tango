@@ -69,6 +69,7 @@ const int GEOM_CORRECTION_BIT_POSITION	= 12;
 
 using namespace lima;
 using namespace std;
+using namespace yat4tango;
 
 namespace AviexCCD_ns
 {
@@ -101,6 +102,7 @@ public :
  *    Attribute member data.
  */
 //@{
+		Tango::DevString	*attr_mxLibraryVersion_read;
 		Tango::DevString	*attr_internalAcquisitionMode_read;
 		Tango::DevString	attr_internalAcquisitionMode_write;
 		Tango::DevDouble	*attr_initialDelayTime_read;
@@ -121,8 +123,12 @@ public :
 		Tango::DevBoolean	attr_floodCorrection_write;
 		Tango::DevBoolean	*attr_geomCorrection_read;
 		Tango::DevBoolean	attr_geomCorrection_write;
-		Tango::DevBoolean	*attr_readoutSpeed_read;
-		Tango::DevBoolean	attr_readoutSpeed_write;
+		Tango::DevBoolean	*attr_offsetCorrection_read;
+		Tango::DevBoolean	attr_offsetCorrection_write;
+		Tango::DevBoolean	*attr_linearization_read;
+		Tango::DevBoolean	attr_linearization_write;
+		Tango::DevBoolean	*attr_highSpeed_read;
+		Tango::DevBoolean	attr_highSpeed_write;
 //@}
 
 /**
@@ -172,7 +178,15 @@ public :
 /**
  *	
  */
-	Tango::DevBoolean	memorizedReadoutSpeed;
+	Tango::DevBoolean	memorizedOffsetCorrection;
+/**
+ *	
+ */
+	Tango::DevBoolean	memorizedLinearization;
+/**
+ *	
+ */
+	Tango::DevBoolean	memorizedHighSpeed;
 //@}
 
 /**
@@ -245,6 +259,10 @@ public :
  *	Hardware acquisition for attributes.
  */
 	virtual void read_attr_hardware(vector<long> &attr_list);
+/**
+ *	Extract real attribute values for mxLibraryVersion acquisition result.
+ */
+	virtual void read_mxLibraryVersion(Tango::Attribute &attr);
 /**
  *	Extract real attribute values for internalAcquisitionMode acquisition result.
  */
@@ -326,13 +344,33 @@ public :
  */
 	virtual void write_geomCorrection(Tango::WAttribute &attr);
 /**
- *	Extract real attribute values for readoutSpeed acquisition result.
+ *	Extract real attribute values for offsetCorrection acquisition result.
  */
-	virtual void read_readoutSpeed(Tango::Attribute &attr);
+	virtual void read_offsetCorrection(Tango::Attribute &attr);
 /**
- *	Write readoutSpeed attribute values to hardware.
+ *	Write offsetCorrection attribute values to hardware.
  */
-	virtual void write_readoutSpeed(Tango::WAttribute &attr);
+	virtual void write_offsetCorrection(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for linearization acquisition result.
+ */
+	virtual void read_linearization(Tango::Attribute &attr);
+/**
+ *	Write linearization attribute values to hardware.
+ */
+	virtual void write_linearization(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for highSpeed acquisition result.
+ */
+	virtual void read_highSpeed(Tango::Attribute &attr);
+/**
+ *	Write highSpeed attribute values to hardware.
+ */
+	virtual void write_highSpeed(Tango::WAttribute &attr);
+/**
+ *	Read/Write allowed for mxLibraryVersion attribute.
+ */
+	virtual bool is_mxLibraryVersion_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for internalAcquisitionMode attribute.
  */
@@ -374,9 +412,17 @@ public :
  */
 	virtual bool is_geomCorrection_allowed(Tango::AttReqType type);
 /**
- *	Read/Write allowed for readoutSpeed attribute.
+ *	Read/Write allowed for offsetCorrection attribute.
  */
-	virtual bool is_readoutSpeed_allowed(Tango::AttReqType type);
+	virtual bool is_offsetCorrection_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for linearization attribute.
+ */
+	virtual bool is_linearization_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for highSpeed attribute.
+ */
+	virtual bool is_highSpeed_allowed(Tango::AttReqType type);
 /**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code
@@ -400,16 +446,6 @@ protected :
     //    Add your own data members here
     //-----------------------------------------
     
-    //- Store the values into the property
-    //- Properties stuff    
-    int                 find_index_from_property_name(Tango::DbData& dev_prop, string property_name);
-    template <class T>
-    void                create_property_if_empty(Tango::DbData& dev_prop,T value, string property_name);    
-    template <class T>
-    void                set_property(string property_name, T value);
-    template <class T>
-    T                   get_property(string property_name) ;
-	
     //state & status stuff
     bool                        m_is_device_initialized ;
     stringstream                m_status_message;

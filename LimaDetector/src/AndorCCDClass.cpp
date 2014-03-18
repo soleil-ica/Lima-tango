@@ -5,12 +5,12 @@ static const char *SvnPath    = "$HeadURL: $";
 static const char *HttpServer = "http://www.esrf.fr/computing/cs/tango/tango_doc/ds_doc/";
 //+=============================================================================
 //
-// file :        AviexCCDClass.cpp
+// file :        AndorCCDClass.cpp
 //
-// description : C++ source for the AviexCCDClass. A singleton
+// description : C++ source for the AndorCCDClass. A singleton
 //               class derived from DeviceClass. It implements the
 //               command list and all properties and methods required
-//               by the AviexCCD once per process.
+//               by the AndorCCD once per process.
 //
 // project :     TANGO Device Server
 //
@@ -35,8 +35,8 @@ static const char *HttpServer = "http://www.esrf.fr/computing/cs/tango/tango_doc
 #ifdef WIN32
 #include "tango.h"
 #endif
-#include <AviexCCD.h>
-#include <AviexCCDClass.h>
+#include <AndorCCD.h>
+#include <AndorCCDClass.h>
 
 #ifndef WIN32
 #include "tango.h"
@@ -44,7 +44,7 @@ static const char *HttpServer = "http://www.esrf.fr/computing/cs/tango/tango_doc
 
 //+----------------------------------------------------------------------------
 /**
- *	Create AviexCCDClass singleton and return it in a C function for Python usage
+ *	Create AndorCCDClass singleton and return it in a C function for Python usage
  */
 //+----------------------------------------------------------------------------
 extern "C" {
@@ -54,13 +54,13 @@ __declspec(dllexport)
 
 #endif
 
-	Tango::DeviceClass *_create_AviexCCD_class(const char *name) {
-		return AviexCCD_ns::AviexCCDClass::init(name);
+	Tango::DeviceClass *_create_AndorCCD_class(const char *name) {
+		return AndorCCD_ns::AndorCCDClass::init(name);
 	}
 }
 
 
-namespace AviexCCD_ns
+namespace AndorCCD_ns
 {
 
 
@@ -72,43 +72,43 @@ namespace AviexCCD_ns
 //	Initialize pointer for singleton pattern
 //----------------------------------------------------------------
 //
-AviexCCDClass *AviexCCDClass::_instance = NULL;
+AndorCCDClass *AndorCCDClass::_instance = NULL;
 
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCDClass::AviexCCDClass(string &s)
+// method : 		AndorCCDClass::AndorCCDClass(string &s)
 // 
-// description : 	constructor for the AviexCCDClass
+// description : 	constructor for the AndorCCDClass
 //
 // in : - s : The class name
 //
 //-----------------------------------------------------------------------------
-AviexCCDClass::AviexCCDClass(string &s):DeviceClass(s)
+AndorCCDClass::AndorCCDClass(string &s):DeviceClass(s)
 {
 
-	cout2 << "Entering AviexCCDClass constructor" << endl;
+	cout2 << "Entering AndorCCDClass constructor" << endl;
 	set_default_property();
 	get_class_property();
 	write_class_property();
 	
-	cout2 << "Leaving AviexCCDClass constructor" << endl;
+	cout2 << "Leaving AndorCCDClass constructor" << endl;
 
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCDClass::~AviexCCDClass()
+// method : 		AndorCCDClass::~AndorCCDClass()
 // 
-// description : 	destructor for the AviexCCDClass
+// description : 	destructor for the AndorCCDClass
 //
 //-----------------------------------------------------------------------------
-AviexCCDClass::~AviexCCDClass()
+AndorCCDClass::~AndorCCDClass()
 {
 	_instance = NULL;
 }
 
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCDClass::instance
+// method : 		AndorCCDClass::instance
 // 
 // description : 	Create the object if not already done. Otherwise, just
 //			return a pointer to the object
@@ -116,14 +116,14 @@ AviexCCDClass::~AviexCCDClass()
 // in : - name : The class name
 //
 //-----------------------------------------------------------------------------
-AviexCCDClass *AviexCCDClass::init(const char *name)
+AndorCCDClass *AndorCCDClass::init(const char *name)
 {
 	if (_instance == NULL)
 	{
 		try
 		{
 			string s(name);
-			_instance = new AviexCCDClass(s);
+			_instance = new AndorCCDClass(s);
 		}
 		catch (bad_alloc)
 		{
@@ -133,7 +133,7 @@ AviexCCDClass *AviexCCDClass::init(const char *name)
 	return _instance;
 }
 
-AviexCCDClass *AviexCCDClass::instance()
+AndorCCDClass *AndorCCDClass::instance()
 {
 	if (_instance == NULL)
 	{
@@ -145,13 +145,13 @@ AviexCCDClass *AviexCCDClass::instance()
 
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCDClass::command_factory
+// method : 		AndorCCDClass::command_factory
 // 
 // description : 	Create the command object(s) and store them in the 
 //			command list
 //
 //-----------------------------------------------------------------------------
-void AviexCCDClass::command_factory()
+void AndorCCDClass::command_factory()
 {
 
 	//	add polling if any
@@ -162,14 +162,14 @@ void AviexCCDClass::command_factory()
 
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCDClass::get_class_property
+// method : 		AndorCCDClass::get_class_property
 // 
 // description : 	Get the class property for specified name.
 //
 // in :		string	name : The property name
 //
 //+----------------------------------------------------------------------------
-Tango::DbDatum AviexCCDClass::get_class_property(string &prop_name)
+Tango::DbDatum AndorCCDClass::get_class_property(string &prop_name)
 {
 	for (unsigned int i=0 ; i<cl_prop.size() ; i++)
 		if (cl_prop[i].name == prop_name)
@@ -179,12 +179,12 @@ Tango::DbDatum AviexCCDClass::get_class_property(string &prop_name)
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCDClass::get_default_device_property()
+// method : 		AndorCCDClass::get_default_device_property()
 // 
 // description : 	Return the default value for device property.
 //
 //-----------------------------------------------------------------------------
-Tango::DbDatum AviexCCDClass::get_default_device_property(string &prop_name)
+Tango::DbDatum AndorCCDClass::get_default_device_property(string &prop_name)
 {
 	for (unsigned int i=0 ; i<dev_def_prop.size() ; i++)
 		if (dev_def_prop[i].name == prop_name)
@@ -195,12 +195,12 @@ Tango::DbDatum AviexCCDClass::get_default_device_property(string &prop_name)
 
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCDClass::get_default_class_property()
+// method : 		AndorCCDClass::get_default_class_property()
 // 
 // description : 	Return the default value for class property.
 //
 //-----------------------------------------------------------------------------
-Tango::DbDatum AviexCCDClass::get_default_class_property(string &prop_name)
+Tango::DbDatum AndorCCDClass::get_default_class_property(string &prop_name)
 {
 	for (unsigned int i=0 ; i<cl_def_prop.size() ; i++)
 		if (cl_def_prop[i].name == prop_name)
@@ -210,7 +210,7 @@ Tango::DbDatum AviexCCDClass::get_default_class_property(string &prop_name)
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCDClass::device_factory
+// method : 		AndorCCDClass::device_factory
 // 
 // description : 	Create the device object(s) and store them in the 
 //			device list
@@ -218,7 +218,7 @@ Tango::DbDatum AviexCCDClass::get_default_class_property(string &prop_name)
 // in :		Tango::DevVarStringArray *devlist_ptr : The device name list
 //
 //-----------------------------------------------------------------------------
-void AviexCCDClass::device_factory(const Tango::DevVarStringArray *devlist_ptr)
+void AndorCCDClass::device_factory(const Tango::DevVarStringArray *devlist_ptr)
 {
 
 	//	Create all devices.(Automatic code generation)
@@ -229,7 +229,7 @@ void AviexCCDClass::device_factory(const Tango::DevVarStringArray *devlist_ptr)
 						
 		// Create devices and add it into the device list
 		//----------------------------------------------------
-		device_list.push_back(new AviexCCD(this, (*devlist_ptr)[i]));							 
+		device_list.push_back(new AndorCCD(this, (*devlist_ptr)[i]));							 
 
 		// Export device to the outside world
 		// Check before if database used.
@@ -244,79 +244,52 @@ void AviexCCDClass::device_factory(const Tango::DevVarStringArray *devlist_ptr)
 
 }
 //+----------------------------------------------------------------------------
-//	Method: AviexCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
+//	Method: AndorCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 //-----------------------------------------------------------------------------
-void AviexCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
+void AndorCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 {
-	//	Attribute : mxLibraryVersion
-	mxLibraryVersionAttrib	*mx_library_version = new mxLibraryVersionAttrib();
-	Tango::UserDefaultAttrProp	mx_library_version_prop;
-	mx_library_version_prop.set_description("This returns a complete version string for MX library.");
-	mx_library_version->set_default_properties(mx_library_version_prop);
-	att_list.push_back(mx_library_version);
+	//	Attribute : enabledCooler
+	enabledCoolerAttrib	*enabled_cooler = new enabledCoolerAttrib();
+	att_list.push_back(enabled_cooler);
 
-	//	Attribute : internalAcquisitionMode
-	internalAcquisitionModeAttrib	*internal_acquisition_mode = new internalAcquisitionModeAttrib();
-	Tango::UserDefaultAttrProp	internal_acquisition_mode_prop;
-	internal_acquisition_mode_prop.set_description("Available Internal Acquisition Modes are :<br>\nONESHOT<br>\nCONTINUOUS<br>\nMULTIFRAME<br>\nGEOMETRICAL<br>\nMEASURE_DARK<br>\nMEASURE_FLOOD_FIELD<br>");
-	internal_acquisition_mode->set_default_properties(internal_acquisition_mode_prop);
-	att_list.push_back(internal_acquisition_mode);
+	//	Attribute : currentCoolingStatus
+	currentCoolingStatusAttrib	*current_cooling_status = new currentCoolingStatusAttrib();
+	Tango::UserDefaultAttrProp	current_cooling_status_prop;
+	current_cooling_status_prop.set_description("Display the current status of the cooling system.");
+	current_cooling_status->set_default_properties(current_cooling_status_prop);
+	att_list.push_back(current_cooling_status);
 
-	//	Attribute : initialDelayTime
-	initialDelayTimeAttrib	*initial_delay_time = new initialDelayTimeAttrib();
-	Tango::UserDefaultAttrProp	initial_delay_time_prop;
-	initial_delay_time_prop.set_standard_unit("ms");
-	initial_delay_time_prop.set_display_unit("ms");
-	initial_delay_time->set_default_properties(initial_delay_time_prop);
-	att_list.push_back(initial_delay_time);
+	//	Attribute : temperatureTarget
+	temperatureTargetAttrib	*temperature_target = new temperatureTargetAttrib();
+	Tango::UserDefaultAttrProp	temperature_target_prop;
+	temperature_target_prop.set_unit("Celsius");
+	temperature_target_prop.set_display_unit("°C");
+	temperature_target_prop.set_format("%d");
+	temperature_target->set_default_properties(temperature_target_prop);
+	att_list.push_back(temperature_target);
 
-	//	Attribute : readoutDelayTime
-	readoutDelayTimeAttrib	*readout_delay_time = new readoutDelayTimeAttrib();
-	Tango::UserDefaultAttrProp	readout_delay_time_prop;
-	readout_delay_time_prop.set_standard_unit("ms");
-	readout_delay_time_prop.set_display_unit("ms");
-	readout_delay_time->set_default_properties(readout_delay_time_prop);
-	att_list.push_back(readout_delay_time);
+	//	Attribute : temperature
+	temperatureAttrib	*temperature = new temperatureAttrib();
+	Tango::UserDefaultAttrProp	temperature_prop;
+	temperature_prop.set_unit("Celsius");
+	temperature_prop.set_display_unit("°C");
+	temperature_prop.set_format("%d");
+	temperature->set_default_properties(temperature_prop);
+	att_list.push_back(temperature);
 
-	//	Attribute : exposureMultiplier
-	exposureMultiplierAttrib	*exposure_multiplier = new exposureMultiplierAttrib();
-	att_list.push_back(exposure_multiplier);
+	//	Attribute : adcMode
+	adcModeAttrib	*adc_mode = new adcModeAttrib();
+	Tango::UserDefaultAttrProp	adc_mode_prop;
+	adc_mode_prop.set_description("Define the ADC frequency .<br>\nAvailable values are :<br>\n0-> 5 MHz<br>\n1-> 3 MHz<br>\n2-> 1 MHz<br>\n3-> 0.05 MHz<br>");
+	adc_mode->set_default_properties(adc_mode_prop);
+	att_list.push_back(adc_mode);
 
-	//	Attribute : gapMultiplier
-	gapMultiplierAttrib	*gap_multiplier = new gapMultiplierAttrib();
-	att_list.push_back(gap_multiplier);
-
-	//	Attribute : maskCorrection
-	maskCorrectionAttrib	*mask_correction = new maskCorrectionAttrib();
-	att_list.push_back(mask_correction);
-
-	//	Attribute : biasCorrection
-	biasCorrectionAttrib	*bias_correction = new biasCorrectionAttrib();
-	att_list.push_back(bias_correction);
-
-	//	Attribute : darkCorrection
-	darkCorrectionAttrib	*dark_correction = new darkCorrectionAttrib();
-	att_list.push_back(dark_correction);
-
-	//	Attribute : floodCorrection
-	floodCorrectionAttrib	*flood_correction = new floodCorrectionAttrib();
-	att_list.push_back(flood_correction);
-
-	//	Attribute : geomCorrection
-	geomCorrectionAttrib	*geom_correction = new geomCorrectionAttrib();
-	att_list.push_back(geom_correction);
-
-	//	Attribute : offsetCorrection
-	offsetCorrectionAttrib	*offset_correction = new offsetCorrectionAttrib();
-	att_list.push_back(offset_correction);
-
-	//	Attribute : linearization
-	linearizationAttrib	*linearization = new linearizationAttrib();
-	att_list.push_back(linearization);
-
-	//	Attribute : highSpeed
-	highSpeedAttrib	*high_speed = new highSpeedAttrib();
-	att_list.push_back(high_speed);
+	//	Attribute : currentRate
+	currentRateAttrib	*current_rate = new currentRateAttrib();
+	Tango::UserDefaultAttrProp	current_rate_prop;
+	current_rate_prop.set_description("Display the current ADC frequency in Mhz");
+	current_rate->set_default_properties(current_rate_prop);
+	att_list.push_back(current_rate);
 
 	//	End of Automatic code generation
 	//-------------------------------------------------------------
@@ -339,12 +312,12 @@ void AviexCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCDClass::get_class_property()
+// method : 		AndorCCDClass::get_class_property()
 // 
 // description : 	Read the class properties from database.
 //
 //-----------------------------------------------------------------------------
-void AviexCCDClass::get_class_property()
+void AndorCCDClass::get_class_property()
 {
 	//	Initialize your default values here (if not done with  POGO).
 	//------------------------------------------------------------------
@@ -367,7 +340,7 @@ void AviexCCDClass::get_class_property()
 
 //+----------------------------------------------------------------------------
 //
-// method : 	AviexCCDClass::set_default_property
+// method : 	AndorCCDClass::set_default_property
 // 
 // description: Set default property (class and device) for wizard.
 //              For each property, add to wizard property name and description
@@ -375,7 +348,7 @@ void AviexCCDClass::get_class_property()
 //              store it in a DbDatum.
 //
 //-----------------------------------------------------------------------------
-void AviexCCDClass::set_default_property()
+void AndorCCDClass::set_default_property()
 {
 	string	prop_name;
 	string	prop_desc;
@@ -384,11 +357,11 @@ void AviexCCDClass::set_default_property()
 	vector<string>	vect_data;
 	//	Set Default Class Properties
 	//	Set Default Device Properties
-	prop_name = "DetectorID";
-	prop_desc = "Detector Name.";
-	prop_def  = "MUST_BE_DEFINED";
+	prop_name = "DetectorNum";
+	prop_desc = "Detector Number.";
+	prop_def  = "-1";
 	vect_data.clear();
-	vect_data.push_back("MUST_BE_DEFINED");
+	vect_data.push_back("-1");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -399,11 +372,11 @@ void AviexCCDClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
-	prop_name = "MxDatabaseFileFullName";
-	prop_desc = "The path & the Name of the Mx database file .<br>\n";
-	prop_def  = "MUST_BE_DEFINED";
+	prop_name = "CoolingStatusAtStartUp";
+	prop_desc = "Define wich Cooling status (ON/OFF) must be selected when start the device.";
+	prop_def  = "OFF";
 	vect_data.clear();
-	vect_data.push_back("MUST_BE_DEFINED");
+	vect_data.push_back("OFF");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -414,26 +387,11 @@ void AviexCCDClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
-	prop_name = "MemorizedInternalAcquisitionMode";
-	prop_desc = "Memorize/Define the internalAcquisitionMode attribute at Init device<br>\nAvailables values :<br>\n- ONESHOT<br>\n- CONTINUOUS<br>\n- MULTIFRAME<br>\n- GEOMETRICAL<br>\n- MEASURE_DARK_FRAME<br>";
-	prop_def  = "MULTIFRAME";
-	vect_data.clear();
-	vect_data.push_back("MULTIFRAME");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedCorrectionFlags";
+	prop_name = "MemorizedADCMode";
 	prop_desc = "";
-	prop_def  = "0";
+	prop_def  = "2";
 	vect_data.clear();
-	vect_data.push_back("0");
+	vect_data.push_back("2");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -444,101 +402,11 @@ void AviexCCDClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
-	prop_name = "MemorizedInitialDelayTime";
+	prop_name = "MemorizedTemperatureTarget";
 	prop_desc = "";
-	prop_def  = "0";
+	prop_def  = "-10";
 	vect_data.clear();
-	vect_data.push_back("0");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedReadoutDelayTime";
-	prop_desc = "";
-	prop_def  = "0";
-	vect_data.clear();
-	vect_data.push_back("0");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedExposureMultiplier";
-	prop_desc = "";
-	prop_def  = "1.0";
-	vect_data.clear();
-	vect_data.push_back("1.0");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedGapMultiplier";
-	prop_desc = "";
-	prop_def  = "1.0";
-	vect_data.clear();
-	vect_data.push_back("1.0");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedOffsetCorrection";
-	prop_desc = "";
-	prop_def  = "false";
-	vect_data.clear();
-	vect_data.push_back("false");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedLinearization";
-	prop_desc = "";
-	prop_def  = "false";
-	vect_data.clear();
-	vect_data.push_back("false");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedHighSpeed";
-	prop_desc = "";
-	prop_def  = "false";
-	vect_data.clear();
-	vect_data.push_back("false");
+	vect_data.push_back("-10");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -552,12 +420,12 @@ void AviexCCDClass::set_default_property()
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		AviexCCDClass::write_class_property
+// method : 		AndorCCDClass::write_class_property
 // 
 // description : 	Set class description as property in database
 //
 //-----------------------------------------------------------------------------
-void AviexCCDClass::write_class_property()
+void AndorCCDClass::write_class_property()
 {
 	//	First time, check if database used
 	//--------------------------------------------
@@ -571,7 +439,7 @@ void AviexCCDClass::write_class_property()
 
 	//	Put title
 	Tango::DbDatum	title("ProjectTitle");
-	string	str_title("Device specific for Princeton CCD detector");
+	string	str_title("Device specific for Andor CCD detector");
 	title << str_title;
 	data.push_back(title);
 

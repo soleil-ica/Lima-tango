@@ -76,7 +76,7 @@ using namespace yat4tango;
  //-----------------------------------------------
 
 #define MAX_ATTRIBUTE_STRING_LENGTH     256
-const size_t LOG_BUFFER_DEPTH           = 1024;
+const size_t LOG_BUFFER_DEPTH = 1024;
 
 namespace LimaDetector_ns
 {
@@ -146,8 +146,8 @@ public :
 		Tango::DevString	*attr_detectorDescription_read;
 		Tango::DevString	*attr_detectorType_read;
 		Tango::DevString	*attr_detectorModel_read;
-		Tango::DevUShort	*attr_detectorWidthMax_read;
-		Tango::DevUShort	*attr_detectorHeightMax_read;
+		Tango::DevUShort	*attr_binnedWidthMax_read;
+		Tango::DevUShort	*attr_binnedHeightMax_read;
 		Tango::DevUShort	*attr_detectorPixelDepth_read;
 		Tango::DevString	*attr_triggerMode_read;
 		Tango::DevString	attr_triggerMode_write;
@@ -469,13 +469,13 @@ public :
  */
 	virtual void read_detectorModel(Tango::Attribute &attr);
 /**
- *	Extract real attribute values for detectorWidthMax acquisition result.
+ *	Extract real attribute values for binnedWidthMax acquisition result.
  */
-	virtual void read_detectorWidthMax(Tango::Attribute &attr);
+	virtual void read_binnedWidthMax(Tango::Attribute &attr);
 /**
- *	Extract real attribute values for detectorHeightMax acquisition result.
+ *	Extract real attribute values for binnedHeightMax acquisition result.
  */
-	virtual void read_detectorHeightMax(Tango::Attribute &attr);
+	virtual void read_binnedHeightMax(Tango::Attribute &attr);
 /**
  *	Extract real attribute values for detectorPixelDepth acquisition result.
  */
@@ -585,13 +585,13 @@ public :
  */
 	virtual bool is_detectorModel_allowed(Tango::AttReqType type);
 /**
- *	Read/Write allowed for detectorWidthMax attribute.
+ *	Read/Write allowed for binnedWidthMax attribute.
  */
-	virtual bool is_detectorWidthMax_allowed(Tango::AttReqType type);
+	virtual bool is_binnedWidthMax_allowed(Tango::AttReqType type);
 /**
- *	Read/Write allowed for detectorHeightMax attribute.
+ *	Read/Write allowed for binnedHeightMax attribute.
  */
-	virtual bool is_detectorHeightMax_allowed(Tango::AttReqType type);
+	virtual bool is_binnedHeightMax_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for detectorPixelDepth attribute.
  */
@@ -697,10 +697,6 @@ public :
  */
 	virtual bool is_CloseShutter_allowed(const CORBA::Any &any);
 /**
- *	Execution allowed for NexusResetBufferIndex command.
- */
-	virtual bool is_NexusResetBufferIndex_allowed(const CORBA::Any &any);
-/**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code
  *	@exception DevFailed
@@ -763,11 +759,6 @@ public :
  *	@exception DevFailed
  */
 	void	close_shutter();
-/**
- * Reset the nexus buffer index to index 1.
- *	@exception DevFailed
- */
-	void	nexus_reset_buffer_index();
 
 /**
  *	Read the device properties from database
@@ -817,15 +808,6 @@ public :
 protected :    
     //    Add your own data members here
     //-----------------------------------------
-    //- Store the values into the property
-    //- Properties stuff    
-    int                 find_index_from_property_name(Tango::DbData& dev_prop, string property_name);
-    template <class T>
-    void                create_property_if_empty(Tango::DbData& dev_prop,T value, string property_name);    
-    template <class T>
-    void                set_property(string property_name, T value);
-    template <class T>
-    T                   get_property(string property_name) ;
     
     //Create Yat::task to manage device Start/Snap/Stop commands
     bool                create_acquisition_task(void);    
