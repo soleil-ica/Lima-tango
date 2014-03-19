@@ -51,6 +51,7 @@
 #include "CtAcquisition.h"
 #include "CtImage.h"
 
+#include <yat4tango/PropertyHelper.h>
 #include <AviexInterface.h>
 #include <AviexCamera.h>
 

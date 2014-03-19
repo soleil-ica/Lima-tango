@@ -49,8 +49,6 @@
 //- YAT/YAT4TANGO
 #include <yat4tango/PropertyHelper.h>
 
-#endif
-
 
 #include "HwInterface.h"
 #include "CtControl.h"
