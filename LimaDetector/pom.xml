@@ -185,27 +185,28 @@
 						  </activation>
 						  <cpp>
 							<excludes>
-								<exclude>Princeton*.*</exclude>
+								<exclude>Ando*.*</exclude>								
 								<exclude>Pco*.*</exclude>
 								<exclude>PerkinElmer*.*</exclude>
-								<exclude>Andor3*.*</exclude> <!-- WIP -->			
-								<exclude>VieworksVP*.*</exclude> <!-- WIP -->		
-								<exclude>Aviex*.*</exclude> <!-- WIP -->												
+								<exclude>Princeton*.*</exclude>								
+								<exclude>Andor3*.*</exclude>
+								<exclude>VieworksVP*.*</exclude>
 							</excludes>
 							<defines>
 								<define>USE_GIGE</define>	<!-- Needed By Basler -->
-								<define>OS_UNIX</define>	<!-- Needed By ??? -->							
+								<define>OS_UNIX</define>	<!-- Needed By Aviex -->							
 								<!-- define wich detector you need to ENABLE -->
-								<!--<define>AVIEX_ENABLED</define>
+								<define>ADSC_ENABLED</define>   
+								<define>ANDOR_ENABLED</define>								
+								<define>AVIEX_ENABLED</define>
 								<define>BASLER_ENABLED</define>												 
 								<define>MARCCD_ENABLED</define>
-								<define>PILATUS_ENABLED</define>-->
-								<define>XPAD_ENABLED</define>
-								<!--<define>ADSC_ENABLED</define>   
-								<define>PROSILICA_ENABLED</define>-->
+								<define>PILATUS_ENABLED</define>
+								<define>PROSILICA_ENABLED</define>
 								<define>SIMULATOR_ENABLED</define>
-								<!--<define>ANDOR3_ENABLED</define>--> 	<!-- WIP -->
-								<!--<define>VIEWORKSVP_ENABLED</define>--> 	<!-- WIP -->
+								<define>XPAD_ENABLED</define>								
+								<!--<define>ANDOR3_ENABLED</define>-->
+								<!--<define>VIEWORKSVP_ENABLED</define>-->
 							</defines>
 							<!-- <systemIncludePaths>                
 								<systemIncludePath>/home/informatique/ica/langlois/ImXpad/xpix_2_1_0b/imxpad_lib/xpci_lib</systemIncludePath>
@@ -232,26 +233,23 @@
 							</activation>
 							<cpp>
 								<excludes>
+									<exclude>Adsc*.*</exclude>		
+									<exclude>Andor3*.*</exclude>																
 									<exclude>Aviex*.*</exclude>
 									<exclude>Basler*.*</exclude>
 									<exclude>MarCCD*.*</exclude>
+									<exclude>Pco*.*</exclude>									
 									<exclude>Pilatus*.*</exclude>
-									<exclude>Xpad*.*</exclude>
-									<exclude>Adsc*.*</exclude>
 									<exclude>Prosilica*.*</exclude>
-									<exclude>Andor3*.*</exclude>
-									<exclude>VieworksVP*.*</exclude>
-									<!--<exclude>Ando*.*</exclude>-->											
-									<!--<exclude>Princeton*.*</exclude>-->										
-									<!--<exclude>Pco*.*</exclude>-->
-									<!--<exclude>PerkinElmer*.*</exclude>-->																				
+									<exclude>VieworksVP*.*</exclude>																
+									<exclude>Xpad*.*</exclude>									
 								</excludes>
 								<defines>
 									<!-- define wich detector you need to ENABLE -->
-									<define>ANDOR_ENABLED</define>								
-									<define>PRINCETON_ENABLED</define>												 
-									<define>PCO_ENABLED</define>
+									<define>ANDOR_ENABLED</define>																		 
+									<!--<define>PCO_ENABLED</define>-->
 									<define>PERKINELMER_ENABLED</define>
+									<define>PRINCETON_ENABLED</define>											
 									<define>SIMULATOR_ENABLED</define>
 								</defines>
 								<systemIncludePaths>
