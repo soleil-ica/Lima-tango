@@ -179,52 +179,51 @@
 						
 					<specificConfigurations>
 						<specificConfiguration>
-							<id>Lima Linux</id>
-							<activation>
-								<os>Linux</os>
-							</activation>
-							<cpp>
-								<excludes>																											
-									<!--<exclude>Basler*.*</exclude>-->
-									<!--<exclude>MarCCD*.*</exclude>-->
-									<!--<exclude>Pilatus*.*</exclude>-->
-									<!--<exclude>Xpad*.*</exclude>-->
-									<!--<exclude>Adsc*.*</exclude>-->
-									<!--<exclude>Prosilica*.*</exclude>-->
-									<exclude>Ando*.*</exclude>												
-									<exclude>Princeton*.*</exclude>										
-									<exclude>Pco*.*</exclude>
-									<exclude>PerkinElmer*.*</exclude>										
-									<exclude>Andor3*.*</exclude>
-									<exclude>VieworksVP*.*</exclude>
-								</excludes>
-								<defines>
-									<define>USE_GIGE</define>	
-									<define>OS_UNIX</define>								
-									<!-- define wich detector you need to ENABLE -->
-									<define>AVIEX_ENABLED</define>
-									<define>BASLER_ENABLED</define>												 
-									<define>MARCCD_ENABLED</define>
-									<define>PILATUS_ENABLED</define>
-									<define>XPAD_ENABLED</define>
-									<define>ADSC_ENABLED</define>   
-									<define>PROSILICA_ENABLED</define>
-									<define>SIMULATOR_ENABLED</define>
-									<!--<define>ANDOR3_ENABLED</define>--> 	<!-- WIP -->
-									<!--<define>VIEWORKSVP_ENABLED</define>--> 	<!-- WIP -->
-								</defines>
-								<!-- define less verbose mode for gcc-->
-								<options>
-									<option>-w</option>
-								</options>				
-								<systemIncludePaths>                
-									<!--<systemIncludePath>/home/informatique/ica/langlois/Andor3/andor/inc</systemIncludePath>-->
-								</systemIncludePaths>
-								<!-- define less verbose mode for gcc-->
-								<options>
-									<option>-w</option>
-								</options>
-							</cpp>
+						  <id>Lima Linux</id>
+						  <activation>
+							<os>Linux</os>
+						  </activation>
+						  <cpp>
+							<excludes>
+								<exclude>Princeton*.*</exclude>
+								<exclude>Pco*.*</exclude>
+								<exclude>PerkinElmer*.*</exclude>
+								<exclude>Andor3*.*</exclude> <!-- WIP -->			
+								<exclude>VieworksVP*.*</exclude> <!-- WIP -->		
+								<exclude>Aviex*.*</exclude> <!-- WIP -->												
+							</excludes>
+							<defines>
+								<define>USE_GIGE</define>	<!-- Needed By Basler -->
+								<define>OS_UNIX</define>	<!-- Needed By ??? -->							
+								<!-- define wich detector you need to ENABLE -->
+								<!--<define>AVIEX_ENABLED</define>
+								<define>BASLER_ENABLED</define>												 
+								<define>MARCCD_ENABLED</define>
+								<define>PILATUS_ENABLED</define>-->
+								<define>XPAD_ENABLED</define>
+								<!--<define>ADSC_ENABLED</define>   
+								<define>PROSILICA_ENABLED</define>-->
+								<define>SIMULATOR_ENABLED</define>
+								<!--<define>ANDOR3_ENABLED</define>--> 	<!-- WIP -->
+								<!--<define>VIEWORKSVP_ENABLED</define>--> 	<!-- WIP -->
+							</defines>
+							<!-- <systemIncludePaths>                
+								<systemIncludePath>/home/informatique/ica/langlois/ImXpad/xpix_2_1_0b/imxpad_lib/xpci_lib</systemIncludePath>
+							</systemIncludePaths> -->
+							<!-- define less verbose mode for gcc-->
+							<options>
+								<option>-w</option>
+							</options>
+						  </cpp>
+						  <linker>
+							<!-- <libs>
+								<lib>
+									<name>xpci_lib</name>
+									<type>static</type>
+									<directory>/home/informatique/ica/langlois/ImXpad/xpix_2_1_0b/imxpad_lib/xpci_lib</directory>
+								</lib>
+							</libs> -->
+						</linker>
 						</specificConfiguration>
 						<specificConfiguration>
 							<id>Lima Windows</id>
