@@ -51,18 +51,32 @@ namespace SimulatorCCD_ns
 {//=====================================
 //	Define classes for attributes
 //=====================================
-class exposureTimeAttrib: public Tango::Attr
+class fillTypeAttrib: public Tango::Attr
 {
 public:
-	exposureTimeAttrib():Attr("exposureTime", Tango::DEV_DOUBLE, Tango::READ_WRITE) {};
-	~exposureTimeAttrib() {};
+	fillTypeAttrib():Attr("fillType", Tango::DEV_STRING, Tango::READ_WRITE) {};
+	~fillTypeAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<SimulatorCCD *>(dev))->read_exposureTime(att);}
+	{(static_cast<SimulatorCCD *>(dev))->read_fillType(att);}
 	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-	{(static_cast<SimulatorCCD *>(dev))->write_exposureTime(att);}
+	{(static_cast<SimulatorCCD *>(dev))->write_fillType(att);}
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<SimulatorCCD *>(dev))->is_exposureTime_allowed(ty);}
+	{return (static_cast<SimulatorCCD *>(dev))->is_fillType_allowed(ty);}
+};
+
+class growFactorAttrib: public Tango::Attr
+{
+public:
+	growFactorAttrib():Attr("growFactor", Tango::DEV_DOUBLE, Tango::READ_WRITE) {};
+	~growFactorAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<SimulatorCCD *>(dev))->read_growFactor(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<SimulatorCCD *>(dev))->write_growFactor(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<SimulatorCCD *>(dev))->is_growFactor_allowed(ty);}
 };
 
 //=========================================

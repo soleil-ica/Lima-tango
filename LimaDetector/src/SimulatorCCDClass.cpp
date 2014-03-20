@@ -247,18 +247,22 @@ void SimulatorCCDClass::device_factory(const Tango::DevVarStringArray *devlist_p
 //-----------------------------------------------------------------------------
 void SimulatorCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 {
-	//	Attribute : exposureTime
-	exposureTimeAttrib	*exposure_time = new exposureTimeAttrib();
-	Tango::UserDefaultAttrProp	exposure_time_prop;
-	exposure_time_prop.set_unit("ms");
-	exposure_time_prop.set_standard_unit("ms");
-	exposure_time_prop.set_display_unit("ms");
-	exposure_time_prop.set_format("%7.2f");
-	exposure_time_prop.set_description("Set/Get exposure time (in ms)");
-	exposure_time->set_default_properties(exposure_time_prop);
-	exposure_time->set_memorized();
-	exposure_time->set_memorized_init(false);
-	att_list.push_back(exposure_time);
+	//	Attribute : growFactor
+	growFactorAttrib	*grow_factor = new growFactorAttrib();
+	Tango::UserDefaultAttrProp	grow_factor_prop;
+	grow_factor_prop.set_label("Grow Factor");
+	grow_factor_prop.set_format("%7.2f");
+	grow_factor_prop.set_description("Grow factor");
+	grow_factor->set_default_properties(grow_factor_prop);
+	att_list.push_back(grow_factor);
+
+	//	Attribute : fillType
+	fillTypeAttrib	*fill_type = new fillTypeAttrib();
+	Tango::UserDefaultAttrProp	fill_type_prop;
+	fill_type_prop.set_label("Fill type");
+	fill_type_prop.set_description("GAUSS<br>\nDIFFRACTION<br>\n");
+	fill_type->set_default_properties(fill_type_prop);
+	att_list.push_back(fill_type);
 
 	//	End of Automatic code generation
 	//-------------------------------------------------------------
@@ -311,6 +315,36 @@ void SimulatorCCDClass::set_default_property()
 	vector<string>	vect_data;
 	//	Set Default Class Properties
 	//	Set Default Device Properties
+	prop_name = "MemorizedFillType";
+	prop_desc = "memorize the value of the fillType attribute.";
+	prop_def  = "GAUSS";
+	vect_data.clear();
+	vect_data.push_back("GAUSS");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedGrowFactor";
+	prop_desc = "";
+	prop_def  = "1.0";
+	vect_data.clear();
+	vect_data.push_back("1.0");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
 }
 //+----------------------------------------------------------------------------
 //
@@ -333,7 +367,7 @@ void SimulatorCCDClass::write_class_property()
 
 	//	Put title
 	Tango::DbDatum	title("ProjectTitle");
-	string	str_title("");
+	string	str_title("Lima");
 	title << str_title;
 	data.push_back(title);
 

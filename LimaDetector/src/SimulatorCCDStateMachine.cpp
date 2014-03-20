@@ -63,16 +63,14 @@ namespace SimulatorCCD_ns
 
 //+----------------------------------------------------------------------------
 //
-// method : 		SimulatorCCD::is_exposureTime_allowed
+// method : 		SimulatorCCD::is_growFactor_allowed
 // 
-// description : 	Read/Write allowed for exposureTime attribute.
+// description : 	Read/Write allowed for growFactor attribute.
 //
 //-----------------------------------------------------------------------------
-bool SimulatorCCD::is_exposureTime_allowed(Tango::AttReqType type)
+bool SimulatorCCD::is_growFactor_allowed(Tango::AttReqType type)
 {
-	if (get_state() == Tango::INIT	||
-		get_state() == Tango::FAULT	||
-		get_state() == Tango::RUNNING)
+	if (get_state() == Tango::FAULT)
 	{
 		//	End of Generated Code
 		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
@@ -84,6 +82,35 @@ bool SimulatorCCD::is_exposureTime_allowed(Tango::AttReqType type)
 		{
            return true;
 		}	
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		SimulatorCCD::is_fillType_allowed
+// 
+// description : 	Read/Write allowed for fillType attribute.
+//
+//-----------------------------------------------------------------------------
+bool SimulatorCCD::is_fillType_allowed(Tango::AttReqType type)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
+	{
+		//	End of Generated Code
+		//	End of Generated Code
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
+		
+		if ( get_state()==Tango::FAULT && is_device_initialized() )
+		{
+           return true;
+		}
 		//	Re-Start of Generated Code
 		return false;
 	}

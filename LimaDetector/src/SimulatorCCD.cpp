@@ -51,11 +51,18 @@ static const char *RcsId = "$Id:  $";
 //  Status  |  dev_status()
 //
 //===================================================================
+#ifdef WIN32
+#include <tango.h>
+#include <PogoHelper.h>
+#endif
+
 #include <SimulatorCCD.h>
 #include <SimulatorCCDClass.h>
 
+#ifndef WIN32
 #include <tango.h>
 #include <PogoHelper.h>
+#endif
 
 
 namespace SimulatorCCD_ns
@@ -71,20 +78,21 @@ namespace SimulatorCCD_ns
 //      - s : Device name
 //
 //-----------------------------------------------------------------------------
-SimulatorCCD::SimulatorCCD(Tango::DeviceClass *cl,string &s)
-:Tango::Device_4Impl(cl,s.c_str())
+
+SimulatorCCD::SimulatorCCD(Tango::DeviceClass *cl, string &s)
+: Tango::Device_4Impl(cl, s.c_str())
 {
     init_device();
 }
 
-SimulatorCCD::SimulatorCCD(Tango::DeviceClass *cl,const char *s)
-:Tango::Device_4Impl(cl,s)
+SimulatorCCD::SimulatorCCD(Tango::DeviceClass *cl, const char *s)
+: Tango::Device_4Impl(cl, s)
 {
     init_device();
 }
 
-SimulatorCCD::SimulatorCCD(Tango::DeviceClass *cl,const char *s,const char *d)
-:Tango::Device_4Impl(cl,s,d)
+SimulatorCCD::SimulatorCCD(Tango::DeviceClass *cl, const char *s, const char *d)
+: Tango::Device_4Impl(cl, s, d)
 {
     init_device();
 }
@@ -95,18 +103,13 @@ SimulatorCCD::SimulatorCCD(Tango::DeviceClass *cl,const char *s,const char *d)
 // description :     will be called at device destruction or at init command.
 //
 //-----------------------------------------------------------------------------
+
 void SimulatorCCD::delete_device()
 {
-    INFO_STREAM << "SimulatorCCD::SimulatorCCD() delete device " << device_name << endl;        
-	//    Delete device allocated objects
-    DELETE_SCALAR_ATTRIBUTE(attr_exposureTime_read);
-
-    //!!!! ONLY LimaDetector device can do this !!!!
-    //if(m_ct!=0)
-    //{
-    //    ControlFactory::instance().reset("SimulatorCCD");
-    //    m_ct = 0;
-    //}
+    INFO_STREAM << "SimulatorCCD::SimulatorCCD() delete device " << device_name << endl;
+    //    Delete device allocated objects
+    DELETE_SCALAR_ATTRIBUTE(attr_growFactor_read);
+    DELETE_DEVSTRING_ATTRIBUTE(attr_fillType_read);
 }
 
 //+----------------------------------------------------------------------------
@@ -116,13 +119,17 @@ void SimulatorCCD::delete_device()
 // description :     will be called at device initialization.
 //
 //-----------------------------------------------------------------------------
+
 void SimulatorCCD::init_device()
 {
     INFO_STREAM << "SimulatorCCD::SimulatorCCD() create device " << device_name << endl;
 
     // Initialise variables to default values
     //--------------------------------------------
-    CREATE_SCALAR_ATTRIBUTE(attr_exposureTime_read,1.0);
+    get_device_property();
+    CREATE_SCALAR_ATTRIBUTE(attr_growFactor_read);
+    CREATE_DEVSTRING_ATTRIBUTE(attr_fillType_read,  MAX_ATTRIBUTE_STRING_LENGTH);
+
     //By default INIT, need to ensure that all objets are OK before set the device to STANDBY
     set_state(Tango::INIT);
     m_is_device_initialized = false;
@@ -136,38 +143,122 @@ void SimulatorCCD::init_device()
         m_ct = ControlFactory::instance().get_control("SimulatorCCD");
 
         //- get interface to specific camera
-        m_hw = dynamic_cast<lima::Simulator::Interface*>(m_ct->hwInterface());
-        if(m_hw==0)
+        m_hw = dynamic_cast<Simulator::Interface*> (m_ct->hwInterface());
+        if (m_hw == 0)
         {
-            INFO_STREAM<<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"SimulatorCCD"<<") !"<< endl;
-            m_status_message <<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"SimulatorCCD"<<") !"<< endl;
+            INFO_STREAM << "Initialization Failed : Unable to get the interface of camera plugin " << "(" << "SimulatorCCD" << ") !" << endl;
+            m_status_message << "Initialization Failed : Unable to get the interface of camera plugin " << "(" << "SimulatorCCD" << ") !" << endl;
             m_is_device_initialized = false;
             set_state(Tango::FAULT);
             return;
         }
 
+        //- get camera to specific detector
+        m_camera = &(m_hw->getCamera());
+        if (NULL == m_camera)
+        {
+            INFO_STREAM << "Initialization Failed : Unable to get the camera of plugin !" << endl;
+            m_status_message << "Initialization Failed : Unable to get the camera object !" << endl;
+            m_is_device_initialized = false;
+            set_state(Tango::FAULT);
+            return;
+        }
+
+		// write fillType At Init 
+		INFO_STREAM << "Write tango hardware at Init - fillType." << endl;		
+        Tango::WAttribute &fillType = dev_attr->get_w_attr_by_name("fillType");
+        m_fillType = memorizedFillType;
+        strcpy(*attr_fillType_read, memorizedFillType.c_str());
+        fillType.set_write_value(memorizedFillType);
+        write_fillType(fillType);
+		
+		// write growFactor At Init 
+		INFO_STREAM << "Write tango hardware at Init - growFactor." << endl;
+        Tango::WAttribute &growFactor = dev_attr->get_w_attr_by_name("growFactor");
+        *attr_growFactor_read = attr_growFactor_write = memorizedGrowFactor;
+        growFactor.set_write_value(memorizedGrowFactor);
+        write_growFactor(growFactor);		
+
     }
-    catch(lima::Exception& e)
+    catch (Exception& e)
     {
-        INFO_STREAM<<"Initialization Failed : "<<e.getErrMsg()<<endl;
-        m_status_message <<"Initialization Failed : "<<e.getErrMsg( )<< endl;
+        INFO_STREAM << "Initialization Failed : " << e.getErrMsg() << endl;
+        m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
         m_is_device_initialized = false;
         set_state(Tango::FAULT);
         return;
     }
-    catch(...)
+    catch (...)
     {
-        INFO_STREAM<<"Initialization Failed : UNKNOWN"<<endl;
-        m_status_message <<"Initialization Failed : UNKNOWN"<< endl;
+        INFO_STREAM << "Initialization Failed : UNKNOWN" << endl;
+        m_status_message << "Initialization Failed : UNKNOWN" << endl;
         set_state(Tango::FAULT);
         m_is_device_initialized = false;
         return;
     }
     m_is_device_initialized = true;
     set_state(Tango::STANDBY);
-    this->dev_state();
+    dev_state();
 }
 
+
+//+----------------------------------------------------------------------------
+//
+// method : 		SimulatorCCD::get_device_property()
+//
+// description : 	Read the device properties from database.
+//
+//-----------------------------------------------------------------------------
+
+void SimulatorCCD::get_device_property()
+{
+    //	Initialize your default values here (if not done with  POGO).
+    //------------------------------------------------------------------
+
+    //	Read device properties from database.(Automatic code generation)
+    //------------------------------------------------------------------
+	Tango::DbData	dev_prop;
+	dev_prop.push_back(Tango::DbDatum("MemorizedFillType"));
+	dev_prop.push_back(Tango::DbDatum("MemorizedGrowFactor"));
+
+	//	Call database and extract values
+	//--------------------------------------------
+	if (Tango::Util::instance()->_UseDb==true)
+		get_db_device()->get_property(dev_prop);
+	Tango::DbDatum	def_prop, cl_prop;
+	SimulatorCCDClass	*ds_class =
+		(static_cast<SimulatorCCDClass *>(get_device_class()));
+	int	i = -1;
+
+	//	Try to initialize MemorizedFillType from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedFillType;
+	else {
+		//	Try to initialize MemorizedFillType from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedFillType;
+	}
+	//	And try to extract MemorizedFillType value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedFillType;
+
+	//	Try to initialize MemorizedGrowFactor from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedGrowFactor;
+	else {
+		//	Try to initialize MemorizedGrowFactor from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedGrowFactor;
+	}
+	//	And try to extract MemorizedGrowFactor value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedGrowFactor;
+
+
+
+    //	End of Automatic code generation
+    //------------------------------------------------------------------
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "GAUSS", "MemorizedFillType");
+	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "1.0", "MemorizedGrowFactor");
+}
 //+----------------------------------------------------------------------------
 //
 // method :         SimulatorCCD::always_executed_hook()
@@ -175,10 +266,11 @@ void SimulatorCCD::init_device()
 // description :     method always executed before any command is executed
 //
 //-----------------------------------------------------------------------------
+
 void SimulatorCCD::always_executed_hook()
 {
-	DEBUG_STREAM << "SimulatorCCD::always_executed_hook() entering... "<< endl;
-	
+    DEBUG_STREAM << "SimulatorCCD::always_executed_hook() entering... " << endl;
+
     //- update state
     dev_state();
 
@@ -190,89 +282,213 @@ void SimulatorCCD::always_executed_hook()
 // description :     Hardware acquisition for attributes.
 //
 //-----------------------------------------------------------------------------
+
 void SimulatorCCD::read_attr_hardware(vector<long> &attr_list)
 {
-    DEBUG_STREAM << "SimulatorCCD::read_attr_hardware(vector<long> &attr_list) entering... "<< endl;
+    DEBUG_STREAM << "SimulatorCCD::read_attr_hardware(vector<long> &attr_list) entering... " << endl;
     //    Add your own code here
 }
 //+----------------------------------------------------------------------------
 //
-// method :         SimulatorCCD::read_exposureTime
+// method : 		SimulatorCCD::read_fillType
 //
-// description :     Extract real attribute values for exposureTime acquisition result.
+// description : 	Extract real attribute values for fillType acquisition result.
 //
 //-----------------------------------------------------------------------------
-void SimulatorCCD::read_exposureTime(Tango::Attribute &attr)
+
+void SimulatorCCD::read_fillType(Tango::Attribute &attr)
 {
-    DEBUG_STREAM << "SimulatorCCD::read_exposureTime(Tango::Attribute &attr) entering... "<< endl;
-    if(m_ct!=0)
+    DEBUG_STREAM << "SimulatorCCD::read_fillType(Tango::Attribute &attr) entering... " << endl;
+    try
     {
-        try
+        std::string strFillType;
+        FrameBuilder::FillType eFillType;
+        m_camera->getFrameBuilder()->getFillType(eFillType);
+
+        switch (eFillType)
         {
-            double exposure;
-            m_ct->acquisition()->getAcqExpoTime(exposure);
-            *attr_exposureTime_read = (Tango::DevDouble)(exposure*1000.0);
-            attr.set_value(attr_exposureTime_read);
+            case FrameBuilder::FillType::Gauss:			strFillType = C_STR_GAUSS;
+                break;
+            case FrameBuilder::FillType::Diffraction:	strFillType = C_STR_DIFFRACTION;
+                break;
+            default:
+            {
+                Tango::Except::throw_exception(
+                                               static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                               static_cast<const char*> ("Unexpected filltype value."),
+                                               static_cast<const char*> ("SimulatorCCD::read_fillType"));
+            }
         }
-        catch(Tango::DevFailed& df)
-        {
-            ERROR_STREAM << df << endl;
-            //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-                        static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                        static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                        static_cast<const char*> ("SimulatorCCD::read_exposureTime"));
-        }
-        catch(lima::Exception& e)
-        {
-            ERROR_STREAM << e.getErrMsg() << endl;
-            //- throw exception
-            Tango::Except::throw_exception(
-                        static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                        static_cast<const char*> (e.getErrMsg().c_str()),
-                        static_cast<const char*> ("SimulatorCCD::read_exposureTime"));
-        }
+
+
+        strcpy(*attr_fillType_read, strFillType.c_str());
+        attr.set_value(attr_fillType_read);
     }
-	DEBUG_STREAM << "SimulatorCCD::read_exposureTime() ending... "<< endl;		
+    catch (Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
+                                          static_cast<const char*> ("SimulatorCCD::read_fillType"));
+    }
+    catch (Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+                                       static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                       static_cast<const char*> (e.getErrMsg().c_str()),
+                                       static_cast<const char*> ("SimulatorCCD::read_fillType"));
+    }
 }
 
 //+----------------------------------------------------------------------------
 //
-// method :         SimulatorCCD::write_exposureTime
+// method : 		SimulatorCCD::write_fillType
 //
-// description :     Write exposureTime attribute values to hardware.
+// description : 	Write fillType attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
-void SimulatorCCD::write_exposureTime(Tango::WAttribute &attr)
+
+void SimulatorCCD::write_fillType(Tango::WAttribute &attr)
 {
-    DEBUG_STREAM << "SimulatorCCD::write_exposureTime(Tango::WAttribute &attr) entering... "<< endl;
-    if(m_ct!=0)
+    DEBUG_STREAM << "SimulatorCCD::write_fillType(Tango::WAttribute &attr) entering... " << endl;
+    try
+    {
+		m_fillType = *attr_fillType_read;//memorize previous valid value
+        attr.get_write_value(attr_fillType_write);
+        string current = attr_fillType_write;
+        transform(current.begin(), current.end(), current.begin(), ::toupper);
+        if ((current != C_STR_GAUSS) &&
+            (current != C_STR_DIFFRACTION)
+            )
+        {            
+			delete[] attr_fillType_write;
+			attr_fillType_write = new char [m_fillType.size() + 1];			
+            strcpy(attr_fillType_write, m_fillType.c_str());
+            Tango::Except::throw_exception((const char*) ("CONFIGURATION_ERROR"),
+                                           (const char*) ("Possible fillType values are:"
+                                           "\n- GAUSS"
+                                           "\n- DIFFRACTION"),
+                                           (const char*) ("SimulatorCCD::write_fillType"));
+        }
+
+        //- THIS IS AN AVAILABLE FILLTYPE
+        m_fillType = current;
+
+        if (C_STR_GAUSS == m_fillType)
+            m_camera->getFrameBuilder()->setFillType(FrameBuilder::FillType::Gauss);
+        else if (C_STR_DIFFRACTION == m_fillType)
+            m_camera->getFrameBuilder()->setFillType(FrameBuilder::FillType::Diffraction);
+		
+        yat4tango::PropertyHelper::set_property(this, "MemorizedFillType", m_fillType);
+    }
+    catch (Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df,
+                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
+                                          static_cast<const char*> ("SimulatorCCD::write_fillType"));
+    }
+    catch (Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception(
+                                       static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                       static_cast<const char*> (e.getErrMsg().c_str()),
+                                       static_cast<const char*> ("SimulatorCCD::write_fillType"));
+    }
+
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		SimulatorCCD::read_growFactor
+//
+// description : 	Extract real attribute values for growFactor acquisition result.
+//
+//-----------------------------------------------------------------------------
+
+void SimulatorCCD::read_growFactor(Tango::Attribute &attr)
+{
+    DEBUG_STREAM << "SimulatorCCD::read_growFactor(Tango::Attribute &attr) entering... " << endl;
+    assert(NULL != m_ct);
+    if (NULL != m_ct)
     {
         try
         {
-            attr.get_write_value(attr_exposureTime_write);
-            m_ct->acquisition()->setAcqExpoTime((double)(attr_exposureTime_write/1000.0));
+            double growFactor;
+            m_camera->getFrameBuilder()->getGrowFactor(growFactor);
+            *attr_growFactor_read = Tango::DevDouble(growFactor);
+            attr.set_value(attr_growFactor_read);
         }
-        catch(Tango::DevFailed& df)
+        catch (Tango::DevFailed& df)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
             Tango::Except::re_throw_exception(df,
-                        static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                        static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                        static_cast<const char*> ("SimulatorCCD::write_exposureTime"));
+                                              static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                              static_cast<const char*> (string(df.errors[0].desc).c_str()),
+                                              static_cast<const char*> ("SimulatorCCD::read_growFactor"));
         }
-        catch(lima::Exception& e)
+        catch (lima::Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
             Tango::Except::throw_exception(
-                        static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                        static_cast<const char*> (e.getErrMsg().c_str()),
-                        static_cast<const char*> ("SimulatorCCD::write_exposureTime"));
+                                           static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                           static_cast<const char*> (e.getErrMsg().c_str()),
+                                           static_cast<const char*> ("SimulatorCCD::read_growFactor"));
         }
     }
-	DEBUG_STREAM << "SimulatorCCD::write_exposureTime() ending... "<< endl;		
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		SimulatorCCD::write_growFactor
+//
+// description : 	Write growFactor attribute values to hardware.
+//
+//-----------------------------------------------------------------------------
+
+void SimulatorCCD::write_growFactor(Tango::WAttribute &attr)
+{
+    DEBUG_STREAM << "SimulatorCCD::write_growFactor(Tango::WAttribute &attr) entering... " << endl;
+
+    assert(NULL != m_ct);
+    if (NULL != m_ct)
+    {
+        try
+        {
+            attr.get_write_value(attr_growFactor_write);
+            double growFactor;
+            m_camera->getFrameBuilder()->setGrowFactor(attr_growFactor_write);
+			yat4tango::PropertyHelper::set_property(this, "MemorizedGrowFactor", attr_growFactor_write);			
+        }
+        catch (Tango::DevFailed& df)
+        {
+            ERROR_STREAM << df << endl;
+            //- rethrow exception
+            Tango::Except::re_throw_exception(df,
+                                              static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                              static_cast<const char*> (string(df.errors[0].desc).c_str()),
+                                              static_cast<const char*> ("SimulatorCCD::write_growFactor"));
+        }
+        catch (lima::Exception& e)
+        {
+            ERROR_STREAM << e.getErrMsg() << endl;
+            //- throw exception
+            Tango::Except::throw_exception(
+                                           static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                                           static_cast<const char*> (e.getErrMsg().c_str()),
+                                           static_cast<const char*> ("SimulatorCCD::write_growFactor"));
+        }
+    }
 }
 
 
@@ -287,33 +503,46 @@ void SimulatorCCD::write_exposureTime(Tango::WAttribute &attr)
  *
  */
 //+------------------------------------------------------------------
+
 Tango::DevState SimulatorCCD::dev_state()
 {
-    Tango::DevState    argout = DeviceImpl::dev_state();
+    Tango::DevState argout = DeviceImpl::dev_state();
     DEBUG_STREAM << "SimulatorCCD::dev_state(): entering... !" << endl;
     //    Add your own code to control device here
-    stringstream    DeviceStatus;
-    DeviceStatus     << "";
-    Tango::DevState DeviceState    = Tango::STANDBY;
-    if(!m_is_device_initialized )
+    stringstream DeviceStatus;
+    DeviceStatus << "";
+    Tango::DevState DeviceState = Tango::STANDBY;
+    if (!m_is_device_initialized)
     {
-        DeviceState            = Tango::FAULT;
-        DeviceStatus        << m_status_message.str();
+        DeviceState = Tango::FAULT;
+        DeviceStatus << m_status_message.str();
     }
     else
-	{
-		//state&status are retrieved from generic device
-		DeviceState = ControlFactory::instance().get_state();
-		DeviceStatus << ControlFactory::instance().get_status();		
+    {
+        //state&status are retrieved from generic device
+        DeviceState = ControlFactory::instance().get_state();
+        DeviceStatus << ControlFactory::instance().get_status();
     }
 
     set_state(DeviceState);
     set_status(DeviceStatus.str());
 
     argout = DeviceState;
-	DEBUG_STREAM << "SimulatorCCD::dev_state() ending... "<< endl;		
+    DEBUG_STREAM << "SimulatorCCD::dev_state() ending... " << endl;
     return argout;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
