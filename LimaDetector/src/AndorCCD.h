@@ -43,14 +43,12 @@
 
  //    Add your own constant definitions here.
  //-----------------------------------------------
-#ifdef WIN32
 #include "tango.h"
 #include "Factory.h"
 
 //- YAT/YAT4TANGO
 #include <yat4tango/PropertyHelper.h>
 
-#endif
 
 
 #include "HwInterface.h"
@@ -60,13 +58,6 @@
 #include <AndorInterface.h>
 #include <AndorCamera.h>
 
-#ifndef WIN32
-#include "tango.h"
-#include "Factory.h"
-
-//- YAT/YAT4TANGO
-#include <yat4tango/PropertyHelper.h>
-#endif
 
 #define MAX_ATTRIBUTE_STRING_LENGTH     256
 
