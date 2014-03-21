@@ -8,82 +8,15 @@ bool  ControlFactory::is_created = false;
 //-----------------------------------------------------------------------------------------
 void ControlFactory::initialize_pointers()
 {
-    my_control				= 0;
+    my_control			= 0;
+    my_camera           = 0;
+    my_interface        = 0;
 
-#ifdef SIMULATOR_ENABLED
-    my_camera_simulator 	= 0;
-    my_interface_simulator 	= 0;
-#endif
-
-#ifdef ANDOR_ENABLED
-    my_camera_andor 		= 0;
-    my_interface_andor   	= 0;
-#endif
-	
-#ifdef AVIEX_ENABLED
-    my_camera_aviex 		= 0;
-    my_interface_aviex   	= 0;
-#endif
-    
-#ifdef BASLER_ENABLED
-    my_camera_basler 		= 0;
-    my_interface_basler 	= 0;
-#endif
-
-#ifdef XPAD_ENABLED
-    my_camera_xpad 			= 0;
-    my_interface_xpad 		= 0;
-#endif
-
-#ifdef PILATUS_ENABLED
-    my_camera_pilatus 		= 0;
-    my_interface_pilatus 	= 0;
-#endif
-
-#ifdef MARCCD_ENABLED
-    my_camera_marccd 		= 0;
-    my_interface_marccd 	= 0;
-#endif
-
-#ifdef ADSC_ENABLED
-    my_camera_adsc 			= 0;
-    my_interface_adsc 		= 0;
-#endif
-
-#ifdef PROSILICA_ENABLED
-    my_camera_prosilica 	= 0;
-    my_interface_prosilica 	= 0;
-#endif
-
-#ifdef PRINCETON_ENABLED
-    my_camera_princeton 	= 0;
-    my_interface_princeton 	= 0;
-#endif
-
-#ifdef PCO_ENABLED
-    my_camera_pco 	        = 0;
-    my_interface_pco 	    = 0;
-#endif
-
-#ifdef PERKINELMER_ENABLED
-    my_interface_perkinelmer= 0;
-#endif
-
-#ifdef ANDOR3_ENABLED
-    my_camera_andor3        = 0;
-    my_interface_andor3	    = 0;
-#endif
-
-#ifdef VIEWORKSVP_ENABLED
-    my_camera_vieworksvp    = 0;
-    my_interface_vieworksvp = 0;
-#endif
-
-    my_server_name 			= "none";
-    my_device_name 			= "none";
+    my_server_name 		= "none";
+    my_device_name 		= "none";
 
     my_status.str("");
-    my_state 				= Tango::INIT;
+    my_state 			= Tango::INIT;
 }
 
 //-----------------------------------------------------------------------------------------
@@ -95,7 +28,7 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         //get the tango device/instance
         if(!ControlFactory::is_created)
         {
-			initialize_pointers();
+            initialize_pointers();
             std::string  detector = detector_type;
             Tango::DbDatum db_datum;
             my_server_name = Tango::Util::instance()->get_ds_name ();
@@ -107,10 +40,10 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         if (detector_type == "SimulatorCCD")
         {
             if(!ControlFactory::is_created)
-            {       
-                my_camera_simulator         = new Simulator::Camera();
-                my_interface_simulator      = new Simulator::Interface(*my_camera_simulator);
-                my_control                  = new CtControl(my_interface_simulator);
+            {
+                my_camera                   = static_cast<void*>(new Simulator::Camera());
+                my_interface                = static_cast<void*>(new Simulator::Interface( *(static_cast<Simulator::Camera*>(my_camera))));
+                my_control                  = new CtControl(static_cast<Simulator::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
                 return my_control;
             }
@@ -130,16 +63,16 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 std::string database_file;
                 db_data[0] >> detector_id;
                 db_data[1] >> database_file;
-                my_camera_aviex            = new Aviex::Camera(detector_id, database_file);                
-                
-                my_interface_aviex         = new Aviex::Interface(*my_camera_aviex);
-                my_control                  = new CtControl(my_interface_aviex);          
+                my_camera                   = static_cast<void*>(new Aviex::Camera(detector_id, database_file));
+
+                my_interface                = static_cast<void*>(new Aviex::Interface( *(static_cast<Aviex::Camera*>(my_camera))));
+                my_control                  = new CtControl(static_cast<Aviex::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
                 return my_control;
             }
         }
 #endif
-        
+
 #ifdef BASLER_ENABLED
         if (detector_type == "BaslerCCD")
         {
@@ -153,14 +86,14 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 std::string camera_ip;
                 db_data[0] >> camera_ip;
                 long detector_timeout = 11000;
-                db_data[1] >> detector_timeout;                
+                db_data[1] >> detector_timeout;
                 long packet_size = -1;
                 db_data[2] >> packet_size;
-                my_camera_basler            = new Basler::Camera(camera_ip, packet_size);                
-                my_camera_basler->setTimeout(detector_timeout);      
-                
-                my_interface_basler         = new Basler::Interface(*my_camera_basler);
-                my_control                  = new CtControl(my_interface_basler);          
+                my_camera                   = static_cast<void*>(new Basler::Camera(camera_ip, packet_size));
+                static_cast<Basler::Camera*>(my_camera)->setTimeout(detector_timeout);
+
+                my_interface                = static_cast<void*>(new Basler::Interface( *(static_cast<Basler::Camera*>(my_camera))));
+                my_control                  = new CtControl(static_cast<Basler::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
                 return my_control;
             }
@@ -169,7 +102,7 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 
 #ifdef XPAD_ENABLED
         if (detector_type == "XpadPixelDetector")
-        {    
+        {
 
             if(!ControlFactory::is_created)
             {
@@ -183,12 +116,12 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[0] >> xpad_model;
                 db_data[1] >> calibration_adjusting_number;
 
-                my_camera_xpad                = new Xpad::Camera(xpad_model);
-                my_camera_xpad->setCalibrationAdjustingNumber(calibration_adjusting_number);
+                my_camera                   = static_cast<void*>(new Xpad::Camera(xpad_model));
+                static_cast<Xpad::Interface*>(my_camera)->setCalibrationAdjustingNumber(calibration_adjusting_number);
 
-                my_interface_xpad             = new Xpad::Interface(*my_camera_xpad);
-                my_control                    = new CtControl(my_interface_xpad);
-                ControlFactory::is_created    = true;
+                my_interface                = static_cast<void*>(new Xpad::Interface( *(static_cast<Xpad::Camera*>(my_camera))));
+                my_control                  = new CtControl(static_cast<Xpad::Interface*>(my_interface));
+                ControlFactory::is_created  = true;
                 return my_control;
             }
         }
@@ -212,13 +145,14 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[1] >> camera_port;
                 db_data[2] >> use_reader;
 
-                my_camera_pilatus           = new Pilatus::Camera(camera_ip.c_str(), camera_port);
-                if(my_camera_pilatus && use_reader)
-                    my_camera_pilatus->enableDirectoryWatcher();
-                if(my_camera_pilatus && !use_reader)
-                    my_camera_pilatus->disableDirectoryWatcher();
-                my_interface_pilatus        = new Pilatus::Interface(*my_camera_pilatus);
-                my_control                  = new CtControl(my_interface_pilatus);
+                my_camera                   = static_cast<void*>(new Pilatus::Camera(camera_ip.c_str(), camera_port));
+                if(my_camera && use_reader)
+                    static_cast<Pilatus::Camera*>(my_camera)->enableDirectoryWatcher();
+                if(my_camera && !use_reader)
+                    static_cast<Pilatus::Camera*>(my_camera)->disableDirectoryWatcher();
+
+                my_interface                = static_cast<void*>( new Pilatus::Interface( *(static_cast<Pilatus::Camera*>(my_camera))));
+                my_control                  = new CtControl(static_cast<Pilatus::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
                 return my_control;
             }
@@ -234,7 +168,7 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data.push_back(Tango::DbDatum("DetectorIP"));
                 db_data.push_back(Tango::DbDatum("DetectorPort"));
                 db_data.push_back(Tango::DbDatum("DetectorTargetPath"));
-                db_data.push_back(Tango::DbDatum("ReaderTimeout"));                
+                db_data.push_back(Tango::DbDatum("ReaderTimeout"));
 
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 std::string camera_ip;
@@ -247,12 +181,13 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[2] >> img_path;
                 db_data[3] >> reader_timeout;
 
-                my_camera_marccd           = new Marccd::Camera(camera_ip.c_str(), camera_port, img_path);
-                my_interface_marccd        = new Marccd::Interface(*my_camera_marccd);
-                if(my_interface_marccd)
-                    my_interface_marccd->setTimeout(reader_timeout/1000);
-                my_control                 = new CtControl(my_interface_marccd);
-                ControlFactory::is_created = true;
+                my_camera                   = static_cast<void*>(new Marccd::Camera(camera_ip.c_str(), camera_port, img_path));
+                my_interface                = static_cast<void*>(new Marccd::Interface( *(static_cast<Marccd::Camera*>(my_camera))));
+                if(my_interface)
+                    static_cast<Marccd::Interface*>(my_interface)->setTimeout(reader_timeout / 1000);
+
+                my_control                  = new CtControl(static_cast<Marccd::Interface*>(my_interface));
+                ControlFactory::is_created  = true;
                 return my_control;
             }
         }
@@ -272,16 +207,17 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 bool use_reader;
                 db_data[0] >> reader_timeout;
                 db_data[1] >> use_reader;
-                my_camera_adsc                = new Adsc::Camera();
-                my_interface_adsc             = new Adsc::Interface(*my_camera_adsc);
-                if(my_interface_adsc && use_reader)
-                    my_interface_adsc->enableReader();
-                if(my_interface_adsc && !use_reader)
-                    my_interface_adsc->disableReader();
-                if(my_interface_adsc)
-                    my_interface_adsc->setTimeout(reader_timeout);
-                my_control                    = new CtControl(my_interface_adsc);
-                ControlFactory::is_created    = true;
+                my_camera                  = static_cast<void*>(new Adsc::Camera());
+                my_interface               = static_cast<void*>(new Adsc::Interface( *(static_cast<Adsc::Camera*>(my_camera))));
+                if(my_interface && use_reader)
+                    static_cast<Adsc::Interface*>(my_interface)->enableReader();
+                if(my_interface && !use_reader)
+                    static_cast<Adsc::Interface*>(my_interface)->disableReader();
+                if(my_interface)
+                    static_cast<Adsc::Interface*>(my_interface)->setTimeout(reader_timeout);
+
+                my_control                  = new CtControl(static_cast<Adsc::Interface*>(my_interface));
+                ControlFactory::is_created  = true;
                 return my_control;
             }
         }
@@ -299,10 +235,10 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 std::string camera_ip;
                 db_data[0] >> camera_ip;
 
-                my_camera_prosilica           	= new Prosilica::Camera(camera_ip.c_str());
-                my_interface_prosilica        	= new Prosilica::Interface(my_camera_prosilica);
-                my_control                  	= new CtControl(my_interface_prosilica);
-                ControlFactory::is_created  	= true;
+                my_camera                  = static_cast<void*>(new Prosilica::Camera(camera_ip.c_str()));
+                my_interface                = static_cast<void*>(new Prosilica::Interface( static_cast<Prosilica::Camera*>(my_camera)));
+                my_control                  = new CtControl(static_cast<Prosilica::Interface*>(my_interface));
+                ControlFactory::is_created  = true;
                 return my_control;
             }
         }
@@ -314,20 +250,21 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 
             if(!ControlFactory::is_created)
             {
-                Tango::DbData db_data;			
-				db_data.push_back(Tango::DbDatum("DetectorNum"));
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);		
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("DetectorNum"));
+                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 long camera_num;
                 db_data[0] >> camera_num;
-                my_camera_andor					= new Andor::Camera("Not Used At Soleil", camera_num);
-                my_interface_andor				= new Andor::Interface(*my_camera_andor);
-                my_control                  	= new CtControl(my_interface_andor);
-                ControlFactory::is_created  	= true;
+
+                my_camera                  = static_cast<void*>(new Andor::Camera("Not Used At Soleil", camera_num));
+                my_interface               = static_cast<void*>(new Andor::Interface( *(static_cast<Andor::Camera*>(my_camera))));
+                my_control                  = new CtControl(static_cast<Andor::Interface*>(my_interface));
+                ControlFactory::is_created  = true;
                 return my_control;
             }
         }
 #endif
-		
+
 #ifdef PRINCETON_ENABLED
         if (detector_type == "PrincetonCCD")
         {
@@ -335,14 +272,15 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
             if(!ControlFactory::is_created)
             {
                 Tango::DbData db_data;
-				db_data.push_back(Tango::DbDatum("DetectorNum"));
+                db_data.push_back(Tango::DbDatum("DetectorNum"));
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 long camera_num;
                 db_data[0] >> camera_num;
-                my_camera_princeton           	= new RoperScientific::Camera(camera_num);
-                my_interface_princeton        	= new RoperScientific::Interface(*my_camera_princeton);
-                my_control                  	= new CtControl(my_interface_princeton);
-                ControlFactory::is_created  	= true;
+
+                my_camera                  = static_cast<void*>(new RoperScientific::Camera(camera_num));
+                my_interface               = static_cast<void*>(new RoperScientific::Interface( *(static_cast<RoperScientific::Camera*>(my_camera))));
+                my_control                  = new CtControl(static_cast<RoperScientific::Interface*>(my_interface));
+                ControlFactory::is_created  = true;
                 return my_control;
             }
         }
@@ -353,9 +291,9 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         {
             if(!ControlFactory::is_created)
             {
-                my_camera_pco               = new Pco::Camera("");
-                my_interface_pco            = new Pco::Interface(my_camera_pco);
-                my_control                  = new CtControl(my_interface_pco);
+                my_camera                  = static_cast<void*>(new Pco::Camera(""));
+                my_interface               = static_cast<void*>(new Pco::Interface( *(static_cast<Pco::Camera*>(my_camera))));
+                my_control                  = new CtControl(static_cast<Pco::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
                 return my_control;
             }
@@ -367,9 +305,10 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         {
             if(!ControlFactory::is_created)
             {
-                my_interface_perkinelmer    = new PerkinElmer::Interface();
-                my_control                  = new CtControl(my_interface_perkinelmer);
-                ControlFactory::is_created  = true;
+                my_camera                  = 0
+                my_interface               = static_cast<void*>(new PerkinElmer::Interface());
+                my_control                 = new CtControl(static_cast<PerkinElmer::Interface*>(my_interface));
+                ControlFactory::is_created = true;
                 return my_control;
             }
         }
@@ -381,19 +320,19 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
             if(!ControlFactory::is_created)
             {
                 Tango::DbData db_data;
-				db_data.push_back(Tango::DbDatum("BitFlowPath"));
+                db_data.push_back(Tango::DbDatum("BitFlowPath"));
                 db_data.push_back(Tango::DbDatum("CameraNumber"));
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 std::string bit_flow_path;
                 long camera_number;
                 db_data[0] >> bit_flow_path;
                 db_data[1] >> camera_number;
-                
-                my_camera_andor3            = new Andor3::Camera(bit_flow_path,camera_number);
-                my_interface_andor3         = new Andor3::Interface(*my_camera_andor3);
-                my_control                  = new CtControl(my_interface_andor3);
+
+                my_camera                  = static_cast<void*>(new Andor3::Camera(bit_flow_path,camera_number));
+                my_interface               = static_cast<void*>(new Andor3::Interface( *(static_cast<Andor3::Camera*>(my_camera))));
+                my_control                  = new CtControl(static_cast<Andor3::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
-                return my_control;
+                return my_control;                
             }
         }
 #endif
@@ -405,11 +344,11 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
             {
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("SisoPath"));
-				db_data.push_back(Tango::DbDatum("BoardIndex"));
+                db_data.push_back(Tango::DbDatum("BoardIndex"));
                 db_data.push_back(Tango::DbDatum("CameraPort"));
                 db_data.push_back(Tango::DbDatum("AppletName"));
                 db_data.push_back(Tango::DbDatum("DMAIndex"));
-                
+
                 (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
                 std::string siso_path;
                 long board_index;
@@ -422,16 +361,16 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[3] >> applet_name;
                 db_data[4] >> dma_index;
                 
-                my_camera_vieworksvp        = new VieworksVP::Camera(siso_path,board_index,camera_port,applet_name,dma_index);
-                my_interface_vieworksvp     = new VieworksVP::Interface(*my_camera_vieworksvp);
-                my_control                  = new CtControl(my_interface_vieworksvp);
+                my_camera                  = static_cast<void*>(new VieworksVP::Camera(siso_path,board_index,camera_port,applet_name,dma_index));
+                my_interface               = static_cast<void*>(new VieworksVP::Interface( *(static_cast<VieworksVP::Camera*>(my_camera))));
+                my_control                  = new CtControl(static_cast<VieworksVP::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
-                return my_control;
+                return my_control;                   
             }
         }
 #endif
 
-        
+
 
         if(!ControlFactory::is_created)
             throw LIMA_HW_EXC(Error, "Unable to create the lima control object : Unknown Detector Type");
@@ -469,241 +408,17 @@ void ControlFactory::reset(const std::string& detector_type )
                 my_control = 0;
             }
 
-#ifdef SIMULATOR_ENABLED
-            if (detector_type == "SimulatorCCD")
+            if(my_camera)
             {
-                if(my_camera_simulator)
-                {
-                    delete my_camera_simulator;
-                    my_camera_simulator = 0;
-                }
-
-                if(my_interface_simulator)
-                {
-                    delete my_interface_simulator;
-                    my_interface_simulator = 0;
-                }
+                delete my_camera;
+                my_camera = 0;
             }
-#endif        
 
-#ifdef AVIEX_ENABLED
-            if (detector_type == "AviexCCD")
+            if(my_interface)
             {
-                if(my_camera_aviex)
-                {
-                    delete my_camera_aviex;
-                    my_camera_aviex = 0;
-                }
-
-                if(my_interface_aviex)
-                {
-                    delete my_interface_aviex;
-                    my_interface_aviex = 0;
-                }
+                delete my_interface;
+                my_interface = 0;
             }
-#endif
-            
-#ifdef BASLER_ENABLED
-            if (detector_type == "BaslerCCD")
-            {
-                if(my_camera_basler)
-                {
-                    delete my_camera_basler;
-                    my_camera_basler = 0;
-                }
-
-                if(my_interface_basler)
-                {
-                    delete my_interface_basler;
-                    my_interface_basler = 0;
-                }
-            }
-#endif
-
-#ifdef XPAD_ENABLED
-            if (detector_type == "XpadPixelDetector")
-            {
-                if(my_camera_xpad)
-                {
-                    //- do not delete because its a YAT Task
-                    my_camera_xpad->exit();
-                    my_camera_xpad = 0;
-                }
-
-                if(my_interface_xpad)
-                {
-                    delete my_interface_xpad;
-                    my_interface_xpad = 0;
-                }
-            }
-#endif
-
-#ifdef PILATUS_ENABLED
-            if (detector_type == "PilatusPixelDetector")
-            {
-                if(my_camera_pilatus)
-                {
-                    delete my_camera_pilatus;
-                    my_camera_pilatus = 0;
-                }
-
-                if(my_interface_pilatus)
-                {
-                    delete my_interface_pilatus;
-                    my_interface_pilatus = 0;
-                }
-            }
-#endif
-
-#ifdef MARCCD_ENABLED
-            if (detector_type == "MarCCD")
-            {
-                if(my_camera_marccd)
-                {
-                    //- do not delete because its a YAT Task
-                    my_camera_marccd->exit();
-                    my_camera_marccd = 0;
-                }
-
-                if(my_interface_marccd)
-                {
-                    delete my_interface_marccd;
-                    my_interface_marccd = 0;
-                }
-            }
-#endif     
-
-#ifdef ADSC_ENABLED
-            if (detector_type == "AdscCCD")
-            {
-                if(my_camera_adsc)
-                {
-                    delete my_camera_adsc;
-                    my_camera_adsc = 0;
-                }
-
-                if(my_interface_adsc)
-                {
-                    delete my_interface_adsc;
-                    my_interface_adsc = 0;
-                }
-            }
-#endif
-
-#ifdef PROSILICA_ENABLED
-            if (detector_type == "ProsilicaCCD")
-            {
-                if(my_camera_prosilica)
-                {
-                    delete my_camera_prosilica;
-                    my_camera_prosilica = 0;
-                }
-
-                if(my_interface_prosilica)
-                {
-                    delete my_interface_prosilica;
-                    my_interface_prosilica = 0;
-                }
-            }
-#endif
-
-			
-#ifdef ANDOR_ENABLED
-            if (detector_type == "AndorCCD")
-            {
-                if(my_interface_andor)
-                {
-                    delete my_interface_andor;
-                    my_interface_andor = 0;
-                }
-
-                if(my_camera_andor)
-                {
-                    delete my_camera_andor;
-                    my_camera_andor = 0;
-                }
-            }
-#endif
-
-#ifdef PRINCETON_ENABLED
-            if (detector_type == "PrincetonCCD")
-            {
-                if(my_interface_princeton)
-                {
-                    delete my_interface_princeton;
-                    my_interface_princeton = 0;
-                }
-
-                if(my_camera_princeton)
-                {
-                    delete my_camera_princeton;
-                    my_camera_princeton = 0;
-                }
-            }
-#endif
-
-#ifdef PCO_ENABLED
-            if (detector_type == "Pco")
-            {
-                if(my_interface_pco)
-                {
-                    delete my_interface_pco;
-                    my_interface_pco = 0;
-                }
-
-                if(my_camera_pco)
-                {
-                    delete my_camera_pco;
-                    my_camera_pco = 0;
-                }
-            }
-#endif
-
-#ifdef PERKINELMER_ENABLED
-            if (detector_type == "PerkinElmer")
-            {
-                if(my_interface_perkinelmer)
-                {
-                    delete my_interface_perkinelmer;
-                    my_interface_perkinelmer = 0;
-                }                
-            }
-#endif
-
-#ifdef ANDOR3_ENABLED
-            if (detector_type == "Andor3")
-            {
-                if(my_interface_andor3)
-                {
-                    delete my_interface_andor3;
-                    my_interface_andor3 = 0;
-                }
-
-                if(my_camera_andor3)
-                {
-                    delete my_camera_andor3;
-                    my_camera_andor3 = 0;
-                }
-            }
-#endif
-
-#ifdef VIEWORKSVP_ENABLED
-            if (detector_type == "VieworksVP")
-            {
-                if(my_interface_vieworksvp)
-                {
-                    delete my_interface_vieworksvp;
-                    my_interface_vieworksvp = 0;
-                }
-
-                if(my_camera_vieworksvp)
-                {
-                    delete my_camera_vieworksvp;
-                    my_camera_vieworksvp = 0;
-                }
-            }
-#endif
-    
         }
     }
     catch(Tango::DevFailed& df)
@@ -767,7 +482,7 @@ std::string 	ControlFactory::get_status(void )
 
 }
 //-----------------------------------------------------------------------------------------
-void ControlFactory::set_state(Tango::DevState state) 
+void ControlFactory::set_state(Tango::DevState state)
 {
     yat::AutoMutex<> _lock(object_state_lock);
     my_state = state;
@@ -775,10 +490,10 @@ void ControlFactory::set_state(Tango::DevState state)
 
 //-----------------------------------------------------------------------------------------
 void ControlFactory::set_status (const std::string& status)
-{      
+{
     yat::AutoMutex<> _lock(object_state_lock);
     my_status.str("");
-    my_status<<status.c_str()<<endl;
+    my_status << status.c_str() << endl;
 
 }
 //-----------------------------------------------------------------------------------------

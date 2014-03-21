@@ -478,7 +478,7 @@ void LimaDetector::init_device()
 		mMyVideoMode["Y64"] = Y64;
 		mMyVideoMode["RGB555"] = RGB555;
 		mMyVideoMode["RGB565"] = RGB565;
-		//mMyVideoMode["RGB24"] 		= RGB24;
+		mMyVideoMode["RGB24"] 		= RGB24;
 		mMyVideoMode["RGB32"] = RGB32;
 		mMyVideoMode["BGR24"] = BGR24;
 		mMyVideoMode["BGR32"] = BGR32;
@@ -1482,19 +1482,19 @@ void LimaDetector::write_triggerMode(Tango::WAttribute &attr)
 		}
 
 		TrigMode trig_mode = IntTrig;
-		if (m_trigger_mode == "INTERNAL_SINGLE")
+		if (current == "INTERNAL_SINGLE")
 			trig_mode = IntTrig;
-		else if (m_trigger_mode == "EXTERNAL_SINGLE")
+		else if (current == "EXTERNAL_SINGLE")
 			trig_mode = ExtTrigSingle;
-		else if (m_trigger_mode == "EXTERNAL_MULTI")
+		else if (current == "EXTERNAL_MULTI")
 			trig_mode = ExtTrigMult;
-		else if (m_trigger_mode == "EXTERNAL_GATE")
+		else if (current == "EXTERNAL_GATE")
 			trig_mode = ExtGate;
-		else if (m_trigger_mode == "INTERNAL_MULTI")
+		else if (current == "INTERNAL_MULTI")
 			trig_mode = IntTrigMult;
-		else if (m_trigger_mode == "EXTERNAL_START_STOP")
+		else if (current == "EXTERNAL_START_STOP")
 			trig_mode = ExtStartStop;
-		else if (m_trigger_mode == "EXTERNAL_READOUT")
+		else if (current == "EXTERNAL_READOUT")
 			trig_mode = ExtTrigReadout;
 		
 		//- THIS IS AN AVAILABLE TRIGGER MODE
@@ -2914,10 +2914,10 @@ void LimaDetector::snap()
 		if (attr_nbFrames_write == 0)
 		{
 			//- throw exception
-			Tango::Except::throw_exception((const char*) ("CONFIGURATION_ERROR"),
-										(const char*) ("Snap command is not Available when 'nbFrames' is 0"
-													"\nUse Start command to diplay a 'video' stream.\n"),
-										(const char*) ("LimaDetector::snap"));
+			Tango::Except::throw_exception(	(const char*) ("CONFIGURATION_ERROR"),
+											(const char*) ("Snap command is not Available when 'nbFrames' is 0"
+											"\nUse Start command to diplay a 'video' stream.\n"),
+											(const char*) ("LimaDetector::snap"));
 		}
 
 		m_saving_par.nbframes = attr_nbFrames_write;

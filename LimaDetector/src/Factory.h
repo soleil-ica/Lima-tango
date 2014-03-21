@@ -1,7 +1,7 @@
 #ifndef _FACTORY_H_
 #define _FACTORY_H_
 
-	#include <tango.h>
+#include <tango.h>
 
 #include <Singleton.h>
 
@@ -12,107 +12,106 @@
 
 
 #ifdef SIMULATOR_ENABLED
-	#include <SimulatorInterface.h>
+#include <SimulatorInterface.h>
 #endif
 
 #ifdef AVIEX_ENABLED  
-	#include <AviexCamera.h>
-	#include <AviexDetInfoCtrlObj.h>
-	#include <AviexSyncCtrlObj.h>
-	#include <AviexRoiCtrlObj.h>
-	#include <AviexBinCtrlObj.h>
-	#include <AviexInterface.h>
+#include <AviexCamera.h>
+#include <AviexDetInfoCtrlObj.h>
+#include <AviexSyncCtrlObj.h>
+#include <AviexRoiCtrlObj.h>
+#include <AviexBinCtrlObj.h>
+#include <AviexInterface.h>
 #endif
 
 #ifdef BASLER_ENABLED  
-	#include <BaslerInterface.h>
-	#include <BaslerCamera.h>
+#include <BaslerInterface.h>
+#include <BaslerCamera.h>
 #endif
 
 #ifdef XPAD_ENABLED
-	#include <XpadInterface.h>
+#include <XpadInterface.h>
 #endif
 
 #ifdef PILATUS_ENABLED
-	#include <PilatusInterface.h>
+#include <PilatusInterface.h>
 #endif
 
 #ifdef MARCCD_ENABLED
-	#include <MarccdInterface.h>
+#include <MarccdInterface.h>
 #endif
 
 #ifdef ADSC_ENABLED
-	#include <AdscInterface.h>
+#include <AdscInterface.h>
 #endif
 
 #ifdef PROSILICA_ENABLED
-	#include <ProsilicaInterface.h>
-	#include <ProsilicaCamera.h>
-	#include <ProsilicaDetInfoCtrlObj.h>
-	#include <ProsilicaBufferCtrlObj.h>
-	#include <ProsilicaVideoCtrlObj.h>
-	#include <ProsilicaSyncCtrlObj.h>   
+#include <ProsilicaInterface.h>
+#include <ProsilicaCamera.h>
+#include <ProsilicaDetInfoCtrlObj.h>
+#include <ProsilicaBufferCtrlObj.h>
+#include <ProsilicaVideoCtrlObj.h>
+#include <ProsilicaSyncCtrlObj.h>   
 #endif
 
 #ifdef ANDOR_ENABLED
-	#include <AndorCamera.h>
-	#include <AndorBinCtrlObj.h>
-	#include <AndorDetInfoCtrlObj.h>
-	#include <AndorRoiCtrlObj.h>
-	#include <AndorShutterCtrlObj.h>
-	#include <AndorSyncCtrlObj.h>   
-	#include <AndorInterface.h>
+#include <AndorCamera.h>
+#include <AndorBinCtrlObj.h>
+#include <AndorDetInfoCtrlObj.h>
+#include <AndorRoiCtrlObj.h>
+#include <AndorShutterCtrlObj.h>
+#include <AndorSyncCtrlObj.h>   
+#include <AndorInterface.h>
 #endif
 
 #ifdef PRINCETON_ENABLED
-	#include <RoperScientificCamera.h>
-	#include <RoperScientificBinCtrlObj.h>
-	#include <RoperScientificDetInfoCtrlObj.h>
-	#include <RoperScientificRoiCtrlObj.h>
-	#include <RoperScientificSyncCtrlObj.h>   
-	#include <RoperScientificInterface.h>
+#include <RoperScientificCamera.h>
+#include <RoperScientificBinCtrlObj.h>
+#include <RoperScientificDetInfoCtrlObj.h>
+#include <RoperScientificRoiCtrlObj.h>
+#include <RoperScientificSyncCtrlObj.h>   
+#include <RoperScientificInterface.h>
 #endif
 
 #ifdef PCO_ENABLED
-    #include <Pco.h>
-    #include <PcoBufferCtrlObj.h>
-    #include <PcoCamera.h>
-    #include <PcoCameraUtils.h>
-    #include <PcoDetInfoCtrlObj.h>
-    #include <PcoInterface.h>
-    #include <PcoSyncCtrlObj.h>   
+#include <Pco.h>
+#include <PcoBufferCtrlObj.h>
+#include <PcoCamera.h>
+#include <PcoCameraUtils.h>
+#include <PcoDetInfoCtrlObj.h>
+#include <PcoInterface.h>
+#include <PcoSyncCtrlObj.h>   
 #endif
 
 #ifdef PERKINELMER_ENABLED
-    #include <PerkinElmerBinCtrlObj.h>
-    #include <PerkinElmerCompatibility.h>
-    #include <PerkinElmerDetInfoCtrlObj.h>
-    #include <PerkinElmerInterface.h>
-    #include <PerkinElmerSyncCtrlObj.h>    
+#include <PerkinElmerBinCtrlObj.h>
+#include <PerkinElmerCompatibility.h>
+#include <PerkinElmerDetInfoCtrlObj.h>
+#include <PerkinElmerInterface.h>
+#include <PerkinElmerSyncCtrlObj.h>    
 #endif
 
 #ifdef ANDOR3_ENABLED
-    #include <Andor3BinCtrlObj.h>
-    #include <Andor3Camera.h>
-    #include <Andor3DetInfoCtrlObj.h>
-    #include <Andor3Interface.h>
-    #include <Andor3RoiCtrlObj.h>
-    #include <Andor3ShutterCtrlObj.h>
-    #include <Andor3SyncCtrlObj.h>    
+#include <Andor3BinCtrlObj.h>
+#include <Andor3Camera.h>
+#include <Andor3DetInfoCtrlObj.h>
+#include <Andor3Interface.h>
+#include <Andor3RoiCtrlObj.h>
+#include <Andor3ShutterCtrlObj.h>
+#include <Andor3SyncCtrlObj.h>    
 #endif
 
 #ifdef VIEWORKSVP_ENABLED
-    #include <VieworksVPBinCtrlObj.h>
-    #include <VieworksVPCamera.h>
-    #include <VieworksVPDetInfoCtrlObj.h>
-    #include <VieworksVPInterface.h>
-    #include <VieworksVPRoiCtrlObj.h>
-    #include <VieworksVPShutterCtrlObj.h>
-    #include <VieworksVPSyncCtrlObj.h>    
+#include <VieworksVPBinCtrlObj.h>
+#include <VieworksVPCamera.h>
+#include <VieworksVPDetInfoCtrlObj.h>
+#include <VieworksVPInterface.h>
+#include <VieworksVPRoiCtrlObj.h>
+#include <VieworksVPShutterCtrlObj.h>
+#include <VieworksVPSyncCtrlObj.h>    
 #endif
 
 using namespace lima;
-
 class ControlFactory : public Singleton<ControlFactory>
 {
 public:
@@ -131,91 +130,26 @@ public:
     void set_status(const std::string& status);
 
 private:
-	void initialize_pointers();
+    void initialize_pointers();
 
-#ifdef SIMULATOR_ENABLED
-    Simulator::Camera* my_camera_simulator;
-    Simulator::Interface* my_interface_simulator;
-#endif
 
-#ifdef AVIEX_ENABLED  
-    Aviex::Camera* my_camera_aviex;
-    Aviex::Interface* my_interface_aviex;
-#endif
+    void*                           my_camera;      //generic pointer, must be casted to real XXX::Camera when using it !
+    void*                           my_interface;   //generic pointer, must be casted to real XXX::Interface when using it !
     
-#ifdef BASLER_ENABLED  
-    Basler::Camera* my_camera_basler;
-    Basler::Interface* my_interface_basler;
-#endif
-
-#ifdef XPAD_ENABLED
-    Xpad::Camera* my_camera_xpad;
-    Xpad::Interface* my_interface_xpad;
-#endif
-
-#ifdef PILATUS_ENABLED      
-    Pilatus::Camera* my_camera_pilatus;
-    Pilatus::Interface* my_interface_pilatus;
-#endif
-
-#ifdef MARCCD_ENABLED      
-    Marccd::Camera* my_camera_marccd;
-    Marccd::Interface* my_interface_marccd;
-#endif
-
-#ifdef ADSC_ENABLED      
-    Adsc::Camera* my_camera_adsc;
-    Adsc::Interface* my_interface_adsc;
-#endif
-
-#ifdef PROSILICA_ENABLED      
-    Prosilica::Camera* my_camera_prosilica;
-    Prosilica::Interface* my_interface_prosilica;
-#endif
-
-#ifdef ANDOR_ENABLED
-    Andor::Camera* my_camera_andor;
-    Andor::Interface* my_interface_andor;
-#endif
-	
-#ifdef PRINCETON_ENABLED
-    RoperScientific::Camera* my_camera_princeton;
-    RoperScientific::Interface* my_interface_princeton;
-#endif
-
-#ifdef PCO_ENABLED
-    Pco::Camera* my_camera_pco;
-    Pco::Interface* my_interface_pco;
-#endif
-
-#ifdef PERKINELMER_ENABLED
-	PerkinElmer::Interface*        my_interface_perkinelmer;
-#endif
-
-#ifdef ANDOR3_ENABLED
-    Andor3::Camera* my_camera_andor3;
-    Andor3::Interface* my_interface_andor3;
-#endif
-
-#ifdef VIEWORKSVP_ENABLED
-    VieworksVP::Camera* my_camera_vieworksvp;
-    VieworksVP::Interface* my_interface_vieworksvp;
-#endif
-
-	CtControl*                     my_control;
-	static bool                    is_created;
-	std::string                    my_server_name;  
-	std::string                    my_device_name;
-	Tango::DevState				   my_state;
-	stringstream				   my_status;
+    CtControl*                      my_control;
+    static bool                     is_created;
+    std::string                     my_server_name;
+    std::string                     my_device_name;
+    Tango::DevState                 my_state;
+    stringstream                    my_status;
 
     //lock the singleton acess
-    yat::Mutex object_lock;
+    yat::Mutex                      object_lock;
 
     //lock the singleton acess
-    yat::Mutex object_state_lock;
+    yat::Mutex                      object_state_lock;
 
-};
+} ;
 
 #endif
 
