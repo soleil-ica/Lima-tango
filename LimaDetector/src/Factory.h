@@ -116,16 +116,24 @@ class ControlFactory : public Singleton<ControlFactory>
 {
 public:
 
+    //get the main object of Lima CtConttrol
     CtControl* get_control(const std::string& detector_type);
+
+    //initialize all pointers
     void reset(const std::string& detector_type);
+    
     //init the specific device, necessary when user call Init on generic device
     void init_specific_device(const std::string& detector_type);
+    
     //get the state in a AutoMutex lock
     Tango::DevState get_state(void);
+    
     //get the status in a AutoMutex lock
     std::string get_status(void);
+    
     //fix the state in a AutoMutex lock
     void set_state(Tango::DevState state);
+    
     //fix the status in a AutoMutex lock
     void set_status(const std::string& status);
 
