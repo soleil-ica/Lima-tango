@@ -247,7 +247,7 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 std::string camera_ip;
                 db_data[0] >> camera_ip;
 
-                my_camera                  = static_cast<void*>(new Prosilica::Camera(camera_ip.c_str()));
+                my_camera                   = static_cast<void*>(new Prosilica::Camera(camera_ip.c_str()));
                 my_interface                = static_cast<void*>(new Prosilica::Interface( static_cast<Prosilica::Camera*>(my_camera)));
                 my_control                  = new CtControl(static_cast<Prosilica::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
@@ -268,8 +268,8 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 long camera_num;
                 db_data[0] >> camera_num;
 
-                my_camera                  = static_cast<void*>(new Andor::Camera("Not Used At Soleil", camera_num));
-                my_interface               = static_cast<void*>(new Andor::Interface( *static_cast<Andor::Camera*>(my_camera)));
+                my_camera                   = static_cast<void*>(new Andor::Camera("Not Used At Soleil", camera_num));
+                my_interface                = static_cast<void*>(new Andor::Interface( *static_cast<Andor::Camera*>(my_camera)));
                 my_control                  = new CtControl(static_cast<Andor::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
                 return my_control;
@@ -289,8 +289,8 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 long camera_num;
                 db_data[0] >> camera_num;
 
-                my_camera                  = static_cast<void*>(new RoperScientific::Camera(camera_num));
-                my_interface               = static_cast<void*>(new RoperScientific::Interface( *static_cast<RoperScientific::Camera*>(my_camera)));
+                my_camera                   = static_cast<void*>(new RoperScientific::Camera(camera_num));
+                my_interface                = static_cast<void*>(new RoperScientific::Interface( *static_cast<RoperScientific::Camera*>(my_camera)));
                 my_control                  = new CtControl(static_cast<RoperScientific::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
                 return my_control;
@@ -303,8 +303,8 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         {
             if(!ControlFactory::is_created)
             {
-                my_camera                  = static_cast<void*>(new Pco::Camera(""));
-                my_interface               = static_cast<void*>(new Pco::Interface( *static_cast<Pco::Camera*>(my_camera)));
+                my_camera                   = static_cast<void*>(new Pco::Camera(""));
+                my_interface                = static_cast<void*>(new Pco::Interface( static_cast<Pco::Camera*>(my_camera)));
                 my_control                  = new CtControl(static_cast<Pco::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
                 return my_control;
@@ -340,8 +340,8 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[0] >> bit_flow_path;
                 db_data[1] >> camera_number;
 
-                my_camera                  = static_cast<void*>(new Andor3::Camera(bit_flow_path,camera_number));
-                my_interface               = static_cast<void*>(new Andor3::Interface( *static_cast<Andor3::Camera*>(my_camera)));
+                my_camera                   = static_cast<void*>(new Andor3::Camera(bit_flow_path,camera_number));
+                my_interface                = static_cast<void*>(new Andor3::Interface( *static_cast<Andor3::Camera*>(my_camera)));
                 my_control                  = new CtControl(static_cast<Andor3::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
                 return my_control;                
@@ -373,8 +373,8 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[3] >> applet_name;
                 db_data[4] >> dma_index;
                 
-                my_camera                  = static_cast<void*>(new VieworksVP::Camera(siso_path,board_index,camera_port,applet_name,dma_index));
-                my_interface               = static_cast<void*>(new VieworksVP::Interface( *static_cast<VieworksVP::Camera*>(my_camera)));
+                my_camera                   = static_cast<void*>(new VieworksVP::Camera(siso_path,board_index,camera_port,applet_name,dma_index));
+                my_interface                = static_cast<void*>(new VieworksVP::Interface( *static_cast<VieworksVP::Camera*>(my_camera)));
                 my_control                  = new CtControl(static_cast<VieworksVP::Interface*>(my_interface));
                 ControlFactory::is_created  = true;
                 return my_control;                   
