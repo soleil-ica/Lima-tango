@@ -1,3 +1,15 @@
+//+=============================================================================
+//
+// file :         Factory.cpp
+//
+// description : Include for Factory.cpp
+//
+// copyleft :    Synchrotron SOLEIL
+//               L'Orme des merisiers - Saint Aubin
+//               BP48 - 91192 Gif sur Yvette
+//               FRANCE
+//
+//-=============================================================================
 #ifndef _FACTORY_H_
 #define _FACTORY_H_
 
@@ -143,8 +155,8 @@ private:
 
     void*                           my_camera;      //generic pointer, must be casted to real XXX::Camera when using it !
     void*                           my_interface;   //generic pointer, must be casted to real XXX::Interface when using it !
+    CtControl*                      my_control;     //the main object of Lima
     
-    CtControl*                      my_control;
     static bool                     is_created;
     std::string                     my_server_name;
     std::string                     my_device_name;

@@ -1,3 +1,15 @@
+//+=============================================================================
+//
+// file :         Factory.cpp
+//
+// description : This module handles the creation of the main lima object (CtControl) for each type of camera
+//
+// copyleft :    Synchrotron SOLEIL
+//               L'Orme des merisiers - Saint Aubin
+//               BP48 - 91192 Gif sur Yvette
+//               FRANCE
+//
+//-=============================================================================
 #include <Factory.h>
 
 #include <iostream>
@@ -117,7 +129,7 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[1] >> calibration_adjusting_number;
 
                 my_camera                   = static_cast<void*>(new Xpad::Camera(xpad_model));
-                static_cast<Xpad::Interface*>(my_camera)->setCalibrationAdjustingNumber(calibration_adjusting_number);
+                static_cast<Xpad::Camera*>(my_camera)->setCalibrationAdjustingNumber(calibration_adjusting_number);
 
                 my_interface                = static_cast<void*>(new Xpad::Interface( *static_cast<Xpad::Camera*>(my_camera)));
                 my_control                  = new CtControl(static_cast<Xpad::Interface*>(my_interface));
@@ -305,7 +317,7 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         {
             if(!ControlFactory::is_created)
             {
-                my_camera                  = 0
+                my_camera                  = 0;
                 my_interface               = static_cast<void*>(new PerkinElmer::Interface());
                 my_control                 = new CtControl(static_cast<PerkinElmer::Interface*>(my_interface));
                 ControlFactory::is_created = true;
@@ -369,8 +381,6 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
             }
         }
 #endif
-
-
 
         if(!ControlFactory::is_created)
             throw LIMA_HW_EXC(Error, "Unable to create the lima control object : Unknown Detector Type");
