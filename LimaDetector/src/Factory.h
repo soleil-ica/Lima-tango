@@ -67,12 +67,6 @@
 #endif
 
 #ifdef ANDOR_ENABLED
-#include <AndorCamera.h>
-#include <AndorBinCtrlObj.h>
-#include <AndorDetInfoCtrlObj.h>
-#include <AndorRoiCtrlObj.h>
-#include <AndorShutterCtrlObj.h>
-#include <AndorSyncCtrlObj.h>   
 #include <AndorInterface.h>
 #endif
 
@@ -124,6 +118,7 @@
 #endif
 
 using namespace lima;
+
 class ControlFactory : public Singleton<ControlFactory>
 {
 public:
@@ -153,15 +148,15 @@ private:
     void initialize_pointers();
 
 
-    void*                           my_camera;      //generic pointer, must be casted to real XXX::Camera when using it !
-    void*                           my_interface;   //generic pointer, must be casted to real XXX::Interface when using it !
-    CtControl*                      my_control;     //the main object of Lima
+    void*                           m_camera;      //generic pointer, must be casted to real XXX::Camera when using it !
+    void*                           m_interface;   //generic pointer, must be casted to real XXX::Interface when using it !
+    CtControl*                      m_control;     //the main object of Lima
     
-    static bool                     is_created;
-    std::string                     my_server_name;
-    std::string                     my_device_name;
-    Tango::DevState                 my_state;
-    stringstream                    my_status;
+    static bool                     m_is_created;
+    std::string                     m_server_name;
+    std::string                     m_device_name;
+    Tango::DevState                 m_state;
+    stringstream                    m_status;
 
     //lock the singleton acess
     yat::Mutex                      object_lock;

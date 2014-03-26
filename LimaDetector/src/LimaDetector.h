@@ -56,10 +56,8 @@
 #include "CtSaving.h"
 #include "CtImage.h"
 #include "CtVideo.h"
-#include "CtBuffer.h"
-#include "CtEvent.h"
 #include "CtShutter.h"
-#include "AcqState.h"
+
 
 
 //- This Device
@@ -77,7 +75,7 @@ using namespace yat4tango;
  //    Add your own constant definitions here.
  //-----------------------------------------------
 
-#define MAX_ATTRIBUTE_STRING_LENGTH     256
+const size_t MAX_ATTRIBUTE_STRING_LENGTH = 256;
 const size_t LOG_BUFFER_DEPTH = 1024;
 
 namespace LimaDetector_ns

@@ -136,7 +136,6 @@ void LimaDetector::delete_device()
 	DELETE_SCALAR_ATTRIBUTE(attr_flipX_read);
 	DELETE_SCALAR_ATTRIBUTE(attr_flipY_read);
 
-
 	if (m_ct != 0)
 	{
 		if (m_ct->shutter()->hasCapability())

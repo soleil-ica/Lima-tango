@@ -296,11 +296,11 @@ void BaslerCCD::get_device_property()
 
     //    End of Automatic code generation
     //------------------------------------------------------------------
-    create_property_if_empty(dev_prop, "127.0.0.1", "DetectorIP");
-    create_property_if_empty(dev_prop, "11000", "DetectorTimeout");
-    create_property_if_empty(dev_prop, "1500", "DetectorPacketSize");
-    create_property_if_empty(dev_prop, "0", "MemorizedGain");
-    create_property_if_empty(dev_prop, "False", "MemorizedAutoGain");    
+    PropertyHelper::create_property_if_empty(this, dev_prop, "127.0.0.1", "DetectorIP");
+    PropertyHelper::create_property_if_empty(this, dev_prop, "11000", "DetectorTimeout");
+    PropertyHelper::create_property_if_empty(this, dev_prop, "1500", "DetectorPacketSize");
+    PropertyHelper::create_property_if_empty(this, dev_prop, "0", "MemorizedGain");
+    PropertyHelper::create_property_if_empty(this, dev_prop, "False", "MemorizedAutoGain");    
 
 }
 //+----------------------------------------------------------------------------
@@ -479,7 +479,7 @@ void BaslerCCD::write_gain(Tango::WAttribute &attr)
             {
                 attr.get_write_value(attr_gain_write);
                 (m_hw->getCamera()).setGain(attr_gain_write);
-                set_property("MemorizedGain", attr_gain_write);
+                PropertyHelper::set_property(this,"MemorizedGain", attr_gain_write);
             }
         }
         catch (Tango::DevFailed& df)
@@ -564,7 +564,7 @@ void BaslerCCD::write_autoGain(Tango::WAttribute &attr)
             {
                 attr.get_write_value(attr_autoGain_write);
                 (m_hw->getCamera()).setAutoGain(attr_autoGain_write);
-                set_property("MemorizedAutoGain", attr_autoGain_write);
+                PropertyHelper::set_property(this,"MemorizedAutoGain", attr_autoGain_write);
             }
         }
         catch (Tango::DevFailed& df)
@@ -627,140 +627,5 @@ Tango::DevState BaslerCCD::dev_state()
     argout = DeviceState;
     return argout;
 }
-
-/*-------------------------------------------------------------------------
-//       BaslerCCD::set_property
-/-------------------------------------------------------------------------*/
-template <class T>
-void BaslerCCD::set_property(string property_name, T value)
-{
-    if (!Tango::Util::instance()->_UseDb)
-    {
-        //- rethrow exception
-        Tango::Except::throw_exception(static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                       static_cast<const char*> ("NO DB"),
-                                       static_cast<const char*> ("BaslerCCD::set_property"));
-    }
-
-    Tango::DbDatum current_value(property_name);
-    current_value << value;
-    Tango::DbData db_data;
-    db_data.push_back(current_value);
-    try
-    {
-        get_db_device()->put_property(db_data);
-    }
-    catch (Tango::DevFailed &df)
-    {
-        string message = "Error in storing " + property_name + " in Configuration DataBase ";
-        LOG_ERROR((message));
-        ERROR_STREAM << df << endl;
-        //- rethrow exception
-        Tango::Except::re_throw_exception(df,
-                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                          static_cast<const char*> ("BaslerCCD::set_property"));
-    }
-}
-
-/*-------------------------------------------------------------------------
-//       BaslerCCD::get_property
-/-------------------------------------------------------------------------*/
-template <class T>
-T BaslerCCD::get_property(string property_name)
-{
-    if (!Tango::Util::instance()->_UseDb)
-    {
-        //- rethrow exception
-        Tango::Except::throw_exception(static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                       static_cast<const char*> ("NO DB"),
-                                       static_cast<const char*> ("BaslerCCD::get_property"));
-    }
-
-    T value;
-    Tango::DbDatum current_value(property_name);
-    Tango::DbData db_data;
-    db_data.push_back(current_value);
-    try
-    {
-        get_db_device()->get_property(db_data);
-    }
-    catch (Tango::DevFailed &df)
-    {
-        string message = "Error in reading " + property_name + " in Configuration DataBase ";
-        LOG_ERROR((message));
-        ERROR_STREAM << df << endl;
-        //- rethrow exception
-        Tango::Except::re_throw_exception(df,
-                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                          static_cast<const char*> ("BaslerCCD::get_property"));
-    }
-    db_data[0] >> value;
-    return (value);
-}
-
-/*-------------------------------------------------------------------------
-//       BaslerCCD::create_property_if_empty
-/-------------------------------------------------------------------------*/
-template <class T>
-void BaslerCCD::create_property_if_empty(Tango::DbData& dev_prop, T value, string property_name)
-{
-    int iPropertyIndex = find_index_from_property_name(dev_prop, property_name);
-    if (iPropertyIndex == -1) return;
-    if (dev_prop[iPropertyIndex].is_empty())
-    {
-        Tango::DbDatum current_value(dev_prop[iPropertyIndex].name);
-        current_value << value;
-        Tango::DbData db_data;
-        db_data.push_back(current_value);
-
-        try
-        {
-            get_db_device()->put_property(db_data);
-        }
-        catch (Tango::DevFailed &df)
-        {
-            string message = "Error in storing " + property_name + " in Configuration DataBase ";
-            LOG_ERROR((message));
-            ERROR_STREAM << df << endl;
-            //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-                                              static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                              static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                              static_cast<const char*> ("BaslerCCD::create_property_if_empty"));
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------
-//       BaslerCCD::find_index_from_property_name
-/-------------------------------------------------------------------------*/
-int BaslerCCD::find_index_from_property_name(Tango::DbData& dev_prop, string property_name)
-{
-    size_t iNbProperties = dev_prop.size();
-    unsigned int i;
-    for (i = 0; i < iNbProperties; i++)
-    {
-        string sPropertyName(dev_prop[i].name);
-        if (sPropertyName == property_name) return i;
-    }
-    if (i == iNbProperties) return -1;
-    return i;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }	//	namespace

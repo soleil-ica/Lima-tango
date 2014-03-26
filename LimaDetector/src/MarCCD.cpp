@@ -270,10 +270,10 @@ void MarCCD::get_device_property()
 
     //	End of Automatic code generation
     //------------------------------------------------------------------
-    create_property_if_empty(dev_prop, "127.0.0.1", "DetectorIP");
-    create_property_if_empty(dev_prop, "-1", "DetectorPort");
-    create_property_if_empty(dev_prop, "/no/path/defined/", "DetectorTargetPath");
-    create_property_if_empty(dev_prop, "10000", "ReaderTimeout");
+    PropertyHelper::create_property_if_empty(this, dev_prop, "127.0.0.1", "DetectorIP");
+    PropertyHelper::create_property_if_empty(this, dev_prop, "-1", "DetectorPort");
+    PropertyHelper::create_property_if_empty(this, dev_prop, "/no/path/defined/", "DetectorTargetPath");
+    PropertyHelper::create_property_if_empty(this, dev_prop, "10000", "ReaderTimeout");
 }
 //+----------------------------------------------------------------------------
 //
@@ -627,130 +627,5 @@ Tango::DevState MarCCD::dev_state()
     argout = DeviceState;
     return argout;
 }
-
-/*-------------------------------------------------------------------------
-//       MarCCD::set_property
-/-------------------------------------------------------------------------*/
-template <class T>
-void MarCCD::set_property(string property_name, T value)
-{
-    if (!Tango::Util::instance()->_UseDb)
-    {
-        //- rethrow exception
-        Tango::Except::throw_exception(static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                       static_cast<const char*> ("NO DB"),
-                                       static_cast<const char*> ("MarCCD::set_property"));
-    }
-
-    Tango::DbDatum current_value(property_name);
-    current_value << value;
-    Tango::DbData db_data;
-    db_data.push_back(current_value);
-    try
-    {
-        get_db_device()->put_property(db_data);
-    }
-    catch (Tango::DevFailed &df)
-    {
-        string message = "Error in storing " + property_name + " in Configuration DataBase ";
-        LOG_ERROR((message));
-        ERROR_STREAM << df << endl;
-        //- rethrow exception
-        Tango::Except::re_throw_exception(df,
-                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                          static_cast<const char*> ("MarCCD::set_property"));
-    }
-}
-
-/*-------------------------------------------------------------------------
-//       MarCCD::get_property
-/-------------------------------------------------------------------------*/
-template <class T>
-T MarCCD::get_property(string property_name)
-{
-    if (!Tango::Util::instance()->_UseDb)
-    {
-        //- rethrow exception
-        Tango::Except::throw_exception(static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                       static_cast<const char*> ("NO DB"),
-                                       static_cast<const char*> ("MarCCD::get_property"));
-    }
-
-    T value;
-    Tango::DbDatum current_value(property_name);
-    Tango::DbData db_data;
-    db_data.push_back(current_value);
-    try
-    {
-        get_db_device()->get_property(db_data);
-    }
-    catch (Tango::DevFailed &df)
-    {
-        string message = "Error in reading " + property_name + " in Configuration DataBase ";
-        LOG_ERROR((message));
-        ERROR_STREAM << df << endl;
-        //- rethrow exception
-        Tango::Except::re_throw_exception(df,
-                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                          static_cast<const char*> ("MarCCD::get_property"));
-    }
-    db_data[0] >> value;
-    return (value);
-}
-
-/*-------------------------------------------------------------------------
-//       MarCCD::create_property_if_empty
-/-------------------------------------------------------------------------*/
-template <class T>
-void MarCCD::create_property_if_empty(Tango::DbData& dev_prop, T value, string property_name)
-{
-    int iPropertyIndex = find_index_from_property_name(dev_prop, property_name);
-    if (iPropertyIndex == -1) return;
-    if (dev_prop[iPropertyIndex].is_empty())
-    {
-        Tango::DbDatum current_value(dev_prop[iPropertyIndex].name);
-        current_value << value;
-        Tango::DbData db_data;
-        db_data.push_back(current_value);
-
-        try
-        {
-            get_db_device()->put_property(db_data);
-        }
-        catch (Tango::DevFailed &df)
-        {
-            string message = "Error in storing " + property_name + " in Configuration DataBase ";
-            LOG_ERROR((message));
-            ERROR_STREAM << df << endl;
-            //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-                                              static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                              static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                              static_cast<const char*> ("MarCCD::create_property_if_empty"));
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------
-//       MarCCD::find_index_from_property_name
-/-------------------------------------------------------------------------*/
-int MarCCD::find_index_from_property_name(Tango::DbData& dev_prop, string property_name)
-{
-    size_t iNbProperties = dev_prop.size();
-    unsigned int i;
-    for (i = 0; i < iNbProperties; i++)
-    {
-        string sPropertyName(dev_prop[i].name);
-        if (sPropertyName == property_name) return i;
-    }
-    if (i == iNbProperties) return -1;
-    return i;
-}
-
-
-
-
 
 } //	namespace

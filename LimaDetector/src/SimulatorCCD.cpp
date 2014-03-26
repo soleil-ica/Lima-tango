@@ -67,7 +67,6 @@ static const char *RcsId = "$Id:  $";
 
 namespace SimulatorCCD_ns
 {
-
 //+----------------------------------------------------------------------------
 //
 // method :         SimulatorCCD::SimulatorCCD(string &s)
@@ -466,7 +465,6 @@ void SimulatorCCD::write_growFactor(Tango::WAttribute &attr)
         try
         {
             attr.get_write_value(attr_growFactor_write);
-            double growFactor;
             m_camera->getFrameBuilder()->setGrowFactor(attr_growFactor_write);
 			yat4tango::PropertyHelper::set_property(this, "MemorizedGrowFactor", attr_growFactor_write);			
         }
@@ -531,24 +529,5 @@ Tango::DevState SimulatorCCD::dev_state()
     DEBUG_STREAM << "SimulatorCCD::dev_state() ending... " << endl;
     return argout;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }	//	namespace
