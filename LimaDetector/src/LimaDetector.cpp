@@ -294,23 +294,23 @@ void LimaDetector::init_device()
 
 
 		//- get the main object used to pilot the lima framework
-		INFO_STREAM << "Get the main control object in order to pilot the detector." << endl;
+		INFO_STREAM << "Get the main control object in order to pilot the DetectorType ("<< detectorType << ")." << endl;
 		m_ct = ControlFactory::instance().get_control(detectorType);
 
 		//- get interface to specific camera
-		INFO_STREAM << "Get Interface to the specific detector defined in DetectorType property." << endl;
+		INFO_STREAM << "Get Interface to the DetectorType ("<< detectorType << ")." << endl;
 		m_hw = dynamic_cast<HwInterface*> (m_ct->hwInterface());
 		if (m_hw == 0)
 		{
-			INFO_STREAM << "Initialization Failed : Unable to get the interface of camera plugin " << "(" << detectorType << ") !" << endl;
-			m_status_message << "Initialization Failed : Unable to get the interface of camera plugin " << "(" << detectorType << ") !" << endl;
+			INFO_STREAM << "Initialization Failed : Unable to get the interface of DetectorType ("<< detectorType << ")!" << endl;
+			m_status_message << "Initialization Failed : Unable to get the interface of DetectorType ("<< detectorType << ")!" << endl;
 			m_is_device_initialized = false;
 			set_state(Tango::FAULT);
 			return;
 		}
 
 		//- define currentImageType of detector (16 bits, 32 bits, ...) according to "DetectorPixelDepth" device property
-		INFO_STREAM << "Define ImageType of detector (16 bits, 32 bits, ...) according to DetectorPixelDepth property." << endl;
+		INFO_STREAM << "Define ImageType of detector (16 bits, 32 bits, ...) according to DetectorPixelDepth ("<< detectorPixelDepth << ") property." << endl;
 		HwDetInfoCtrlObj *hw_det_info;
 		m_hw->getHwCtrlObj(hw_det_info);
 		switch (detectorPixelDepth)
