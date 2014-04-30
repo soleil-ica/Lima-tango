@@ -32,6 +32,8 @@ from Utils import getDataFromFile,BasePostProcess
 def grouper(n, iterable, padvalue=None):
     return itertools.izip(*[itertools.chain(iterable, itertools.repeat(padvalue, n-1))]*n)
 
+computing_modes_list = ["MAXIMUM", "CM"]
+
 #PeakFinderTask = Core.Processlib.Tasks.PeakFinderTask
 
 #==================================================================
@@ -88,6 +90,27 @@ class PeakFinderDeviceServer(BasePostProcess) :
 	data = attr.get_write_value()
         self.__peakFinderMgr.setBufferSize(data)
 
+#------------------------------------------------------------------
+#    Read ComputingMode attribute
+#------------------------------------------------------------------
+    def read_ComputingMode(self, attr):
+	value_read = self.__peakFinderMgr.getComputingMode()
+	attr.set_value(value_read)
+
+
+#------------------------------------------------------------------
+#    Write ComputingMode attribute
+#------------------------------------------------------------------
+    def write_ComputingMode(self, attr):
+	data = attr.get_write_value()
+        if data in computing_modes_list:
+            self.__peakFinderMgr.setComputingMode(data)
+        else:
+            PyTango.Except.throw_exception('WrongData',
+                                           'Allowed modes are: %s, %s '%(computing_modes_list[0], computing_modes_list[1]),
+                                           'PeakFinder: write_ComputingMode') 
+            
+            
 
 #------------------------------------------------------------------
 #    Read CounterStatus attribute
@@ -168,6 +191,10 @@ class PeakFinderDeviceServerClass(PyTango.DeviceClass):
 	    PyTango.READ]],
 	'RunLevel':
 	    [[PyTango.DevLong,
+	    PyTango.SCALAR,
+	    PyTango.READ_WRITE]],
+	'ComputingMode':
+	    [[PyTango.DevString,
 	    PyTango.SCALAR,
 	    PyTango.READ_WRITE]],
 	}
