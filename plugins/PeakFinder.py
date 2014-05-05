@@ -52,9 +52,10 @@ class PeakFinderDeviceServer(BasePostProcess) :
 #------------------------------------------------------------------
     def __init__(self,cl, name):
 	self.__peakFinderMgr = None
-#        self.__roiName2ID = {}
-#        self.__roiID2Name = {}
-        self.__currentRoiId = 0
+        
+        self.__ComputingMode = {'MAXIMUM' : 0,
+                                'CM' : 1}
+
 	BasePostProcess.__init__(self,cl,name)
 	PeakFinderDeviceServer.init_device(self)
 
@@ -95,7 +96,7 @@ class PeakFinderDeviceServer(BasePostProcess) :
 #------------------------------------------------------------------
     def read_ComputingMode(self, attr):
 	value_read = self.__peakFinderMgr.getComputingMode()
-	attr.set_value(value_read)
+        attr.set_value(_getDictKey(self.__ComputingMode,value_read))
 
 
 #------------------------------------------------------------------
@@ -103,15 +104,9 @@ class PeakFinderDeviceServer(BasePostProcess) :
 #------------------------------------------------------------------
     def write_ComputingMode(self, attr):
 	data = attr.get_write_value()
-        if data in computing_modes_list:
-            self.__peakFinderMgr.setComputingMode(data)
-        else:
-            PyTango.Except.throw_exception('WrongData',
-                                           'Allowed modes are: %s, %s '%(computing_modes_list[0], computing_modes_list[1]),
-                                           'PeakFinder: write_ComputingMode') 
+        t = _getDictValue(self.__ComputingMode,data)
+        self.__peakFinderMgr.setComputingMode(t)
             
-            
-
 #------------------------------------------------------------------
 #    Read CounterStatus attribute
 #------------------------------------------------------------------
@@ -216,3 +211,17 @@ def set_control_ref(control_class_ref) :
 
 def get_tango_specific_class_n_device() :
    return PeakFinderDeviceServerClass,PeakFinderDeviceServer
+
+def _getDictKey(dict, value):
+    try:
+        ind = dict.values().index(value)                            
+    except ValueError:
+        return None
+    return dict.keys()[ind]
+
+def _getDictValue(dict, key):
+    try:
+        value = dict[key.upper()]
+    except KeyError:
+        return None
+    return value
