@@ -208,15 +208,68 @@ Configuration device
 .. toctree::
   :maxdepth: 2
 
-  andor
-  basler
-  frelon
-  maxipix
-  pco
-  pilatus
-  prosilica 
-  simulator
+  camera/andor
+  camera/basler
+  camera/dexela
+  camera/frelon
+  camera/imxpad
+  camera/maxipix
+  camera/pco
+  camera/perkinelmer
+  camera/photonicscience
+  camera/pilatus
+  camera/pointgrey
+  camera/prosilica 
+  camera/rayonixhs
+  camera/roperscientific
+  camera/simulator
+  camera/ueye
+  camera/ultra
+  camera/xh
+  camera/xpad
+  camera/xspress3
 
-Calculation devices
--------------------
 
+Plugin devices: software operation or extra interfaces
+-------------------------------------------------------
+
+ User-defined software plugins can be used to execute arbitrary image-based operations. An entry point in the control layer completely exports the ProcessLib functionality, allowing an external code to be called on every frame. The software operation can be implemented in C++ or Python.
+
+The software operations on image are embedded into individual Tango devices and are available in the **plugins/** directory. They are automatically exported
+by the LimaCCDs server. 
+
+ The software operations are of two types, *Sink* or *Link* : 
+* **Link** operation is supposed to modify the frame data, so it gets the frame data as input parameter and it will return a "corrected" image (e.g. Mask/Flatfield/BackgroundSubstraction).
+* **Sink** operation  is taken the frame data as input parameter to apply some software operation in order to return new data like statistics, peak positions, alarm on saturation ... etc.
+
+In addition to sink/link plugin device, a plugin can just be implemented to provide/export a subset of the Lima interface or a legacy interface for some specific client applications (e.g SPEC, LimaTacoCCD plugin).
+
+
+
+Today there are about  8 standard plugin devices:
+
+* BackgroundSubstraction : link operation, to correct the frames with a background image (substraction)
+* FlatField:               link operation to correct the frames with a flatfield image (divide + option normalisation)
+* Mask:                    link operation to mask pixels. Very useful if some pixel are not working properly and if you want to set then to a fix value or to zero.
+* PeakFinder:              thanks to Teresa Numez from DESY, a sink operation which can detect diffraction peaks.
+* Roi2Spectrum:            sink operation to apply ROI spectrum on the frames. You can define more than one spectra with ROI coordinates and by specifying in which direction you need to bin the values, vertical or horizontal.
+* RoiCounter:              sink operation to get calculating statistics on image regions. 
+
+
+* LimaTacoCCD: extra interface for TACO clients, it only provides commands (TACO does not have attribute !), it is still used at ESRF for SPEC.
+* LiveViewer:  extra interface  to provide a live view of the last acquired image, can be used from atkpanel.
+
+If you need to implement your own plugin device we can provide you some example codes, use the mailing-list lima@esrf.fr to get help.
+
+
+.. toctree::
+  :maxdepth: 2
+
+  plugins/background
+  plugins/flatfield
+  plugins/mask
+  plugins/peakfinder
+  plugins/roi2spectrum
+  plugins/roicounter
+  plugins/limatacoccd
+  plugins/liveviewer
