@@ -10,8 +10,10 @@ ControlFactory::ControlFactory()
 {
 	my_control				= 0;
 
+#ifdef SIMULATOR_ENABLED
 	my_camera_simulator 	= 0;
 	my_interface_simulator 	= 0;
+#endif
 
 #ifdef BASLER_ENABLED 
 	my_camera_basler 		= 0;
