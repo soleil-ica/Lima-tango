@@ -1,5 +1,27 @@
-BackgroundSubstraction
+Background Substraction
 =======================
+
+The Background substraction correction is a simple operation you can active when a detector has some dark-current 
+noise independent of the dose of photons it will receive.
+To set the correction  you must provide to the device a background image (**setBackgroundImage** cmd) file and 
+then start (**start** cmd) the correction.
+
+
+Properties
+----------
+This device has no property.
+
+Attributes
+----------
+
+======================= ======= ======================= ======================================================================
+Attribute name		RW	Type			Description
+======================= ======= ======================= ======================================================================
+RunLevel		rw	DevLong                 Run level in the processing chain, from 0 to N
+delete_dark_after_read  rw      DevBoolean              If true the device will delete the file after reading
+                                                        Can be useful to not keep obsolete dark image file after use	
+======================= ======= ======================= ======================================================================
+
 
 Commands
 --------
@@ -7,27 +29,9 @@ Commands
 =======================	=============== =======================	===========================================
 Command name		Arg. in		Arg. out		Description
 =======================	=============== =======================	===========================================
-Init			DevVoid 	DevVoid			Do not use
-State			DevVoid		DevLong			Return the device state
-Status			DevVoid		DevString		Return the device state as a string
-getAttrStringValueList	DevString:	DevVarStringArray:	Return the authorized string value list for
-			Attribute name	String value list	a given attribute name
+setBackgroundImage      DevString       DevVoid                 Full path of background image file
+Start                   DevVoid        	DevVoid			Start the correction for next image
+Stop                    DevVoid         DevVoid                 Stop the correction after the next image 
 =======================	=============== =======================	===========================================
 
 
-Attributes
-----------
-======================= ======= ======================= ======================================================================
-Attribute name		RW	Type			Description
-======================= ======= ======================= ======================================================================
-TODO			ro	DevShort	 	todo	
-======================= ======= ======================= ======================================================================
-
-Properties
-----------
-
-=============== =============== =============== =========================================================================
-Property name	Mandatory	Default value	Description
-=============== =============== =============== =========================================================================
-TODO		No		N/A		Todo	
-=============== =============== =============== =========================================================================

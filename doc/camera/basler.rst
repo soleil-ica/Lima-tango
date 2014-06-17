@@ -1,5 +1,30 @@
-Basler
+Basler Tango device
 ======
+
+This is the reference documentation of the Basler Tango device.
+
+you can also find some useful information about the camera models/prerequisite/installation/configuration/compilation in the :ref:`Basler camera plugin <camera-basler>` section.
+
+Properties
+----------
+
+======================== =============== =============== ==============================================================
+Property name	         Mandatory	 Default value	 Description
+======================== =============== =============== ==============================================================
+cam_ip_address	         Yes		 N/A		 The camera's ip or hostname 
+inter_packet_delay       No              0               The inter packet delay
+frame_transmission_delay No              0               The frame transmission delay
+======================== =============== =============== ==============================================================
+
+Both inter_packet_delay and frame_tranmission_delay properties can be used to tune the GiGE performance, for
+more information on how to configure a GiGE Basler camera please refer to the Basler documentation.
+
+
+Attributes
+----------
+
+This camera device has not attribute.
+
 
 Commands
 --------
@@ -15,13 +40,3 @@ getAttrStringValueList	DevString:	DevVarStringArray:	Return the authorized strin
 =======================	=============== =======================	===========================================
 
 
-Properties
-----------
-
-=============== =============== =============== ==============================================================
-Property name	Mandatory	Default value	Description
-=============== =============== =============== ==============================================================
-cam_ip_address	Yes		N/A		The camera's ip or hostname 
-packet_size	No		8000		Suppose that eth MTU is set at least to 8192 (Jumbo mode !).
-						if you want default Basler packet size set it to -1
-=============== =============== =============== ==============================================================

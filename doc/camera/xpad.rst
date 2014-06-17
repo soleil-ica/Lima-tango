@@ -1,5 +1,17 @@
-Xpad
+Xpad Tango device
 =======
+
+This is the reference documentation of the Xpad Tango device.
+
+you can also find some useful information about the camera models/prerequisite/installation/configuration/compilation in the :ref:`Xpad camera plugin <camera-xpad>` section.
+
+Properties
+----------
+None.
+
+Attributes
+----------
+None.
 
 Commands
 --------
@@ -14,20 +26,3 @@ getAttrStringValueList	DevString:	DevVarStringArray:	Return the authorized strin
 			Attribute name	String value list	a given attribute name
 =======================	=============== =======================	===========================================
 
-
-Attributes
-----------
-======================= ======= ======================= ======================================================================
-Attribute name		RW	Type			Description
-======================= ======= ======================= ======================================================================
-TODO			ro	DevShort	 	todo	
-======================= ======= ======================= ======================================================================
-
-Properties
-----------
-
-=============== =============== =============== =========================================================================
-Property name	Mandatory	Default value	Description
-=============== =============== =============== =========================================================================
-TODO		No		N/A		Todo	
-=============== =============== =============== =========================================================================

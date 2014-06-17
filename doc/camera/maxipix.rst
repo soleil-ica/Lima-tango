@@ -1,18 +1,33 @@
-Maxipix
+Maxipix Tango device
 =======
 
-Commands
---------
+This is the reference documentation of the Maxipix Tango device.
 
-=======================	=============== =======================	===========================================
-Command name		Arg. in		Arg. out		Description
-=======================	=============== =======================	===========================================
-Init			DevVoid 	DevVoid			Do not use
-State			DevVoid		DevLong			Return the device state
-Status			DevVoid		DevString		Return the device state as a string
-getAttrStringValueList	DevString:	DevVarStringArray:	Return the authorized string value list for
-			Attribute name	String value list	a given attribute name
-=======================	=============== =======================	===========================================
+you can also find some useful information about the camera models/prerequisite/installation/configuration/compilation in the :ref:`Maxipix camera plugin <camera-maxipix>` section.
+
+
+Properties
+----------
+
+===================== =============== =============== ==============================================================
+Property name	      Mandatory	      Default value   Description
+===================== =============== =============== ==============================================================
+config_name	      Yes             N/A             The configuration name
+config_path	      Yes             N/A             The configuration directory path where the files are available
+espia_dev_nb	      No              0	              The acquisition Espia board number
+reconstruction_active No              True            Activate the reconstruction or not
+fill_mode	      No              Raw             the chip-gap filling mode, **Raw**, **Zero**,
+                                                       **Dispatch** or **Mean**.
+gate_level	      No              High_Rise       The Input gate level, **High_rise** or
+						      **Low_Fall**
+gate_mode	      No              Inactive        The gate mode, **Inactive** or **Active**
+ready_level	      No              High_Rise       The output ready level, **High_rise** or
+                                                      **Low_Fall**
+ready_mode	      No              Exposure        The output Ready mode, **Exposure** or
+                                                      **Exposure_Readout**
+shutter_level	      No              High_Rise       The output Shutter level, **High_rise** or **Low_Fall**
+trigger_level	      No              High_Rise       The output Trigger level, **High_rise** or **Low_Fall**
+===================== =============== =============== ==============================================================
 
 
 Attributes
@@ -54,26 +69,25 @@ shutter_level		rw	DevString		The output Shutter level
 trigger_level		rw	DevString		The output Trigger level:
 							 - **High_rise**
 							 - **Low_Fall**
+dac_possible            ro      DevString[]             Return the list of the the possible dac names
+dac_name                rw      DevString               The dac name to be write/read (dac_value)
+dac_value               rw      DevLong                 The dac value of the given dac_name dac register
 ======================= ======= ======================= ===========================================================
 
-Properties
-----------
+**Warning**: we recommend to not change the DAC register values (dac_name and dac_value attributes) excepted
+if you well know what you are doing, if you have some troubles with the detector please contact the ESRF Detector
+Unit first.
+ 
+Commands
+--------
 
-=============== =============== =============== ==============================================================
-Property name	Mandatory	Default value	Description
-=============== =============== =============== ==============================================================
-config_name	Yes		N/A		The configuration name
-config_path	Yes		N/A		the configuration directory path where the files are available
-espia_dev_nb	No		0		The acquisition Espia board number
-fill_mode	No		Raw		The chip-gap filling mode, **Raw**, **Zero**,
-						**Dispatch** or **Mean**.
-gate_level	No		High_Rise	The Input gate level, **High_rise** or
-						**Low_Fall**
-gate_mode	No		Inactive	The gate mode, **Inactive** or **Active**
-ready_level	No		High_Rise	The output ready level, **High_rise** or
-						**Low_Fall**
-ready_mode	No		Exposure	The output Ready mode, **Exposure** or
-						**Exposure_Readout**
-shutter_level	No		High_Rise	The output Shutter level, **High_rise** or **Low_Fall**
-trigger_level	No		High_Rise	The output Trigger level, **High_rise** or **Low_Fall**
-=============== =============== =============== ==============================================================
+=======================	=============== =======================	===========================================
+Command name		Arg. in		Arg. out		Description
+=======================	=============== =======================	===========================================
+Init			DevVoid 	DevVoid			Do not use
+State			DevVoid		DevLong			Return the device state
+Status			DevVoid		DevString		Return the device state as a string
+getAttrStringValueList	DevString:	DevVarStringArray:	Return the authorized string value list for
+			Attribute name	String value list	a given attribute name
+=======================	=============== =======================	===========================================
+

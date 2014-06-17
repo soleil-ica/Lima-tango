@@ -1,5 +1,16 @@
-Ueye
+Ueye Tango device
 =======
+
+This is the reference documentation of the Simulator Tango device.
+
+you can also find some useful information about the camera models/prerequisite/installation/configuration/compilation in the :ref:`Ueye camera plugin <camera-ueye>` section.
+
+Properties
+----------
+This device has no property neither attribute.
+
+Attributes
+----------
 
 Commands
 --------
@@ -15,19 +26,7 @@ getAttrStringValueList	DevString:	DevVarStringArray:	Return the authorized strin
 =======================	=============== =======================	===========================================
 
 
-Attributes
-----------
-======================= ======= ======================= ======================================================================
-Attribute name		RW	Type			Description
-======================= ======= ======================= ======================================================================
-TODO			ro	DevShort	 	todo	
-======================= ======= ======================= ======================================================================
 
-Properties
-----------
 
-=============== =============== =============== =========================================================================
-Property name	Mandatory	Default value	Description
-=============== =============== =============== =========================================================================
-TODO		No		N/A		Todo	
-=============== =============== =============== =========================================================================
+
+
