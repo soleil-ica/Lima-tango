@@ -817,12 +817,12 @@ void XpadPixelDetector::save_config_g(const Tango::DevVarULongArray *argin)
 
 	//	Add your own code to control device here
 
-    //- argin length doit etre de taille: 3 + 7 = 10
-    if(argin->length()!= 10)
+    //- argin length doit etre de taille: 3 + 11 = 14
+    if(argin->length()!= 14)
     {
         Tango::Except::throw_exception(
                     static_cast<const char*> ("PARAMETER_ERROR"),
-                    static_cast<const char*> ("The size of the argin paramater is not good: there should be 10 values (3+7)"),
+                    static_cast<const char*> ("The size of the argin paramater is not good: there should be 14 values (3+11)"),
                     static_cast<const char*> ("XpadPixelDetector::save_config_g"));
     }
 
