@@ -363,6 +363,10 @@ public :
  */
 	virtual bool is_LoadConfig_allowed(const CORBA::Any &any);
 /**
+ *	Execution allowed for LoadConfigG command.
+ */
+	virtual bool is_LoadConfigG_allowed(const CORBA::Any &any);
+/**
  *	Execution allowed for Reset command.
  */
 	virtual bool is_Reset_allowed(const CORBA::Any &any);
@@ -383,8 +387,7 @@ public :
  */
 	void	load_flat_config(Tango::DevULong);
 /**
- * This function loads in all the global registers the value passed as parameters.
- *	the order if the configG is as follow: CMOS_DSBL ; AMP_TP;ITHH;VADJ;VREF;IMFP;IOTA;IPRE;ITHL;ITUNE;IBUFFER
+ * IBUFFER
  *	@param	argin	modNum(1..8), chipId(0..6), config_values (11 values)
  *	@exception DevFailed
  */
@@ -413,6 +416,24 @@ public :
  *	@exception DevFailed
  */
 	void	load_config(const Tango::DevVarULongArray *);
+/**
+ * Load a value of a wanted config G register.
+ *	register IDs are:
+ *	CMOS_DSBL_V32  0x01 
+ *	AMP_TP_V32     0x1F
+ *	ITHH_V32       0x33
+ *	VADJ_V32       0x35
+ *	VREF_V32       0x36
+ *	IMFP_V32       0x3b
+ *	IOTA_V32       0x3c
+ *	IPRE_V32       0x3d
+ *	ITHL_V32       0x3e
+ *	TUNE_V32      0x3f
+ *	IBUFFER_V32    0x40
+ *	@param	argin	modNum(1..8), chipId(0..6), register ID, register value
+ *	@exception DevFailed
+ */
+	void	load_config_g(const Tango::DevVarULongArray *);
 /**
  * Reset the Xpad : call the xpci_hubModRebootNIOS(modMask) xpix function
  *	@exception DevFailed

@@ -120,8 +120,7 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <A NAME="LoadAllConfigG"><!-- --></A>
 <h2>5 - LoadAllConfigG</h2>
 <ul>
-<Li><Strong>Description: </Strong> This function loads in all the global registers the value passed as parameters.
-the order if the configG is as follow: CMOS_DSBL ; AMP_TP;ITHH;VADJ;VREF;IMFP;IOTA;IPRE;ITHL;ITUNE;IBUFFER<Br>&nbsp
+<Li><Strong>Description: </Strong> IBUFFER<Br>&nbsp
 <Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
  : modNum(1..8), chipId(0..6), config_values (11 values)<Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
@@ -179,9 +178,35 @@ into the config registers.<Br>&nbsp
 <Br>&nbsp
 </ul><Br>
 <Br>
+<A NAME="LoadConfigG"><!-- --></A>
+<A NAME="LoadConfigG"><!-- --></A>
+<h2>9 - LoadConfigG</h2>
+<ul>
+<Li><Strong>Description: </Strong> Load a value of a wanted config G register.
+register IDs are:
+CMOS_DSBL_V32  0x01 
+AMP_TP_V32     0x1F
+ITHH_V32       0x33
+VADJ_V32       0x35
+VREF_V32       0x36
+IMFP_V32       0x3b
+IOTA_V32       0x3c
+IPRE_V32       0x3d
+ITHL_V32       0x3e
+TUNE_V32      0x3f
+IBUFFER_V32    0x40<Br>&nbsp
+<Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
+ : modNum(1..8), chipId(0..6), register ID, register value<Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::STANDBY</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
 <A NAME="Reset"><!-- --></A>
 <A NAME="Reset"><!-- --></A>
-<h2>9 - Reset</h2>
+<h2>10 - Reset</h2>
 <ul>
 <Li><Strong>Description: </Strong> Reset the Xpad : call the xpci_hubModRebootNIOS(modMask) xpix function<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
@@ -195,7 +220,7 @@ into the config registers.<Br>&nbsp
 <Br>
 <A NAME="GetModConfig"><!-- --></A>
 <A NAME="GetModConfig"><!-- --></A>
-<h2>10 - GetModConfig</h2>
+<h2>11 - GetModConfig</h2>
 <ul>
 <Li><Strong>Description: </Strong> This fonction read the values of the local configuration registers currently loaded 
 in the detector for all the chips on all the modules. Data are received in the format of 2 bytes per pixel with 

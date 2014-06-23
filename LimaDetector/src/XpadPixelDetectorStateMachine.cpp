@@ -392,5 +392,25 @@ bool XpadPixelDetector::is_GetModConfig_allowed(const CORBA::Any &any)
 	}
 	return true;
 }
+//+----------------------------------------------------------------------------
+//
+// method : 		XpadPixelDetector::is_LoadConfigG_allowed
+// 
+// description : 	Execution allowed for LoadConfigG command.
+//
+//-----------------------------------------------------------------------------
+bool XpadPixelDetector::is_LoadConfigG_allowed(const CORBA::Any &any)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::RUNNING	||
+		get_state() == Tango::FAULT)
+	{
+		//	End of Generated Code
+
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
 
 }	// namespace XpadPixelDetector_ns

@@ -54,6 +54,7 @@ static const char *RcsId = "$Id:  $";
 //  SaveConfigL     |  save_config_l()
 //  SaveConfigG     |  save_config_g()
 //  LoadConfig      |  load_config()
+//  LoadConfigG     |  load_config_g()
 //  Reset           |  reset()
 //  GetModConfig    |  get_mod_config()
 //
@@ -1063,8 +1064,7 @@ Tango::DevVarUShortArray *XpadPixelDetector::get_mod_config()
  *	method:	XpadPixelDetector::load_all_config_g
  *
  *	description:	method to execute "LoadAllConfigG"
- *	This function loads in all the global registers the value passed as parameters.
- *	the order if the configG is as follow: CMOS_DSBL ; AMP_TP;ITHH;VADJ;VREF;IMFP;IOTA;IPRE;ITHL;ITUNE;IBUFFER
+ *	IBUFFER
  *
  * @param	argin	modNum(1..8), chipId(0..6), config_values (11 values)
  *
@@ -1081,7 +1081,7 @@ void XpadPixelDetector::load_all_config_g(const Tango::DevVarULongArray *argin)
     {
         Tango::Except::throw_exception(
                     static_cast<const char*> ("PARAMETER_ERROR"),
-                    static_cast<const char*> ("The size of the argin paramater is not good: there should be 3 values (2+11)"),
+                    static_cast<const char*> ("The size of the argin paramater is not good: there should be 13 values (2+11)"),
                     static_cast<const char*> ("XpadPixelDetector::load_all_config_g"));
     }
     try
@@ -1097,5 +1097,59 @@ void XpadPixelDetector::load_all_config_g(const Tango::DevVarULongArray *argin)
                     static_cast<const char*> ("XpadPixelDetector::load_all_config_g"));
     }
 }
+
+
+//+------------------------------------------------------------------
+/**
+ *	method:	XpadPixelDetector::load_config_g
+ *
+ *	description:	method to execute "LoadConfigG"
+ *	Load a value of a wanted config G register.
+ *	register IDs are:
+ *	CMOS_DSBL_V32  0x01 
+ *	AMP_TP_V32     0x1F
+ *	ITHH_V32       0x33
+ *	VADJ_V32       0x35
+ *	VREF_V32       0x36
+ *	IMFP_V32       0x3b
+ *	IOTA_V32       0x3c
+ *	IPRE_V32       0x3d
+ *	ITHL_V32       0x3e
+ *	TUNE_V32      0x3f
+ *	IBUFFER_V32    0x40
+ *
+ * @param	argin	modNum(1..8), chipId(0..6), register ID, register value
+ *
+ */
+//+------------------------------------------------------------------
+void XpadPixelDetector::load_config_g(const Tango::DevVarULongArray *argin)
+{
+	DEBUG_STREAM << "XpadPixelDetector::load_config_g(): entering... !" << endl;
+
+	//	Add your own code to control device here
+
+	//- argin length doit etre de taille 4: module number, chip Id, register ID , register value
+    if(argin->length()!= 4)
+    {
+        Tango::Except::throw_exception(
+                    static_cast<const char*> ("PARAMETER_ERROR"),
+					static_cast<const char*> ("The size of the argin paramater is not good: there should be 4 values"),
+                    static_cast<const char*> ("XpadPixelDetector::load_config_g"));
+    }
+    try
+    {
+        m_camera->loadConfigG((*argin)[0],(*argin)[1],(*argin)[2],(*argin)[3]);
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        Tango::Except::throw_exception(
+                    static_cast<const char*> ("LIMA_ERROR"),
+                    static_cast<const char*> (e.getErrMsg().c_str()),
+                    static_cast<const char*> ("XpadPixelDetector::load_config_g"));
+    }
+
+}
+
 
 }	//	namespace
