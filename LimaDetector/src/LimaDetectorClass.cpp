@@ -67,7 +67,7 @@ namespace LimaDetector_ns
 {
 //+----------------------------------------------------------------------------
 //
-// method : 		NexusResetBufferIndexCmd::execute()
+// method : 		ResetFileIndexClass::execute()
 // 
 // description : 	method to trigger the execution of the command.
 //                PLEASE DO NOT MODIFY this method core without pogo   
@@ -78,15 +78,14 @@ namespace LimaDetector_ns
 // returns : The command output data (packed in the Any object)
 //
 //-----------------------------------------------------------------------------
-CORBA::Any *NexusResetBufferIndexCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+CORBA::Any *ResetFileIndexClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
 {
 
-	cout2 << "NexusResetBufferIndexCmd::execute(): arrived" << endl;
+	cout2 << "ResetFileIndexClass::execute(): arrived" << endl;
 
-	((static_cast<LimaDetector *>(device))->nexus_reset_buffer_index());
+	((static_cast<LimaDetector *>(device))->reset_file_index());
 	return new CORBA::Any();
 }
-
 
 //+----------------------------------------------------------------------------
 //
@@ -461,7 +460,7 @@ void LimaDetectorClass::command_factory()
 		"",
 		"",
 		Tango::EXPERT));
-	command_list.push_back(new NexusResetBufferIndexCmd("NexusResetBufferIndex",
+	command_list.push_back(new ResetFileIndexClass("ResetFileIndex",
 		Tango::DEV_VOID, Tango::DEV_VOID,
 		"",
 		"",

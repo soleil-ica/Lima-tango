@@ -877,12 +877,12 @@ bool LimaDetector::is_ResetBinning_allowed(const CORBA::Any &any)
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		LimaDetector::is_NexusResetBufferIndex_allowed
+// method : 		LimaDetector::is_ResetFileIndex_allowed
 // 
-// description : 	Execution allowed for NexusResetBufferIndex command.
+// description : 	Execution allowed for ResetFileIndex command.
 //
 //-----------------------------------------------------------------------------
-bool LimaDetector::is_NexusResetBufferIndex_allowed(const CORBA::Any &any)
+bool LimaDetector::is_ResetFileIndex_allowed(const CORBA::Any &any)
 {
 	if (get_state() == Tango::INIT	||
 		get_state() == Tango::FAULT	||

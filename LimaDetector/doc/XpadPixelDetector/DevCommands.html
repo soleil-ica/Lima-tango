@@ -106,13 +106,13 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <A NAME="LoadFlatConfig"><!-- --></A>
 <h2>4 - LoadFlatConfig</h2>
 <ul>
-<Li><Strong>Description: </Strong> <Br>&nbsp
+<Li><Strong>Description: </Strong> Load a Flat value to all pixels<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_ULONG</Strong>
  : Flat value to be loaded<Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Command allowed for: </Strong><Ul>
-<Li>Tango::STANDBY<Li>Tango::DISABLE</Ul>
+<Li>Tango::STANDBY</Ul>
 <Br>&nbsp
 </ul><Br>
 <Br>
@@ -120,13 +120,13 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <A NAME="LoadAllConfigG"><!-- --></A>
 <h2>5 - LoadAllConfigG</h2>
 <ul>
-<Li><Strong>Description: </Strong> <Br>&nbsp
+<Li><Strong>Description: </Strong> Load the config G(lobal) to a module and a chip<Br>&nbsp
 <Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
  : modNum(1..8), chipId(0..6), config_values (11 values)<Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Command allowed for: </Strong><Ul>
-<Li>Tango::STANDBY<Li>Tango::DISABLE</Ul>
+<Li>Tango::STANDBY</Ul>
 <Br>&nbsp
 </ul><Br>
 <Br>
@@ -134,13 +134,13 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <A NAME="SaveConfigL"><!-- --></A>
 <h2>6 - SaveConfigL</h2>
 <ul>
-<Li><Strong>Description: </Strong> <Br>&nbsp
+<Li><Strong>Description: </Strong> ?<Br>&nbsp
 <Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
  : modNum(1..8), calibId(0..6), chipId(0..7), curRow (0..119), values (80 values)<Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Command allowed for: </Strong><Ul>
-<Li>Tango::STANDBY<Li>Tango::DISABLE</Ul>
+<Li>Tango::STANDBY</Ul>
 <Br>&nbsp
 </ul><Br>
 <Br>
@@ -148,13 +148,13 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <A NAME="SaveConfigG"><!-- --></A>
 <h2>7 - SaveConfigG</h2>
 <ul>
-<Li><Strong>Description: </Strong> <Br>&nbsp
+<Li><Strong>Description: </Strong> ?<Br>&nbsp
 <Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
  : modNum(1..8), calibId(0..6), reg, values (7 values)<Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Command allowed for: </Strong><Ul>
-<Li>Tango::STANDBY<Li>Tango::DISABLE</Ul>
+<Li>Tango::STANDBY</Ul>
 <Br>&nbsp
 </ul><Br>
 <Br>
@@ -162,33 +162,59 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <A NAME="LoadConfig"><!-- --></A>
 <h2>8 - LoadConfig</h2>
 <ul>
-<Li><Strong>Description: </Strong> <Br>&nbsp
+<Li><Strong>Description: </Strong> ?<Br>&nbsp
 <Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
  : modNum(1..8), calibId(0..6)<Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Command allowed for: </Strong><Ul>
-<Li>Tango::STANDBY<Li>Tango::DISABLE</Ul>
+<Li>Tango::STANDBY</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
+<A NAME="LoadConfigG"><!-- --></A>
+<A NAME="LoadConfigG"><!-- --></A>
+<h2>9 - LoadConfigG</h2>
+<ul>
+<Li><Strong>Description: </Strong> Load a value of a wanted config G register.
+register IDs are:
+CMOS_DSBL_V32  0x01 
+AMP_TP_V32     0x1F
+ITHH_V32       0x33
+VADJ_V32       0x35
+VREF_V32       0x36
+IMFP_V32       0x3b
+IOTA_V32       0x3c
+IPRE_V32       0x3d
+ITHL_V32       0x3e
+TUNE_V32      0x3f
+IBUFFER_V32    0x40<Br>&nbsp
+<Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
+ : modNum(1..8), chipId(0..6), register ID, register value<Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::STANDBY</Ul>
 <Br>&nbsp
 </ul><Br>
 <Br>
 <A NAME="Reset"><!-- --></A>
 <A NAME="Reset"><!-- --></A>
-<h2>9 - Reset</h2>
+<h2>10 - Reset</h2>
 <ul>
-<Li><Strong>Description: </Strong> <Br>&nbsp
+<Li><Strong>Description: </Strong> Reset the Xpad<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Command allowed for: </Strong><Ul>
-<Li>Tango::INIT<Li>Tango::STANDBY<Li>Tango::FAULT<Li>Tango::DISABLE</Ul>
+<Li>Tango::INIT<Li>Tango::STANDBY<Li>Tango::FAULT</Ul>
 <Br>&nbsp
 </ul><Br>
 <Br>
 <A NAME="GetDacl"><!-- --></A>
 <A NAME="GetDacl"><!-- --></A>
-<h2>10 - GetDacl</h2>
+<h2>11 - GetDacl (for expert only)</h2>
 <ul>
 <Li><Strong>Description: </Strong> <Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
@@ -202,7 +228,7 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <Br>
 <A NAME="GetIthl"><!-- --></A>
 <A NAME="GetIthl"><!-- --></A>
-<h2>11 - GetIthl</h2>
+<h2>12 - GetIthl (for expert only)</h2>
 <ul>
 <Li><Strong>Description: </Strong> <Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
@@ -216,9 +242,9 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <Br>
 <A NAME="CalibrateOTNSlow"><!-- --></A>
 <A NAME="CalibrateOTNSlow"><!-- --></A>
-<h2>12 - CalibrateOTNSlow</h2>
+<h2>13 - CalibrateOTNSlow</h2>
 <ul>
-<Li><Strong>Description: </Strong> <Br>&nbsp
+<Li><Strong>Description: </Strong> Start the Over The Noise Slow calibration<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
@@ -230,9 +256,9 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <Br>
 <A NAME="UploadCalibration"><!-- --></A>
 <A NAME="UploadCalibration"><!-- --></A>
-<h2>13 - UploadCalibration</h2>
+<h2>14 - UploadCalibration</h2>
 <ul>
-<Li><Strong>Description: </Strong> <Br>&nbsp
+<Li><Strong>Description: </Strong> Upload a calibration from a file defined in the property CalibrationPath<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
@@ -244,9 +270,9 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <Br>
 <A NAME="UploadWaitTimes"><!-- --></A>
 <A NAME="UploadWaitTimes"><!-- --></A>
-<h2>14 - UploadWaitTimes</h2>
+<h2>15 - UploadWaitTimes</h2>
 <ul>
-<Li><Strong>Description: </Strong> <Br>&nbsp
+<Li><Strong>Description: </Strong> Upload a tralectory of wait times, instead of having always the same value<Br>&nbsp
 <Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
  : the wait times<Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
@@ -258,9 +284,9 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <Br>
 <A NAME="IncrementITHL"><!-- --></A>
 <A NAME="IncrementITHL"><!-- --></A>
-<h2>15 - IncrementITHL</h2>
+<h2>16 - IncrementITHL</h2>
 <ul>
-<Li><Strong>Description: </Strong> <Br>&nbsp
+<Li><Strong>Description: </Strong> Increment the ITHL of 1 unit<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
@@ -272,9 +298,9 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <Br>
 <A NAME="DecrementITHL"><!-- --></A>
 <A NAME="DecrementITHL"><!-- --></A>
-<h2>16 - DecrementITHL</h2>
+<h2>17 - DecrementITHL</h2>
 <ul>
-<Li><Strong>Description: </Strong> <Br>&nbsp
+<Li><Strong>Description: </Strong> Decrement the ITHL of 1 unit<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>

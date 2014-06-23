@@ -59,7 +59,7 @@ static const char *RcsId = "$Id:  $";
 //  GetAttributeAvailableValues  |  get_attribute_available_values()
 //  OpenShutter                  |  open_shutter()
 //  CloseShutter                 |  close_shutter()
-//  NexusResetBufferIndex        |  nexus_reset_buffer_index()
+//  ResetFileIndex               |  reset_file_index()
 //
 //===================================================================
 #include <tango.h>
@@ -3706,23 +3706,22 @@ void LimaDetector::close_shutter()
 
 //+------------------------------------------------------------------
 /**
- *	method:	LimaDetector::nexus_reset_buffer_index
+ *	method:	LimaDetector::reset_file_index
  *
- *	description:	method to execute "NexusResetBufferIndex"
- *	Reset the nexus buffer index to index 1.
+ *	description:	method to execute "ResetFileIndex"
+ *	Reset the file index
  *
  *
  */
 //+------------------------------------------------------------------
-void LimaDetector::nexus_reset_buffer_index()
+void LimaDetector::reset_file_index()
 {
-	DEBUG_STREAM << "LimaDetector::nexus_reset_buffer_index(): entering... !" << endl;
+	DEBUG_STREAM << "LimaDetector::reset_file_index(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
 	m_ct->saving()->clear();
 
 }
-
 
 }	//	namespace
