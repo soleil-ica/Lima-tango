@@ -45,16 +45,16 @@ static const char *RcsId = "$Id:  $";
 //	The following table gives the correspondence
 //	between commands and method name.
 //
-//  Command name           |  Method name
+//  Command name    |  Method name
 //	----------------------------------------
-//  State                  |  dev_state()
-//  Status                 |  dev_status()
-//  Snap                   |  snap()
-//  Start                  |  start()
-//  Stop                   |  stop()
-//  SetROI                 |  set_roi()
-//  SetBinning             |  set_binning()
-//  NexusResetBufferIndex  |  nexus_reset_buffer_index()
+//  State           |  dev_state()
+//  Status          |  dev_status()
+//  Snap            |  snap()
+//  Start           |  start()
+//  Stop            |  stop()
+//  SetROI          |  set_roi()
+//  SetBinning      |  set_binning()
+//  ResetFileIndex  |  reset_file_index()
 //
 //===================================================================
 
@@ -2460,24 +2460,22 @@ int LimaDetector::find_index_from_property_name(Tango::DbData& dev_prop, string 
 
 //+------------------------------------------------------------------
 /**
- *	method:	LimaDetector::nexus_reset_buffer_index
+ *	method:	LimaDetector::reset_file_index
  *
- *	description:	method to execute "NexusResetBufferIndex"
- *	Reset the nexus buffer index to index 1.
+ *	description:	method to execute "ResetFileIndex"
+ *	Reset the file index
  *
  *
  */
 //+------------------------------------------------------------------
-void LimaDetector::nexus_reset_buffer_index()
+void LimaDetector::reset_file_index()
 {
-	DEBUG_STREAM << "LimaDetector::nexus_reset_buffer_index(): entering... !" << endl;
+	DEBUG_STREAM << "LimaDetector::reset_file_index(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
-    m_ct->saving()->clear();
+	m_ct->saving()->clear();
 
 }
-
-
 
 }	//	namespace

@@ -277,10 +277,10 @@ public:
 //=========================================
 //	Define classes for commands
 //=========================================
-class NexusResetBufferIndexCmd : public Tango::Command
+class ResetFileIndexCmd : public Tango::Command
 {
 public:
-	NexusResetBufferIndexCmd(const char   *name,
+	ResetFileIndexCmd(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out,
 				   const char        *in_desc,
@@ -288,15 +288,15 @@ public:
 				   Tango::DispLevel  level)
 	:Command(name,in,out,in_desc,out_desc, level)	{};
 
-	NexusResetBufferIndexCmd(const char   *name,
+	ResetFileIndexCmd(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out)
 	:Command(name,in,out)	{};
-	~NexusResetBufferIndexCmd() {};
+	~ResetFileIndexCmd() {};
 	
 	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
 	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
-	{return (static_cast<LimaDetector *>(dev))->is_NexusResetBufferIndex_allowed(any);}
+	{return (static_cast<LimaDetector *>(dev))->is_ResetFileIndex_allowed(any);}
 };
 
 
