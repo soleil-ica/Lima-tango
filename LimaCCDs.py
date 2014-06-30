@@ -234,6 +234,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
         
         self.__SavingFormat = {'RAW' : Core.CtSaving.RAW,
                                'EDF' : Core.CtSaving.EDF,
+                               'HDF5' : Core.CtSaving.HDF5,
                                'CBF' : Core.CtSaving.CBFFormat}
 	try:
 	    self.__SavingFormat['TIFF'] = Core.CtSaving.TIFFFormat
@@ -248,6 +249,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
 
         self.__SavingFormatDefaultSuffix = {Core.CtSaving.RAW : '.raw',
                                             Core.CtSaving.EDF : '.edf',
+                                            Core.CtSaving.HDF5 : '.h5',
                                             Core.CtSaving.CBFFormat : '.cbf'}
 	try:
 	    self.__SavingFormatDefaultSuffix[Core.CtSaving.TIFFFormat] = '.tiff'
@@ -260,7 +262,8 @@ class LimaCCDs(PyTango.Device_4Impl) :
 
         self.__SavingOverwritePolicy = {'ABORT' : Core.CtSaving.Abort,
                                         'OVERWRITE' : Core.CtSaving.Overwrite,
-                                        'APPEND' : Core.CtSaving.Append}
+                                        'APPEND' : Core.CtSaving.Append,
+                                        'MULTISET' : Core.CtSaving.MultiSet}
 
         self.__AcqTriggerMode = {'INTERNAL_TRIGGER' : Core.IntTrig,
                                  'EXTERNAL_TRIGGER' : Core.ExtTrigSingle,
@@ -786,7 +789,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
     @Core.DEB_MEMBER_FUNCT
     def write_saving_common_header(self,attr) :
         data = attr.get_write_value()
-        header = dict([x.split(self.__key_header_delimiter) for x in data])
+        header = dict([x.split(self.__key_header_delimiter,1) for x in data])
         saving = self.__control.saving()
         saving.setCommonHeader(header)
 
@@ -1610,6 +1613,9 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         'ConfigurationDefaultName' :
         [PyTango.DevString,
          "Default configuration name",["default"]],
+        'UserDetectorName' :
+        [PyTango.DevString,
+         "A user detector identifier, e.g ID02_frelon_saxs"],
         }
 
     #    Command definitions
@@ -1696,6 +1702,14 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         [[PyTango.DevString,
           PyTango.SCALAR,
           PyTango.READ]],
+        'user_detector_name':
+        [[PyTango.DevString,
+          PyTango.SCALAR,
+          PyTango.READ_WRITE],
+	  {
+             'label': "user detector name",
+             'description':"A user defined detector name, will be saved in the saved file header",
+         }],
         'camera_pixelsize':
         [[PyTango.DevDouble,
           PyTango.SPECTRUM,
