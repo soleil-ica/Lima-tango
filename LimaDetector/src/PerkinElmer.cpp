@@ -559,7 +559,7 @@ Tango::DevState PerkinElmer::dev_state()
     }
     else
 	{
-		//state&status are retrieved from specific device
+		// state & status are retrieved from Factory, Factory is updated by Generic device
 		DeviceState = ControlFactory::instance().get_state();
 		DeviceStatus << ControlFactory::instance().get_status();		
     }

@@ -869,6 +869,21 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
+	prop_name = "DisplayType";
+	prop_desc = "Choose the way to display the image :<br>\n- VIDEO : use ctVideo->LastImage()\n- ACQUISITION : use ctControl->ReadImage()";
+	prop_def  = "VIDEO";
+	vect_data.clear();
+	vect_data.push_back("VIDEO");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
 	prop_name = "FileFormat";
 	prop_desc = "Define the format of image files :<BR>\nAvailables values :<br>\n- EDF<BR>\n- NXS<BR>\n- RAW<BR>\n";
 	prop_def  = "NXS";

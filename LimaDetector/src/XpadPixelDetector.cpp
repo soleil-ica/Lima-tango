@@ -200,7 +200,7 @@ void XpadPixelDetector::init_device()
 
     m_is_device_initialized = true;
     set_state(Tango::STANDBY);
-    this->dev_state();
+    dev_state();
 }
 
 
@@ -747,7 +747,7 @@ Tango::DevState XpadPixelDetector::dev_state()
     }
     else
 	{
-		//state&status are retrieved from specific device
+		// state & status are retrieved from Factory, Factory is updated by Generic device
 		DeviceState = ControlFactory::instance().get_state();
 		DeviceStatus << ControlFactory::instance().get_status();		
     }

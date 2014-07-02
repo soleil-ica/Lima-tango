@@ -55,6 +55,7 @@
 #include "CtAccumulation.h"
 #include "CtSaving.h"
 #include "CtImage.h"
+#include "Data.h"
 #include "CtVideo.h"
 #include "CtShutter.h"
 
@@ -234,6 +235,12 @@ public :
  *	Otherwise, use only NONE.
  */
 	string	detectorVideoMode;
+/**
+ *	Choose the way to display the image :<br>
+ *	- VIDEO : use ctVideo->LastImage()
+ *	- ACQUISITION : use ctControl->ReadImage()
+ */
+	string	displayType;
 /**
  *	Define the format of image files :<BR>
  *	Availables values :<br>

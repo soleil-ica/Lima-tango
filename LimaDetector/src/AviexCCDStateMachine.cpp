@@ -400,66 +400,50 @@ bool AviexCCD::is_mxLibraryVersion_allowed(Tango::AttReqType type)
 	}
 	return true;
 }
-//+----------------------------------------------------------------------------
-//
-// method : 		AviexCCD::is_offsetCorrection_allowed
-// 
-// description : 	Read/Write allowed for offsetCorrection attribute.
-//
-//-----------------------------------------------------------------------------
-bool AviexCCD::is_offsetCorrection_allowed(Tango::AttReqType type)
-{
-	if (get_state() == Tango::INIT	||
-		get_state() == Tango::FAULT	||
-		get_state() == Tango::RUNNING)
-	{
-		//	End of Generated Code
-		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
-		{
-           return true;
-		}
-		
-		if ( get_state()==Tango::FAULT && is_device_initialized() )
-		{
-           return true;
-		}	
-		//	Re-Start of Generated Code
-		return false;
-	}
-	return true;
-}
-//+----------------------------------------------------------------------------
-//
-// method : 		AviexCCD::is_linearization_allowed
-// 
-// description : 	Read/Write allowed for linearization attribute.
-//
-//-----------------------------------------------------------------------------
-bool AviexCCD::is_linearization_allowed(Tango::AttReqType type)
-{
-	if (get_state() == Tango::INIT	||
-		get_state() == Tango::FAULT	||
-		get_state() == Tango::RUNNING)
-	{
-		//	End of Generated Code
-		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
-		{
-           return true;
-		}
-		
-		if ( get_state()==Tango::FAULT && is_device_initialized() )
-		{
-           return true;
-		}	
-		//	Re-Start of Generated Code
-		return false;
-	}
-	return true;
-}
 
 //=================================================
 //		Commands Allowed Methods
 //=================================================
 
+//+----------------------------------------------------------------------------
+//
+// method : 		AviexCCD::is_SetParam_allowed
+// 
+// description : 	Execution allowed for SetParam command.
+//
+//-----------------------------------------------------------------------------
+bool AviexCCD::is_SetParam_allowed(const CORBA::Any &any)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
+	{
+		//	End of Generated Code
+
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		AviexCCD::is_GetParam_allowed
+// 
+// description : 	Execution allowed for GetParam command.
+//
+//-----------------------------------------------------------------------------
+bool AviexCCD::is_GetParam_allowed(const CORBA::Any &any)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
+	{
+		//	End of Generated Code
+
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
 
 }	// namespace AviexCCD_ns
