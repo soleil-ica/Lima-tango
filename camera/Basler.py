@@ -92,7 +92,7 @@ class Basler(PyTango.Device_4Impl):
 #==================================================================
     def __getattr__(self,name) :
         #use AttrHelper
-        return get_attr_4u(self,name,_BaslerAcq)
+        return get_attr_4u(self,name,_BaslerCam)
 
 
 #==================================================================

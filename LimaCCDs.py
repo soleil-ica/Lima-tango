@@ -235,6 +235,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
         
         self.__SavingFormat = {'RAW' : Core.CtSaving.RAW,
                                'EDF' : Core.CtSaving.EDF,
+                               'HDF5' : Core.CtSaving.HDF5,
                                'CBF' : Core.CtSaving.CBFFormat}
         try:
             self.__SavingFormat['TIFF'] = Core.CtSaving.TIFFFormat
@@ -249,6 +250,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
 
         self.__SavingFormatDefaultSuffix = {Core.CtSaving.RAW : '.raw',
                                             Core.CtSaving.EDF : '.edf',
+                                            Core.CtSaving.HDF5 : '.h5',
                                             Core.CtSaving.CBFFormat : '.cbf'}
 
         try:
@@ -262,7 +264,8 @@ class LimaCCDs(PyTango.Device_4Impl) :
 
         self.__SavingOverwritePolicy = {'ABORT' : Core.CtSaving.Abort,
                                         'OVERWRITE' : Core.CtSaving.Overwrite,
-                                        'APPEND' : Core.CtSaving.Append}
+                                        'APPEND' : Core.CtSaving.Append,
+                                        'MULTISET' : Core.CtSaving.MultiSet}
 
         self.__AcqTriggerMode = {'INTERNAL_TRIGGER' : Core.IntTrig,
                                  'EXTERNAL_TRIGGER' : Core.ExtTrigSingle,
@@ -299,8 +302,8 @@ class LimaCCDs(PyTango.Device_4Impl) :
                                 'RGB32'      : Core.RGB32,
                                 'BGR24'      : Core.BGR24,
                                 'BGR32'      : Core.BGR32,
-                                'BAYER RG8'  : Core.BAYER_RG8,
-                                'BAYER RG16' : Core.BAYER_RG16,
+                                'BAYER_RG8'  : Core.BAYER_RG8,
+                                'BAYER_RG16' : Core.BAYER_RG16,
                                 'I420'       : Core.I420,
                                 'YUV411'     : Core.YUV411,
                                 'YUV422'     : Core.YUV422,
@@ -308,6 +311,13 @@ class LimaCCDs(PyTango.Device_4Impl) :
         except AttributeError:
             import traceback
             traceback.print_exc()
+
+	try:
+	    self.__VideoMode['BAYER_BG8'] = Core.BAYER_BG8
+	    self.__VideoMode['BAYER_BG16'] = Core.BAYER_BG16
+	except AttributeError:
+	    pass
+
 
         #INIT display shared memory
         try:
@@ -805,7 +815,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
     @Core.DEB_MEMBER_FUNCT
     def write_saving_common_header(self,attr) :
         data = attr.get_write_value()
-        header = dict([x.split(self.__key_header_delimiter) for x in data])
+        header = dict([x.split(self.__key_header_delimiter,1) for x in data])
         saving = self.__control.saving()
         saving.setCommonHeader(header)
 
@@ -1560,7 +1570,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
     def configStore(self,args):
         config_name = args.pop(0)
         config = self.__control.config()
-        config.store(config_name,*args)
+        config.store(config_name,args)
 
     @Core.DEB_MEMBER_FUNCT
     def configApply(self,config_name):
@@ -1618,6 +1628,9 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         'MaxVideoFPS' :
         [PyTango.DevDouble,
          "Maximum number of FPS for video",[30.0]],
+        'UserDetectorName' :
+        [PyTango.DevString,
+         "A user detector identifier, e.g ID02_frelon_saxs"],
         }
 
     #    Command definitions
@@ -1704,6 +1717,14 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         [[PyTango.DevString,
           PyTango.SCALAR,
           PyTango.READ]],
+        'user_detector_name':
+        [[PyTango.DevString,
+          PyTango.SCALAR,
+          PyTango.READ_WRITE],
+	  {
+             'label': "user detector name",
+             'description':"A user defined detector name, will be saved in the saved file header",
+         }],
         'camera_pixelsize':
         [[PyTango.DevDouble,
           PyTango.SPECTRUM,
