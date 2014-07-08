@@ -472,7 +472,6 @@ void ControlFactory::reset(const std::string& detector_type)
 
             if (m_camera)
             {
-
 #ifdef SIMULATOR_ENABLED        
                 if (detector_type == "SimulatorCCD")
                 {
@@ -585,7 +584,7 @@ void ControlFactory::reset(const std::string& detector_type)
             {
                 delete m_interface;
                 m_interface = 0;
-            }
+            }        
         }
     }
     catch (Tango::DevFailed& df)

@@ -137,13 +137,20 @@ void BaslerCCD::init_device()
     {
         //- get the singleton control objet used to pilot the lima framework        
         m_ct = ControlFactory::instance().get_control("BaslerCCD");
-        if (m_ct != 0)
-        {
-            //- get interface to specific camera
-            m_hw = dynamic_cast<Basler::Interface*> (m_ct->hwInterface());
-            //- get camera to specific detector
-            m_camera = &(m_hw->getCamera());
-        }
+		if(m_ct == 0)
+		{
+			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "BaslerCCD" << ") !" << endl;
+			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "BaslerCCD" << ") !" << endl;
+			m_is_device_initialized = false;
+			set_state(Tango::FAULT);
+			return;
+		}		
+		
+		//- get interface to specific camera
+		m_hw = dynamic_cast<Basler::Interface*> (m_ct->hwInterface());
+		
+		//- get camera to specific detector
+		m_camera = &(m_hw->getCamera());
     }
     catch (Exception& e)
     {

@@ -140,28 +140,20 @@ void SimulatorCCD::init_device()
         //in fact LimaDetector is create the singleton control objet
         //so this call, will only return existing object, no need to give it the ip !!
         m_ct = ControlFactory::instance().get_control("SimulatorCCD");
-
+		if(m_ct == 0)
+		{
+			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "SimulatorCCD" << ") !" << endl;
+			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "SimulatorCCD" << ") !" << endl;
+			m_is_device_initialized = false;
+			set_state(Tango::FAULT);
+			return;
+		}
+		
         //- get interface to specific camera
         m_hw = dynamic_cast<Simulator::Interface*> (m_ct->hwInterface());
-        if (m_hw == 0)
-        {
-            INFO_STREAM << "Initialization Failed : Unable to get the interface of camera plugin " << "(" << "SimulatorCCD" << ") !" << endl;
-            m_status_message << "Initialization Failed : Unable to get the interface of camera plugin " << "(" << "SimulatorCCD" << ") !" << endl;
-            m_is_device_initialized = false;
-            set_state(Tango::FAULT);
-            return;
-        }
-
+		
         //- get camera to specific detector
         m_camera = &(m_hw->getCamera());
-        if (NULL == m_camera)
-        {
-            INFO_STREAM << "Initialization Failed : Unable to get the camera of plugin !" << endl;
-            m_status_message << "Initialization Failed : Unable to get the camera object !" << endl;
-            m_is_device_initialized = false;
-            set_state(Tango::FAULT);
-            return;
-        }
 
 		// write fillType At Init 
 		INFO_STREAM << "Write tango hardware at Init - fillType." << endl;		

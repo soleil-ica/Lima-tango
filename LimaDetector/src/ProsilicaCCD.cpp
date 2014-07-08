@@ -132,18 +132,17 @@ void ProsilicaCCD::init_device()
         //in fact LimaDetector is create the singleton control objet
         //so this call, will only return existing object, no need to give it the ip !!
         m_ct = ControlFactory::instance().get_control("ProsilicaCCD");
-
+		if(m_ct == 0)
+		{
+			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "ProsilicaCCD" << ") !" << endl;
+			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "ProsilicaCCD" << ") !" << endl;
+			m_is_device_initialized = false;
+			set_state(Tango::FAULT);
+			return;
+		}
+        
         //- get interface to specific camera
-        m_hw = dynamic_cast<Prosilica::Interface*>(m_ct->hwInterface());
-        if(m_hw==0)
-        {
-            INFO_STREAM<<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"ProsilicaCCD"<<") !"<< endl;
-            m_status_message <<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"ProsilicaCCD"<<") !"<< endl;
-            m_is_device_initialized = false;
-            set_state(Tango::FAULT);
-            return;
-        }
-	
+        m_hw = dynamic_cast<Prosilica::Interface*>(m_ct->hwInterface());	
     }
     catch(Exception& e)
     {

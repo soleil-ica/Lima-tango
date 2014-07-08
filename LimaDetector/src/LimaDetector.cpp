@@ -296,7 +296,6 @@ void LimaDetector::init_device()
 		DebParams::setTypeFlagsNameList(debugLevels);
 		DebParams::setFormatFlagsNameList(debugFormats);
 
-
 		//- get the main object used to pilot the lima framework
 		INFO_STREAM << "Create the main control object in order to pilot the DetectorType (" << detectorType << ")." << endl;
 		m_ct = ControlFactory::instance().create_control(detectorType);
@@ -1085,6 +1084,7 @@ void LimaDetector::get_device_property()
 	PropertyHelper::create_property_if_empty(this, dev_prop, "SimulatorCCD", "DetectorType");
 	PropertyHelper::create_property_if_empty(this, dev_prop, "16", "DetectorPixelDepth");
 	PropertyHelper::create_property_if_empty(this, dev_prop, "NONE", "DetectorVideoMode");
+    PropertyHelper::create_property_if_empty(this, dev_prop, "VIDEO", "DisplayType");    
 	PropertyHelper::create_property_if_empty(this, dev_prop, "NXS", "FileFormat");
 	PropertyHelper::create_property_if_empty(this, dev_prop, "Image", "FilePrefix");
 	PropertyHelper::create_property_if_empty(this, dev_prop, "%06d", "FileIndexPattern");
@@ -2720,7 +2720,7 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
 #define DIMENSIONS_HEIGHT_INDEX  1                       
 			if (counter > 0)
 			{
-				INFO_STREAM << "last_image_counter -> " << counter << endl;
+				DEBUG_STREAM << "last_image_counter -> " << counter << endl;
 
 				Data last_image;
 				m_ct->ReadImage(last_image, -1);
@@ -2772,7 +2772,7 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
 		{
 			if (counter >= 0)
 			{
-				INFO_STREAM << "last_image_counter -> " << counter << endl;
+				DEBUG_STREAM << "last_image_counter -> " << counter << endl;
 				CtVideo::Image last_image; //never put this variable in the class data member, refrence is locked in ctVideo (mantis 0021083)
 				m_ct->video()->getLastImage(last_image); //last image acquired
 				if (last_image.buffer() != 0)

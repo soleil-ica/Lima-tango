@@ -142,33 +142,24 @@ void PrincetonCCD::init_device()
 
     try
     {
-        //- get the main object used to pilot the lima framework
-        //in fact LimaDetector is create the singleton control objet
-        //so this call, will only return existing object, no need to give it the ip !!
-        m_ct = ControlFactory::instance().get_control("PrincetonCCD");
-
-        //- get interface to specific camera
-        m_hw = dynamic_cast<RoperScientific::Interface*>(m_ct->hwInterface());
-        if(m_hw==0)
-        {
-            INFO_STREAM<<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"PrincetonCCD"<<") !"<< endl;
-            m_status_message <<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"PrincetonCCD"<<") !"<< endl;
-            m_is_device_initialized = false;
-            set_state(Tango::FAULT);
-            return;
-        }
+		//- get the main object used to pilot the lima framework
+		//- in fact LimaDetector is create the singleton control objet
+		m_ct = ControlFactory::instance().get_control("PrincetonCCD");
+		if(m_ct == 0)
+		{
+			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "PrincetonCCD" << ") !" << endl;
+			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "PrincetonCCD" << ") !" << endl;
+			m_is_device_initialized = false;
+			set_state(Tango::FAULT);
+			return;
+		}
+        
+        
+		//- get interface to specific camera
+		m_hw = dynamic_cast<RoperScientific::Interface*>(m_ct->hwInterface());
 		
 		//- get camera to specific detector
 		m_camera = &(m_hw->getCamera());
-		if(m_camera == 0)
-		{
-			INFO_STREAM<<"Initialization Failed : Unable to get the camera of plugin !"<<endl;
-			m_status_message <<"Initialization Failed : Unable to get the camera object !"<< endl;
-			m_is_device_initialized = false;
-			set_state(Tango::FAULT);
-			return;			
-		}		
-	
     }
     catch(Exception& e)
     {

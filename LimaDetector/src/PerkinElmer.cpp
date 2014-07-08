@@ -139,17 +139,17 @@ void PerkinElmer::init_device()
         //in fact LimaDetector is create the singleton control objet
         //so this call, will only return existing object, no need to give it the ip !!
         m_ct = ControlFactory::instance().get_control("PerkinElmer");
-
+		if(m_ct == 0)
+		{
+			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "PerkinElmer" << ") !" << endl;
+			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "PerkinElmer" << ") !" << endl;
+			m_is_device_initialized = false;
+			set_state(Tango::FAULT);
+			return;
+		}
+        
         //- get interface to specific camera
 		m_hw = dynamic_cast<lima::PerkinElmer::Interface*>(m_ct->hwInterface());
-        if(m_hw==0)
-        {
-            INFO_STREAM<<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"PerkinElmer"<<") !"<< endl;
-            m_status_message <<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"PerkinElmer"<<") !"<< endl;
-            m_is_device_initialized = false;
-            set_state(Tango::FAULT);
-            return;
-        }
     }
     catch(Exception& e)
     {

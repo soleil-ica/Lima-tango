@@ -140,26 +140,32 @@ void Arithmetic::init_device()
         //in fact LimaDetector is create the singleton control objet
         //so this call, will only return existing object, no need to give it the ip !!
         m_ct = ControlFactory::instance().get_control("Arithmetic");
-        if (m_ct != 0)
-        {
-            ////// EMPTY OLD OPERATIONS /////
-            if (!m_mapOperations.empty())
-            {
-                for (std::map<long, operationParams >::iterator itMap = m_mapOperations.begin(); itMap != m_mapOperations.end(); itMap++)
-                {
-                    delete_external_operation(itMap->first);
-                }
-                m_mapOperations.clear();
-            }
+		if(m_ct == 0)
+		{
+			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "Arithmetic" << ") !" << endl;
+			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "Arithmetic" << ") !" << endl;
+			m_is_device_initialized = false;
+			set_state(Tango::FAULT);
+			return;
+		}		
 
-            //delete task associated to externalOperation
-            if (m_arithmetic_task)
-            {
-                delete m_arithmetic_task;
-                m_arithmetic_task = 0;
-            }
-            //////////////////////////////////
-        }
+		////// EMPTY OLD OPERATIONS /////
+		if (!m_mapOperations.empty())
+		{
+			for (std::map<long, operationParams >::iterator itMap = m_mapOperations.begin(); itMap != m_mapOperations.end(); itMap++)
+			{
+				delete_external_operation(itMap->first);
+			}
+			m_mapOperations.clear();
+		}
+
+		//delete task associated to externalOperation
+		if (m_arithmetic_task)
+		{
+			delete m_arithmetic_task;
+			m_arithmetic_task = 0;
+		}
+		//////////////////////////////////
     }
     catch (Exception& e)
     {
@@ -177,6 +183,7 @@ void Arithmetic::init_device()
         m_is_device_initialized = false;
         return;
     }
+	
     m_is_device_initialized = true;
 
     //write at init, only if device is correctly initialized
