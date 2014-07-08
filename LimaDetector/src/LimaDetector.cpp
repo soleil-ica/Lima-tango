@@ -115,13 +115,14 @@ void LimaDetector::delete_device()
 
 	//    Delete device allocated objects
 	DELETE_SCALAR_ATTRIBUTE(attr_exposureTime_read);
-	DELETE_SCALAR_ATTRIBUTE(attr_exposureAccTime_read);
+	DELETE_SCALAR_ATTRIBUTE(attr_exposureAccTime_read);	
 	DELETE_SCALAR_ATTRIBUTE(attr_latencyTime_read);
 	DELETE_SCALAR_ATTRIBUTE(attr_binnedWidthMax_read);
 	DELETE_SCALAR_ATTRIBUTE(attr_binnedHeightMax_read);
 	DELETE_SCALAR_ATTRIBUTE(attr_detectorPixelDepth_read);
 	DELETE_SCALAR_ATTRIBUTE(attr_nbFrames_read);
 	DELETE_SCALAR_ATTRIBUTE(attr_currentFrame_read);
+	DELETE_SCALAR_ATTRIBUTE(attr_currentAccFrame_read);	
 	DELETE_SCALAR_ATTRIBUTE(attr_fileGeneration_read);
 	DELETE_DEVSTRING_ATTRIBUTE(attr_detectorDescription_read);
 	DELETE_DEVSTRING_ATTRIBUTE(attr_detectorType_read);
@@ -231,6 +232,7 @@ void LimaDetector::init_device()
 	CREATE_SCALAR_ATTRIBUTE(attr_detectorPixelDepth_read);
 	CREATE_SCALAR_ATTRIBUTE(attr_nbFrames_read);
 	CREATE_SCALAR_ATTRIBUTE(attr_currentFrame_read);
+	CREATE_SCALAR_ATTRIBUTE(attr_currentAccFrame_read);
 	CREATE_SCALAR_ATTRIBUTE(attr_fileGeneration_read);
 	CREATE_DEVSTRING_ATTRIBUTE(attr_detectorDescription_read, MAX_ATTRIBUTE_STRING_LENGTH);
 	CREATE_DEVSTRING_ATTRIBUTE(attr_detectorType_read, MAX_ATTRIBUTE_STRING_LENGTH);
@@ -1622,6 +1624,17 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 			{
 				//- Attribute already exist: don't need to remove it
 			}
+			
+			//- Remove dynamic attribute currentAccFrame
+			try
+			{
+				m_dam->get_attribute("currentAccFrame");
+				m_dam->remove_attribute("currentAccFrame");
+			}
+			catch (Tango::DevFailed& df)
+			{
+				//- Attribute already exist: don't need to remove it
+			}			
 		}
 
 		if (current == "ACCUMULATION")
@@ -1629,21 +1642,37 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 			m_ct->acquisition()->setAcqMode(Accumulation);
 
 			//- Create dynamic attribute exposureAccTime
-			DynamicAttributeInfo dai;
-			dai.dev = this;
-			dai.tai.name = "exposureAccTime";
-			dai.tai.unit = "ms";
-			dai.tai.data_format = Tango::SCALAR;
-			dai.tai.data_type = Tango::DEV_DOUBLE;
-			dai.tai.writable = Tango::READ_WRITE;
-			dai.tai.disp_level = Tango::OPERATOR;
-			dai.tai.description = "Set/Get exposure time ONLY in mode ACCUMULATION (in ms)<br>";
+			DynamicAttributeInfo dai1;
+			dai1.dev = this;
+			dai1.tai.name = "exposureAccTime";
+			dai1.tai.unit = "ms";
+			dai1.tai.data_format = Tango::SCALAR;
+			dai1.tai.data_type = Tango::DEV_DOUBLE;
+			dai1.tai.writable = Tango::READ_WRITE;
+			dai1.tai.disp_level = Tango::OPERATOR;
+			dai1.tai.description = "Set/Get exposure time ONLY in mode ACCUMULATION (in ms)<br>";
 
-			dai.rcb = DynamicAttributeReadCallback::instanciate(*this, &LimaDetector::read_exposureAccTime_callback);
-			dai.wcb = DynamicAttributeWriteCallback::instanciate(*this, &LimaDetector::write_exposureAccTime_callback);
+			dai1.rcb = DynamicAttributeReadCallback::instanciate(*this, &LimaDetector::read_exposureAccTime_callback);
+			dai1.wcb = DynamicAttributeWriteCallback::instanciate(*this, &LimaDetector::write_exposureAccTime_callback);
 
 			//- add the attribute to the dam
-			m_dam->add_attribute(dai);
+			m_dam->add_attribute(dai1);
+			
+			//- Create dynamic attribute currentAccFrame
+			DynamicAttributeInfo dai2;
+			dai2.dev = this;
+			dai2.tai.name = "currentAccFrame";
+			dai2.tai.unit = " ";
+			dai2.tai.data_format = Tango::SCALAR;
+			dai2.tai.data_type = Tango::DEV_ULONG;
+			dai2.tai.writable = Tango::READ;
+			dai2.tai.disp_level = Tango::OPERATOR;
+			dai2.tai.description = "Get current accumulated acquired frame ONLY in mode ACCUMULATION<br>";
+
+			dai2.rcb = DynamicAttributeReadCallback::instanciate(*this, &LimaDetector::read_currentAccFrame_callback);			
+
+			//- add the attribute to the dam
+			m_dam->add_attribute(dai2);
 		}
 
 		PropertyHelper::set_property(this, "MemorizedAcquisitionMode", current);
@@ -2274,6 +2303,44 @@ void LimaDetector::read_currentFrame(Tango::Attribute &attr)
 	}
 }
 
+
+//+----------------------------------------------------------------------------
+//
+// method :         LimaDetector::read_currentAccFrame_callback()
+//
+// description :
+//
+//-----------------------------------------------------------------------------
+void LimaDetector::read_currentAccFrame_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
+{
+	DEBUG_STREAM << "LimaDetector::read_currentAccFrame_callback()" << endl; //  << cbd.dya->get_name() << endl;
+
+	try
+	{
+		unsigned long image_acquired_counter;
+		image_acquired_counter = m_hw->getNbHwAcquiredFrames();
+		*attr_currentAccFrame_read = image_acquired_counter;
+		cbd.tga->set_value(attr_currentAccFrame_read);
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		//- rethrow exception
+		Tango::Except::re_throw_exception(df,
+										static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+										static_cast<const char*> (string(df.errors[0].desc).c_str()),
+										static_cast<const char*> ("LimaDetector::read_currentAccFrame_callback"));
+	}
+	catch (Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		//- throw exception
+		Tango::Except::throw_exception(
+									static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+									static_cast<const char*> (e.getErrMsg().c_str()),
+									static_cast<const char*> ("LimaDetector::read_currentAccFrame_callback"));
+	}
+}
 //+----------------------------------------------------------------------------
 //
 // method :         LimaDetector::get_last_image_counter
@@ -2708,7 +2775,6 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
 				INFO_STREAM << "last_image_counter -> " << counter << endl;
 				CtVideo::Image last_image; //never put this variable in the class data member, refrence is locked in ctVideo (mantis 0021083)
 				m_ct->video()->getLastImage(last_image); //last image acquired
-
 				if (last_image.buffer() != 0)
 				{
 					switch (cbd.dya->get_tango_data_type())

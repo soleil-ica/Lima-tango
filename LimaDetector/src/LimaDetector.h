@@ -134,6 +134,7 @@ public :
         Tango::DevDouble    attr_shutterCloseTime_write;
         Tango::DevDouble    *attr_exposureAccTime_read;
         Tango::DevDouble    attr_exposureAccTime_write;
+        Tango::DevULong    *attr_currentAccFrame_read;
 		
 
 
@@ -801,6 +802,8 @@ public :
 
     void    read_exposureAccTime_callback(yat4tango::DynamicAttributeReadCallbackData& cbd);
     void    write_exposureAccTime_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd);
+    
+    void    read_currentAccFrame_callback(yat4tango::DynamicAttributeReadCallbackData& cbd);
 
     // return true if the device is correctly initialized in init_device
     bool    is_device_initialized(){return m_is_device_initialized;};
