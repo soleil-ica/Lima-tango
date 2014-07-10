@@ -319,7 +319,6 @@ class LimaCCDs(PyTango.Device_4Impl) :
 	    pass
 
 
-<<<<<<< HEAD
         #INIT display shared memory
         try:
             shared_memory_names = ['LimaCCds',self.LimaCameraType]
@@ -341,7 +340,6 @@ class LimaCCDs(PyTango.Device_4Impl) :
         self.__video_last_image_timestamp = 0
         self.__control.video().registerImageCallback(self.__video_image_cbk)
         
-=======
         # Setup a user-defined detector name if it exists
         if self.UserDetectorName:
             try:
@@ -352,7 +350,6 @@ class LimaCCDs(PyTango.Device_4Impl) :
                 pass
                
                 
->>>>>>> ef242cae49dd0fdbd7ee650bcb8cbdaf41a16084
     def __getattr__(self,name) :
         if name.startswith('is_') and name.endswith('_allowed') :
             split_name = name.split('_')[1:-1]
