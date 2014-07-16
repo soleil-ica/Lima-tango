@@ -22,13 +22,13 @@ bool ControlFactory::m_is_created = false;
 void ControlFactory::initialize()
 {
     m_control = 0;
-    m_camera = 0;
+    m_camera	 = 0;
     m_interface = 0;
 
     m_server_name = "none";
     m_device_name_specific = "none";
-#ifdef ARITHMETIC_ENABLED    
-    m_device_name_arithmetic = "none";
+#ifdef SHIFTING_ENABLED    
+    m_device_name_shifting = "none";
 #endif
     m_status.str("");
     m_state = Tango::INIT;
@@ -59,13 +59,13 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
                 db_datum >> m_device_name_specific;
             }
 
-#ifdef ARITHMETIC_ENABLED
+#ifdef SHIFTING_ENABLED
             {
-                std::string arithmetic = "Arithmetic";
+                std::string shifting = "Shifting";
                 Tango::DbDatum db_datum;
                 m_server_name = Tango::Util::instance()->get_ds_name();
-                db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, arithmetic);
-                db_datum >> m_device_name_arithmetic;
+                db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, shifting);
+                db_datum >> m_device_name_shifting;
             }     
 #endif            
         }
@@ -452,6 +452,12 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
 CtControl* ControlFactory::get_control(const std::string& detector_type)
 {
     yat::AutoMutex<> _lock(object_control_lock);
+	if (!ControlFactory::m_is_created)
+	{
+		std::stringstream ssMsg("");
+		ssMsg<<"Unable to get the lima control of " << "(" << detector_type << ") !" << endl;
+		throw LIMA_HW_EXC(Error, ssMsg.str());
+	}	
     return m_control;       
 }
 
@@ -621,26 +627,35 @@ void ControlFactory::init_specific_device(const std::string& detector_type)
         }
         (Tango::Util::instance()->get_device_by_name(m_device_name_specific))->delete_device();
         (Tango::Util::instance()->get_device_by_name(m_device_name_specific))->init_device();
-
-#ifdef ARITHMETIC_ENABLED        
-        //@@@TODO and if not exist ?? get the tango device/instance for arithmetic
-        if (!ControlFactory::m_is_created)
-        {
-            std::string detector = "Arithmetic";
-            Tango::DbDatum db_datum;
-            m_server_name = Tango::Util::instance()->get_ds_name();
-            db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, detector);
-            db_datum >> m_device_name_arithmetic;
-        }
-        (Tango::Util::instance()->get_device_by_name(m_device_name_arithmetic))->delete_device();
-        (Tango::Util::instance()->get_device_by_name(m_device_name_arithmetic))->init_device();
-#endif        
     }
     catch (Tango::DevFailed& df)
     {
         //- rethrow exception
         throw LIMA_HW_EXC(Error, std::string(df.errors[0].desc).c_str());
     }
+	
+#ifdef SHIFTING_ENABLED        
+	try
+	{
+        //@@@TODO and if not exist ?? get the tango device/instance for shifting
+        if (!ControlFactory::m_is_created)
+        {
+            std::string detector = "Shifting";
+            Tango::DbDatum db_datum;
+            m_server_name = Tango::Util::instance()->get_ds_name();
+            db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, detector);
+            db_datum >> m_device_name_shifting;
+        }
+        (Tango::Util::instance()->get_device_by_name(m_device_name_shifting))->delete_device();
+        (Tango::Util::instance()->get_device_by_name(m_device_name_shifting))->init_device();
+    }
+    catch (Tango::DevFailed& df)
+    {
+        //- rethrow exception
+        ////throw LIMA_HW_EXC(Error, std::string(df.errors[0].desc).c_str());
+    }		
+#endif        
+
 }
 
 //-----------------------------------------------------------------------------------------

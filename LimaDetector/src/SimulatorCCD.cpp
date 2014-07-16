@@ -140,14 +140,6 @@ void SimulatorCCD::init_device()
         //in fact LimaDetector is create the singleton control objet
         //so this call, will only return existing object, no need to give it the ip !!
         m_ct = ControlFactory::instance().get_control("SimulatorCCD");
-		if(m_ct == 0)
-		{
-			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "SimulatorCCD" << ") !" << endl;
-			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "SimulatorCCD" << ") !" << endl;
-			m_is_device_initialized = false;
-			set_state(Tango::FAULT);
-			return;
-		}
 		
         //- get interface to specific camera
         m_hw = dynamic_cast<Simulator::Interface*> (m_ct->hwInterface());
@@ -173,7 +165,7 @@ void SimulatorCCD::init_device()
     }
     catch (Exception& e)
     {
-        INFO_STREAM << "Initialization Failed : " << e.getErrMsg() << endl;
+        ERROR_STREAM << "Initialization Failed : " << e.getErrMsg() << endl;
         m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
         m_is_device_initialized = false;
         set_state(Tango::FAULT);
@@ -181,7 +173,7 @@ void SimulatorCCD::init_device()
     }
     catch (...)
     {
-        INFO_STREAM << "Initialization Failed : UNKNOWN" << endl;
+        ERROR_STREAM << "Initialization Failed : UNKNOWN" << endl;
         m_status_message << "Initialization Failed : UNKNOWN" << endl;
         set_state(Tango::FAULT);
         m_is_device_initialized = false;
@@ -262,9 +254,32 @@ void SimulatorCCD::always_executed_hook()
 {
     DEBUG_STREAM << "SimulatorCCD::always_executed_hook() entering... " << endl;
 
-    //- update state
-    dev_state();
+	try
+	{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
+		m_status_message.str("");
+		//- get the singleton control objet used to pilot the lima framework
+		m_ct = ControlFactory::instance().get_control("SimulatorCCD");
+		dev_state();
 
+	}
+	catch (Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
+		//- throw exception
+		set_state(Tango::FAULT);
+		m_is_device_initialized = false;
+		return;
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		m_status_message << "Initialization Failed : " << string(df.errors[0].desc) << endl;
+		m_is_device_initialized = false;
+		set_state(Tango::FAULT);
+		return;
+	}
 }
 //+----------------------------------------------------------------------------
 //
@@ -356,8 +371,6 @@ void SimulatorCCD::write_fillType(Tango::WAttribute &attr)
             (current != C_STR_DIFFRACTION)
             )
         {            
-			delete[] attr_fillType_write;
-			attr_fillType_write = new char [m_fillType.size() + 1];			
             strcpy(attr_fillType_write, m_fillType.c_str());
             Tango::Except::throw_exception((const char*) ("CONFIGURATION_ERROR"),
                                            (const char*) ("Possible fillType values are:"

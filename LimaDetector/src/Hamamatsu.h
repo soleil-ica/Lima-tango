@@ -107,7 +107,7 @@ public :
  *	Memorize/Define the readoutSpeed attribute at Init device<br>
  *	Availables values :<br>
  *	NORMAL<br>
- *	FAST<br>
+ *	SLOW<br>
  */
 	string	memorizedReadoutSpeed;
 //@}

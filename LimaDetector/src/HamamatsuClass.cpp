@@ -246,7 +246,7 @@ void HamamatsuClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	readoutSpeedAttrib	*readout_speed = new readoutSpeedAttrib();
 	Tango::UserDefaultAttrProp	readout_speed_prop;
 	readout_speed_prop.set_label("Readout speed");
-	readout_speed_prop.set_description("Possible values are:<br>\nSLOW<br>\nNORMAL<br>");
+	readout_speed_prop.set_description("Possible values are:<br>\nNORMAL<br>\nSLOW<br>");
 	readout_speed->set_default_properties(readout_speed_prop);
 	att_list.push_back(readout_speed);
 
@@ -338,7 +338,7 @@ void HamamatsuClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "MemorizedReadoutSpeed";
-	prop_desc = "Memorize/Define the readoutSpeed attribute at Init device<br>\nAvailables values :<br>\nNORMAL<br>\nFAST<br>";
+	prop_desc = "Memorize/Define the readoutSpeed attribute at Init device<br>\nAvailables values :<br>\nNORMAL<br>\nSLOW<br>";
 	prop_def  = "NORMAL";
 	vect_data.clear();
 	vect_data.push_back("NORMAL");

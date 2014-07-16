@@ -403,8 +403,7 @@ void PrincetonCCD::write_internalAcquisitionMode(Tango::WAttribute &attr)
 		/*TODO enhance CONTINUOUS*/
         if(current.compare("STANDARD")!=0 && current.compare("FOCUS")!=0/*&& current.compare("CONTINUOUS")!=0 */)
         {
-            m_acquisition_mode = previous;
-            attr_internalAcquisitionMode_write = new char [m_acquisition_mode.size()+1];
+            m_acquisition_mode = previous;            
             strcpy (attr_internalAcquisitionMode_write, m_acquisition_mode.c_str());
 
             Tango::Except::throw_exception( (const char*) ("CONFIGURATION_ERROR"),

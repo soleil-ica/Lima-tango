@@ -869,8 +869,8 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
-	prop_name = "DisplayType";
-	prop_desc = "Choose the way to display the image :<br>\n- VIDEO : use ctVideo->LastImage()\n- ACQUISITION : use ctControl->ReadImage()";
+	prop_name = "ImageSource";
+	prop_desc = "Choose the source of Data given to the image attribute :<br>\n- VIDEO : use ctVideo->LastImage()\n- ACQUISITION : use ctControl->ReadImage()";
 	prop_def  = "VIDEO";
 	vect_data.clear();
 	vect_data.push_back("VIDEO");

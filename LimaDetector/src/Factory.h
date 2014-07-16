@@ -170,8 +170,8 @@ private:
     static bool                     m_is_created;
     std::string                     m_server_name;
     std::string                     m_device_name_specific;
-#ifdef ARITHMETIC_ENABLED    
-    std::string                     m_device_name_arithmetic;
+#ifdef SHIFTING_ENABLED    
+    std::string                     m_device_name_shifting;
 #endif    
     Tango::DevState                 m_state;
     stringstream                    m_status;
@@ -185,4 +185,3 @@ private:
 } ;
 
 #endif
-

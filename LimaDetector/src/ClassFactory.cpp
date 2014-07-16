@@ -39,8 +39,8 @@ static const char *RcsId = "$Id:  $";
 #include <LimaDetectorClass.h>
 
 
-#ifdef ARITHMETIC_ENABLED
-#include <ArithmeticClass.h>
+#ifdef SHIFTING_ENABLED
+#include <ShiftingClass.h>
 #endif
 
 #ifdef SIMULATOR_ENABLED
@@ -175,8 +175,8 @@ void Tango::DServer::class_factory()
     add_class(Hamamatsu_ns::HamamatsuClass::init("Hamamatsu"));
 #endif
 
-#ifdef ARITHMETIC_ENABLED    
-    add_class(Arithmetic_ns::ArithmeticClass::init("Arithmetic"));
+#ifdef SHIFTING_ENABLED    
+    add_class(Shifting_ns::ShiftingClass::init("Shifting"));
 #endif
 }
 

@@ -113,12 +113,12 @@
                 <dependency>
                     <groupId>fr.soleil.lib</groupId>
                     <artifactId>YAT4Tango-${aol}-static-${mode}</artifactId>
-                    <version>1.7.4-vc9</version>
+                    <version>1.7.7-vc9</version>
                 </dependency>
                 <dependency>
                     <groupId>fr.soleil.lib</groupId>
                     <artifactId>YAT-${aol}-static-${mode}</artifactId>
-                    <version>1.8.0-vc9</version> 
+                    <version>1.8.8-vc9</version> 
                 </dependency>
                 <dependency>
                     <groupId>fr.soleil.lib</groupId>
@@ -188,15 +188,16 @@
                                     <exclude>PerkinElmer*.*</exclude>
                                     <exclude>Princeton*.*</exclude>								
                                     <exclude>VieworksVP*.*</exclude>
-                                    <exclude>Hamamatsu*.*</exclude>							
+                                    <exclude>Hamamatsu*.*</exclude>			
+                                    <exclude>Shifting*.*</exclude>                                                                                        				
+                                    
                                 </excludes>
                                 <defines>
                                     <define>USE_GIGE</define>	<!-- Needed By Basler -->
                                     <define>OS_UNIX</define>	<!-- Needed By Aviex -->	
                                     						
                                     <!-- define wich detector you need to ENABLE -->
-                                    <define>SIMULATOR_ENABLED</define>
-                                    <define>ARITHMETIC_ENABLED</define>		                                    
+                                    <define>SIMULATOR_ENABLED</define>                                    
                                     <define>BASLER_ENABLED</define>                                                                     
                                     <define>ADSC_ENABLED</define>   
                                     <define>AVIEX_ENABLED</define>									 
@@ -227,6 +228,8 @@
                                     <exclude>Prosilica*.*</exclude>
                                     <exclude>VieworksVP*.*</exclude>																
                                     <exclude>Xpad*.*</exclude>
+                                    <exclude>Shifting*.*</exclude>
+                                                                    
                                 </excludes>
                                 <defines>
                                     <!-- define wich detector you need to ENABLE -->
@@ -234,8 +237,7 @@
                                     <define>PCO_ENABLED</define>
                                     <define>PERKINELMER_ENABLED</define>
                                     <define>PRINCETON_ENABLED</define>                                    
-                                    <define>HAMAMATSU_ENABLED</define>
-                                    <define>ARITHMETIC_ENABLED</define>                                    
+                                    <define>HAMAMATSU_ENABLED</define>                  
                                     <define>SIMULATOR_ENABLED</define>
                                 </defines>	                                  
                             </cpp>					  

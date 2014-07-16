@@ -237,11 +237,11 @@ public :
  */
 	string	detectorVideoMode;
 /**
- *	Choose the way to display the image :<br>
+ *	Choose the source of Data given to the image attribute :<br>
  *	- VIDEO : use ctVideo->LastImage()
  *	- ACQUISITION : use ctControl->ReadImage()
  */
-	string	displayType;
+	string	imageSource;
 /**
  *	Define the format of image files :<BR>
  *	Availables values :<br>
@@ -840,7 +840,7 @@ protected :
     //state & status stuff
     bool                                m_is_device_initialized ;
     stringstream                        m_status_message;
-    static bool                         m_is_created;		//indicate when the construction of "generic" device is completed.
+    static int                          m_init_count;		//indicate when the construction of "generic" device is completed.
 
     //LIMA objects
     HwInterface*                        m_hw;				//object to the generic interface of camera's

@@ -511,7 +511,6 @@ void PilatusPixelDetector::write_gain(Tango::WAttribute &attr)
         if(current.compare("LOW")!=0 && current.compare("MID")!=0 && current.compare("HIGH")!=0 && current.compare("UHIGH")!=0)
         {
             m_gain = previous;
-            attr_gain_write = new char [m_gain.size()+1];
             strcpy (attr_gain_write, m_gain.c_str());
 
             Tango::Except::throw_exception(

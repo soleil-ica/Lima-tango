@@ -1133,16 +1133,15 @@ void AviexCCD::write_internalAcquisitionMode(Tango::WAttribute &attr)
         string previous = m_acquisition_mode;
         attr.get_write_value(attr_internalAcquisitionMode_write);
         string current = attr_internalAcquisitionMode_write;
-
+		transform(current.begin(), current.end(), current.begin(), ::toupper);
         if (current != "ONESHOT" &&
-        current != "CONTINUOUS" &&
-        current != "MULTIFRAME" &&
-        current != "GEOMETRICAL" &&
-        current != "MEASURE_DARK" &&
-        current != "MEASURE_FLOOD_FIELD")
+			current != "CONTINUOUS" &&
+			current != "MULTIFRAME" &&
+			current != "GEOMETRICAL" &&
+			current != "MEASURE_DARK" &&
+			current != "MEASURE_FLOOD_FIELD")
         {
-            m_acquisition_mode = previous;
-            attr_internalAcquisitionMode_write = new char [m_acquisition_mode.size() + 1];
+            m_acquisition_mode = previous;            
             strcpy(attr_internalAcquisitionMode_write, m_acquisition_mode.c_str());
 
             Tango::Except::throw_exception((const char*) ("CONFIGURATION_ERROR"),

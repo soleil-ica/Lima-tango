@@ -136,15 +136,7 @@ void BaslerCCD::init_device()
     try
     {
         //- get the singleton control objet used to pilot the lima framework        
-        m_ct = ControlFactory::instance().get_control("BaslerCCD");
-		if(m_ct == 0)
-		{
-			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "BaslerCCD" << ") !" << endl;
-			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "BaslerCCD" << ") !" << endl;
-			m_is_device_initialized = false;
-			set_state(Tango::FAULT);
-			return;
-		}		
+        m_ct = ControlFactory::instance().get_control("BaslerCCD");	
 		
 		//- get interface to specific camera
 		m_hw = dynamic_cast<Basler::Interface*> (m_ct->hwInterface());
@@ -311,35 +303,35 @@ void BaslerCCD::always_executed_hook()
         yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
         //- get the singleton control objet used to pilot the lima framework
         m_ct = ControlFactory::instance().get_control("BaslerCCD");
-        if (m_ct != 0)
-        {
-            //- get interface to specific camera
-            m_hw = dynamic_cast<Basler::Interface*> (m_ct->hwInterface());
-            //- get camera to specific detector
-            m_camera = &(m_hw->getCamera());
-        }
+        
+		//- get interface to specific camera
+        m_hw = dynamic_cast<Basler::Interface*> (m_ct->hwInterface());
+		
+        //- get camera to specific detector
+        m_camera = &(m_hw->getCamera());
 
         //update state
         dev_state();
     }
-    catch (Exception& e)
-    {
-        ERROR_STREAM << e.getErrMsg() << endl;
-        m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;
-        return;
-    }
-    catch (...)
-    {
-        ERROR_STREAM << "Initialization Failed : UNKNOWN" << endl;
-        m_status_message << "Initialization Failed : UNKNOWN" << endl;
-        //- throw exception
-        set_state(Tango::FAULT);
-        m_is_device_initialized = false;
-        return;
-    }
+	catch (Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
+		//- throw exception
+		set_state(Tango::FAULT);
+		m_is_device_initialized = false;
+		return;
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		INFO_STREAM << "Initialization Failed : " << string(df.errors[0].desc) << endl;
+		m_status_message << "Initialization Failed : " << string(df.errors[0].desc) << endl;
+		m_is_device_initialized = false;
+		set_state(Tango::FAULT);
+		return;
+	}	
+	
 }
 //+----------------------------------------------------------------------------
 //

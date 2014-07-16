@@ -432,12 +432,10 @@ void Hamamatsu::write_readoutSpeed(Tango::WAttribute &attr)
 		if (current != C_STR_READOUTSPEED_NORMAL &&
 			current != C_STR_READOUTSPEED_SLOW)
 		{			
-			delete[] attr_readoutSpeed_write;
-			attr_readoutSpeed_write = new char [m_readoutSpeed.size() + 1];
 			strcpy(attr_readoutSpeed_write, m_readoutSpeed.c_str());
 			
 			string userMsg;
-			userMsg = string("Available Readout speeds are:\n- ") + string(C_STR_READOUTSPEED_SLOW) + string("\n- ") + string(C_STR_READOUTSPEED_NORMAL);
+			userMsg = string("Available Readout speeds are:\n- ") + string(C_STR_READOUTSPEED_NORMAL) + string("\n- ") + string(C_STR_READOUTSPEED_SLOW);
 
 			Tango::Except::throw_exception(	(const char*) ("CONFIGURATION_ERROR"),
 											(const char*) (userMsg.c_str()),
@@ -517,6 +515,7 @@ Tango::DevState Hamamatsu::dev_state()
 
 	return DeviceState;
 }
+
 
 
 
