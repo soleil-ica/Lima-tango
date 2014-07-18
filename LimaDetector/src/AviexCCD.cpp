@@ -159,14 +159,6 @@ void AviexCCD::init_device()
         //in fact LimaDetector is create the singleton control objet
         //so this call, will only return existing object, no need to give it the ip !!
         m_ct = ControlFactory::instance().get_control("AviexCCD");
-		if(m_ct == 0)
-		{
-			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "AviexCCD" << ") !" << endl;
-			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "AviexCCD" << ") !" << endl;
-			m_is_device_initialized = false;
-			set_state(Tango::FAULT);
-			return;
-		}
 
         //- get interface to specific camera
         m_hw = dynamic_cast<Aviex::Interface*> (m_ct->hwInterface());
@@ -462,8 +454,19 @@ void AviexCCD::always_executed_hook()
     DEBUG_STREAM << "AviexCCD::always_executed_hook() entering... " << endl;
     try
     {
-        //refresh the state
-        this->dev_state();
+        yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
+        m_status_message.str("");		
+        //- get the singleton control objet used to pilot the lima framework
+        m_ct = ControlFactory::instance().get_control("AviexCCD");
+        
+		//- get interface to specific camera
+        m_hw = dynamic_cast<Aviex::Interface*> (m_ct->hwInterface());
+		
+        //- get camera to specific detector
+        m_camera = &(m_hw->getCamera());
+
+        //update state
+        dev_state();
     }
     catch (Exception& e)
     {
@@ -510,9 +513,12 @@ void AviexCCD::read_mxLibraryVersion(Tango::Attribute &attr)
 {
     DEBUG_STREAM << "AviexCCD::read_mxLibraryVersion(Tango::Attribute &attr) entering... " << endl;
     try
-    {
+    {        
         std::string mx_version;
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
         m_camera->getMxLibraryVersion(mx_version);
+		}
         strcpy(*attr_mxLibraryVersion_read, mx_version.c_str());
 
         attr.set_value(attr_mxLibraryVersion_read);
@@ -552,7 +558,10 @@ void AviexCCD::read_initialDelayTime(Tango::Attribute &attr)
     try
     {
         double initial_delay_time;
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->getInitialDelayTime(initial_delay_time);
+		}
         *attr_initialDelayTime_read = initial_delay_time * 1000;
         attr.set_value(attr_initialDelayTime_read);
     }
@@ -581,7 +590,10 @@ void AviexCCD::write_initialDelayTime(Tango::WAttribute &attr)
     try
     {
         attr.get_write_value(attr_initialDelayTime_write);
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->setInitialDelayTime(attr_initialDelayTime_write / 1000);
+		}
         PropertyHelper::set_property(this, "MemorizedInitialDelayTime", attr_initialDelayTime_write);
     }
     catch (Tango::DevFailed& df)
@@ -608,7 +620,10 @@ void AviexCCD::read_readoutDelayTime(Tango::Attribute &attr)
     try
     {
         double readout_delay_time;
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->getReadoutDelayTime(readout_delay_time);
+		}
         *attr_readoutDelayTime_read = readout_delay_time * 1000;
         attr.set_value(attr_readoutDelayTime_read);
     }
@@ -636,7 +651,10 @@ void AviexCCD::write_readoutDelayTime(Tango::WAttribute &attr)
     try
     {
         attr.get_write_value(attr_readoutDelayTime_write);
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
         m_camera->setReadoutDelayTime(attr_readoutDelayTime_write / 1000);
+		}
         PropertyHelper::set_property(this, "MemorizedReadoutDelayTime", attr_readoutDelayTime_write);
     }
     catch (Tango::DevFailed& df)
@@ -662,7 +680,10 @@ void AviexCCD::read_exposureMultiplier(Tango::Attribute &attr)
     DEBUG_STREAM << "AviexCCD::read_exposureMultiplier(Tango::Attribute &attr) entering... " << endl;
     try
     {
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->getExpMultiplier(*attr_exposureMultiplier_read);
+		}
         attr.set_value(attr_exposureMultiplier_read);
     }
     catch (Tango::DevFailed& df)
@@ -689,7 +710,10 @@ void AviexCCD::write_exposureMultiplier(Tango::WAttribute &attr)
     try
     {
         attr.get_write_value(attr_exposureMultiplier_write);
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
         m_camera->setExpMultiplier(attr_exposureMultiplier_write);
+		}
         PropertyHelper::set_property(this, "MemorizedExposureMultiplier", attr_exposureMultiplier_write);
     }
     catch (Tango::DevFailed& df)
@@ -715,7 +739,10 @@ void AviexCCD::read_gapMultiplier(Tango::Attribute &attr)
     DEBUG_STREAM << "AviexCCD::read_gapMultiplier(Tango::Attribute &attr) entering... " << endl;
     try
     {
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->getGapMultiplier(*attr_gapMultiplier_read);
+		}
         attr.set_value(attr_gapMultiplier_read);
     }
     catch (Tango::DevFailed& df)
@@ -742,7 +769,10 @@ void AviexCCD::write_gapMultiplier(Tango::WAttribute &attr)
     try
     {
         attr.get_write_value(attr_gapMultiplier_write);
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->setGapMultiplier(attr_gapMultiplier_write);
+		}		
         PropertyHelper::set_property(this, "MemorizedGapMultiplier", attr_gapMultiplier_write);
     }
     catch (Tango::DevFailed& df)
@@ -796,7 +826,10 @@ void AviexCCD::write_maskCorrection(Tango::WAttribute &attr)
     {
         attr.get_write_value(attr_maskCorrection_write);
         (attr_maskCorrection_write == true) ? SET(m_correction_flags, MASK_CORRECTION_BIT_POSITION) : CLR(m_correction_flags, MASK_CORRECTION_BIT_POSITION);
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->setCorrectionFlags(m_correction_flags);
+		}
         PropertyHelper::set_property(this, "MemorizedCorrectionFlags", m_correction_flags);
     }
     catch (Tango::DevFailed& df)
@@ -850,7 +883,10 @@ void AviexCCD::write_biasCorrection(Tango::WAttribute &attr)
     {
         attr.get_write_value(attr_biasCorrection_write);
         (attr_biasCorrection_write == true) ? SET(m_correction_flags, BIAS_CORRECTION_BIT_POSITION) : CLR(m_correction_flags, BIAS_CORRECTION_BIT_POSITION);
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->setCorrectionFlags(m_correction_flags);
+		}
         PropertyHelper::set_property(this, "MemorizedCorrectionFlags", m_correction_flags);
     }
     catch (Tango::DevFailed& df)
@@ -904,7 +940,10 @@ void AviexCCD::write_darkCorrection(Tango::WAttribute &attr)
     {
         attr.get_write_value(attr_darkCorrection_write);
         (attr_darkCorrection_write == true) ? SET(m_correction_flags, DARK_CORRECTION_BIT_POSITION) : CLR(m_correction_flags, DARK_CORRECTION_BIT_POSITION);
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->setCorrectionFlags(m_correction_flags);
+		}
         PropertyHelper::set_property(this, "MemorizedCorrectionFlags", m_correction_flags);
     }
     catch (Tango::DevFailed& df)
@@ -958,7 +997,10 @@ void AviexCCD::write_floodCorrection(Tango::WAttribute &attr)
     {
         attr.get_write_value(attr_floodCorrection_write);
         (attr_floodCorrection_write == true) ? SET(m_correction_flags, FLOOD_CORRECTION_BIT_POSITION) : CLR(m_correction_flags, FLOOD_CORRECTION_BIT_POSITION);
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->setCorrectionFlags(m_correction_flags);
+		}
         PropertyHelper::set_property(this, "MemorizedCorrectionFlags", m_correction_flags);
     }
     catch (Tango::DevFailed& df)
@@ -1012,7 +1054,10 @@ void AviexCCD::write_geomCorrection(Tango::WAttribute &attr)
     {
         attr.get_write_value(attr_geomCorrection_write);
         (attr_geomCorrection_write == true) ? SET(m_correction_flags, GEOM_CORRECTION_BIT_POSITION) : CLR(m_correction_flags, GEOM_CORRECTION_BIT_POSITION);
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->setCorrectionFlags(m_correction_flags);
+		}
         PropertyHelper::set_property(this, "MemorizedCorrectionFlags", m_correction_flags);
     }
     catch (Tango::DevFailed& df)
@@ -1065,7 +1110,10 @@ void AviexCCD::write_highSpeed(Tango::WAttribute &attr)
     try
     {
         attr.get_write_value(attr_highSpeed_write);
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->setReadoutSpeed(attr_highSpeed_write);
+		}
         PropertyHelper::set_property(this, "MemorizedHighSpeed", attr_highSpeed_write);
     }
     catch (Tango::DevFailed& df)
@@ -1092,7 +1140,10 @@ void AviexCCD::read_internalAcquisitionMode(Tango::Attribute &attr)
     try
     {
         std::string acq_mode;
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
         m_camera->getInternalAcqMode(acq_mode);
+		}
         strcpy(*attr_internalAcquisitionMode_read, acq_mode.c_str());
 
         attr.set_value(attr_internalAcquisitionMode_read);
@@ -1157,8 +1208,10 @@ void AviexCCD::write_internalAcquisitionMode(Tango::WAttribute &attr)
 
         //- THIS IS AN AVAILABLE ACQUISTION MODE
         m_acquisition_mode = attr_internalAcquisitionMode_write;
-
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
         m_camera->setInternalAcqMode(m_acquisition_mode);
+		}
         PropertyHelper::set_property(this, "MemorizedInternalAcquisitionMode", m_acquisition_mode);
 
     }
@@ -1211,8 +1264,10 @@ void AviexCCD::set_param(const Tango::DevVarStringArray *argin)
     {
         string name = string((*argin)[0]);
         string val = string((*argin)[1]);
-
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
         m_camera->setExtraParam(name, val);
+		}
     }
     catch (Tango::DevFailed& df)
     {
@@ -1254,9 +1309,12 @@ Tango::DevString AviexCCD::get_param(Tango::DevString argin)
     Tango::DevString argout;    
     try
     {
+		string res("");
         string param_name = argin;
-
-        string res = m_camera->getExtraParam(argin);
+		{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
+        res = m_camera->getExtraParam(argin);
+		}
 
         argout = new char[res.size() + 1];
         if (res.size() > 0)

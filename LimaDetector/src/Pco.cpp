@@ -146,16 +146,7 @@ void Pco::init_device()
     try
     {
         //- get the main object used to pilot the lima framework
-        //- in fact LimaDetector is create the singleton control objet
         m_ct = ControlFactory::instance().get_control("Pco");
-		if(m_ct == 0)
-		{
-			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "Pco" << ") !" << endl;
-			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "Pco" << ") !" << endl;
-			m_is_device_initialized = false;
-			set_state(Tango::FAULT);
-			return;
-		}
         
         //- get interface to specific camera
 		m_hw = dynamic_cast<lima::Pco::Interface*>(m_ct->hwInterface());
@@ -197,9 +188,39 @@ void Pco::always_executed_hook()
 {
     DEBUG_STREAM << "Pco::always_executed_hook() entering... "<< endl;
 	
-    //- update state
-    dev_state();
-	
+	try
+	{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
+		m_status_message.str("");
+		//- get the singleton control objet used to pilot the lima framework
+        m_ct = ControlFactory::instance().get_control("Pco");
+        
+        //- get interface to specific camera
+		m_hw = dynamic_cast<lima::Pco::Interface*>(m_ct->hwInterface());
+
+		//- get camera to specific detector
+		m_camera = (m_hw->getCamera());
+		
+		//- update state
+		dev_state();
+	}
+	catch (Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
+		//- throw exception
+		set_state(Tango::FAULT);
+		m_is_device_initialized = false;
+		return;
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		m_status_message << "Initialization Failed : " << string(df.errors[0].desc) << endl;
+		m_is_device_initialized = false;
+		set_state(Tango::FAULT);
+		return;
+	}	
 }
 //+----------------------------------------------------------------------------
 //

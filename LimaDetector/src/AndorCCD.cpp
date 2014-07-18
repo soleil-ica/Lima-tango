@@ -144,15 +144,7 @@ void AndorCCD::init_device()
 		//- get the main object used to pilot the lima framework
 		//- in fact LimaDetector is create the singleton control objet
 		m_ct = ControlFactory::instance().get_control("AndorCCD");
-		if(m_ct == 0)
-		{
-			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "AndorCCD" << ") !" << endl;
-			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "AndorCCD" << ") !" << endl;
-			m_is_device_initialized = false;
-			set_state(Tango::FAULT);
-			return;
-		}
-        
+
 		//- get interface to specific camera
 		m_hw = dynamic_cast<Andor::Interface*>(m_ct->hwInterface());
 
@@ -318,8 +310,40 @@ void AndorCCD::always_executed_hook()
 {
 	DEBUG_STREAM << "AndorCCD::always_executed_hook() entering... " << endl;
 
-	//- update state
-	dev_state();
+    try
+    {
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());		
+        m_status_message.str("");
+        //- get the singleton control objet used to pilot the lima framework
+		m_ct = ControlFactory::instance().get_control("AndorCCD");
+
+		//- get interface to specific camera
+		m_hw = dynamic_cast<Andor::Interface*>(m_ct->hwInterface());
+
+		//- get camera to specific detector
+		m_camera = &(m_hw->getCamera());
+		
+		//update state
+        dev_state();
+	}
+    catch (Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
+        //- throw exception
+        set_state(Tango::FAULT);
+        m_is_device_initialized = false;
+        return;
+    }
+    catch (...)
+    {
+        ERROR_STREAM << "Initialization Failed : UNKNOWN" << endl;
+        m_status_message << "Initialization Failed : UNKNOWN" << endl;
+        //- throw exception
+        set_state(Tango::FAULT);
+        m_is_device_initialized = false;
+        return;
+    }
 }
 
 

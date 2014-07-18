@@ -259,7 +259,14 @@ void SimulatorCCD::always_executed_hook()
 		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
 		m_status_message.str("");
 		//- get the singleton control objet used to pilot the lima framework
-		m_ct = ControlFactory::instance().get_control("SimulatorCCD");
+        m_ct = ControlFactory::instance().get_control("SimulatorCCD");
+		
+        //- get interface to specific camera
+        m_hw = dynamic_cast<Simulator::Interface*> (m_ct->hwInterface());
+		
+        //- get camera to specific detector
+        m_camera = &(m_hw->getCamera());
+		
 		dev_state();
 
 	}

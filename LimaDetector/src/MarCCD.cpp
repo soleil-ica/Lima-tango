@@ -146,14 +146,6 @@ void MarCCD::init_device()
         //in fact LimaDetector is create the singleton control objet
         //so this call, will only return existing object, no need to give it the ip !!
         m_ct = ControlFactory::instance().get_control("MarCCD");
-		if(m_ct == 0)
-		{
-			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "MarCCD" << ") !" << endl;
-			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "MarCCD" << ") !" << endl;
-			m_is_device_initialized = false;
-			set_state(Tango::FAULT);
-			return;
-		}
         
         //- get interface to specific camera
         m_hw = dynamic_cast<Marccd::Interface*> (m_ct->hwInterface());
@@ -306,13 +298,16 @@ void MarCCD::always_executed_hook()
         m_status_message.str("");
         //- get the singleton control objet used to pilot the lima framework
         m_ct = ControlFactory::instance().get_control("MarCCD");
-   
-        //- get interface to specific detector
-        if (m_ct != 0)
-            m_hw = dynamic_cast<Marccd::Interface*> (m_ct->hwInterface());
-        this->dev_state();
+        
+        //- get interface to specific camera
+        m_hw = dynamic_cast<Marccd::Interface*> (m_ct->hwInterface());
 
-}
+        //- get camera to specific detector
+        m_camera = &(m_hw->getCamera());
+		
+		//update state
+        dev_state();
+	}
     catch (Exception& e)
     {
         ERROR_STREAM << e.getErrMsg() << endl;

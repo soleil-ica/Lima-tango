@@ -137,14 +137,6 @@ void Hamamatsu::init_device()
 	{
 		//- get the main object used to pilot the lima framework		
 		m_ct = ControlFactory::instance().get_control("Hamamatsu");
-		if(m_ct == 0)
-		{
-			INFO_STREAM << "Initialization Failed : Unable to get the lima control of " << "(" << "Hamamatsu" << ") !" << endl;
-			m_status_message << "Initialization Failed : Unable to get the lima control of " << "(" << "Hamamatsu" << ") !" << endl;
-			m_is_device_initialized = false;
-			set_state(Tango::FAULT);
-			return;
-		}
 		
 		//- get interface to specific camera
 		m_hw = dynamic_cast<lima::Hamamatsu::Interface*>(m_ct->hwInterface());
@@ -270,8 +262,39 @@ void Hamamatsu::get_device_property()
 //-----------------------------------------------------------------------------
 void Hamamatsu::always_executed_hook()
 {
-	//- update state
-	dev_state();
+    try
+    {
+        m_status_message.str("");
+        //- get the singleton control objet used to pilot the lima framework
+		m_ct = ControlFactory::instance().get_control("Hamamatsu");
+		
+		//- get interface to specific camera
+		m_hw = dynamic_cast<lima::Hamamatsu::Interface*>(m_ct->hwInterface());
+		
+		//- get camera to specific detector
+		m_camera = &(m_hw->getCamera());
+		
+		//update state
+        dev_state();
+	}
+    catch (Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
+        //- throw exception
+        set_state(Tango::FAULT);
+        m_is_device_initialized = false;
+        return;
+    }
+    catch (...)
+    {
+        ERROR_STREAM << "Initialization Failed : UNKNOWN" << endl;
+        m_status_message << "Initialization Failed : UNKNOWN" << endl;
+        //- throw exception
+        set_state(Tango::FAULT);
+        m_is_device_initialized = false;
+        return;
+    }
 }
 //+----------------------------------------------------------------------------
 //
