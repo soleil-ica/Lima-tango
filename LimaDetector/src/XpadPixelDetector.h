@@ -43,7 +43,8 @@
 #include <XpadCamera.h>
 #include "Factory.h"
 
-//using namespace Tango;
+//- YAT/YAT4TANGO
+#include <yat4tango/PropertyHelper.h>
 
 /**
  * @author	$Author:  $
@@ -99,6 +100,7 @@ namespace XpadPixelDetector_ns
 		Tango::DevULong	attr_gp3_write;
 		Tango::DevULong	attr_gp4_write;
 		Tango::DevBoolean	attr_enableGeometricalCorrection_write;
+		Tango::DevString	attr_acquisitionType_write;
 		Tango::DevULong	*attr_dacl_read;
 		Tango::DevULong	*attr_ithl_read;
 //@}
@@ -108,12 +110,6 @@ namespace XpadPixelDetector_ns
          * Device properties member data.
          */
         //@{
-/**
- *	Type of Acquisition:<BR>
- *	SYNC -> Synchrone<BR>
- *	ASYNC-> Asynchrone<BR>
- */
-	string	acquisitionType;
 /**
  *	Define the model of the XPAD (architecture)<BR>
  *	Availables models :<BR>
@@ -132,6 +128,10 @@ namespace XpadPixelDetector_ns
  *	Number of Adjusting iteration for the Calibration
  */
 	Tango::DevULong	calibrationAdjustingNumber;
+/**
+ *	Flag used to enable Xpix library debug
+ */
+	Tango::DevBoolean	xpixDebug;
 //@}
 
         /**
@@ -305,6 +305,14 @@ namespace XpadPixelDetector_ns
  */
 	virtual void write_enableGeometricalCorrection(Tango::WAttribute &attr);
 /**
+ *	Extract real attribute values for acquisitionType acquisition result.
+ */
+	virtual void read_acquisitionType(Tango::Attribute &attr);
+/**
+ *	Write acquisitionType attribute values to hardware.
+ */
+	virtual void write_acquisitionType(Tango::WAttribute &attr);
+/**
  *	Extract real attribute values for dacl acquisition result.
  */
 	virtual void read_dacl(Tango::Attribute &attr);
@@ -360,6 +368,10 @@ namespace XpadPixelDetector_ns
  *	Read/Write allowed for enableGeometricalCorrection attribute.
  */
 	virtual bool is_enableGeometricalCorrection_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for acquisitionType attribute.
+ */
+	virtual bool is_acquisitionType_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for dacl attribute.
  */
@@ -507,33 +519,17 @@ namespace XpadPixelDetector_ns
 //@}
 
         //	Here is the end of the automatic code generation part
-        //-------------------------------------------------------------	
-        // return true if the device is correctly initialized in init_device
-
-        bool is_device_initialized()
-        {
-            return m_is_device_initialized;
-        };
-
+        //-------------------------------------------------------------	 
+		// return true if the device is correctly initialized in init_device (used by StateMachine.cpp)
+		bool is_device_initialized(){return m_is_device_initialized;};
 
     protected:
         //	Add your own data members here
         //-----------------------------------------
 
-        //- Store the values into the property
-        //- Properties stuff    
-        int                 find_index_from_property_name(Tango::DbData& dev_prop, string property_name);
-        template <class T>
-        void                create_property_if_empty(Tango::DbData& dev_prop,T value, string property_name);    
-        template <class T>
-        void                set_property(string property_name, T value);
-        template <class T>
-        T                   get_property(string property_name) ;
-
-        
         bool m_is_device_initialized;
         stringstream m_status_message;
-        void set_specific_parameters();
+        void set_general_purpose_params();
 
         //lima OBJECTS
         Xpad::Interface* m_hw;

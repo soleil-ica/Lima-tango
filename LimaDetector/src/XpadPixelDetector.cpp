@@ -157,10 +157,9 @@ void XpadPixelDetector::init_device()
         m_hw = dynamic_cast<lima::Xpad::Interface*>(m_ct->hwInterface());
         if(m_hw==0)
         {
-            INFO_STREAM<<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"XpadPixelDetector"<<") !"<< endl;
-            m_status_message <<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"XpadPixelDetector"<<") !"<< endl;
+            m_status_message <<"Initialization Failed : Unable to get the interface of camera plugin (XpadPixelDetector) !"<< endl;
+			ERROR_STREAM << m_status_message.str() << endl;
             m_is_device_initialized = false;
-            set_state(Tango::FAULT);
             return;
         }
 
@@ -168,38 +167,30 @@ void XpadPixelDetector::init_device()
 		m_camera = &(m_hw->getCamera());
 		if(m_camera == 0)
 		{
-			INFO_STREAM<<"Initialization Failed : Unable to get the camera of plugin !"<<endl;
 			m_status_message <<"Initialization Failed : Unable to get the camera object !"<< endl;
+			ERROR_STREAM << m_status_message.str() << endl;
 			m_is_device_initialized = false;
-			set_state(Tango::FAULT);
 			return;			
 		}
 
-        if (acquisitionType == "SYNC")
-            m_camera->setAcquisitionType(lima::Xpad::Camera::SYNC);
-        else
-            m_camera->setAcquisitionType(lima::Xpad::Camera::ASYNC);
+		//- Xpix Debug
+		m_camera->xpixDebug(xpixDebug);
 
     }
     catch(Exception& e)
     {
-        INFO_STREAM<<"Initialization Failed : "<<e.getErrMsg()<<endl;
-        m_status_message <<"Initialization Failed : "<<e.getErrMsg( )<< endl;
+        m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
+		ERROR_STREAM << m_status_message.str() << endl;
         m_is_device_initialized = false;
-        set_state(Tango::FAULT);
-        return;
     }
     catch(...)
     {
-        INFO_STREAM<<"Initialization Failed : UNKNOWN"<<endl;
-        m_status_message <<"Initialization Failed : UNKNOWN"<< endl;
-        set_state(Tango::FAULT);
+        m_status_message << "Initialization Failed : UNKNOWN" << endl;
+		ERROR_STREAM << m_status_message.str() << endl;
         m_is_device_initialized = false;
-        return;
     }
 
     m_is_device_initialized = true;
-    set_state(Tango::STANDBY);
     this->dev_state();
 }
 
@@ -219,10 +210,10 @@ void XpadPixelDetector::get_device_property()
 	//	Read device properties from database.(Automatic code generation)
 	//------------------------------------------------------------------
 	Tango::DbData	dev_prop;
-	dev_prop.push_back(Tango::DbDatum("AcquisitionType"));
 	dev_prop.push_back(Tango::DbDatum("XpadModel"));
 	dev_prop.push_back(Tango::DbDatum("CalibrationPath"));
 	dev_prop.push_back(Tango::DbDatum("CalibrationAdjustingNumber"));
+	dev_prop.push_back(Tango::DbDatum("XpixDebug"));
 
 	//	Call database and extract values
 	//--------------------------------------------
@@ -232,17 +223,6 @@ void XpadPixelDetector::get_device_property()
 	XpadPixelDetectorClass	*ds_class =
 		(static_cast<XpadPixelDetectorClass *>(get_device_class()));
 	int	i = -1;
-
-	//	Try to initialize AcquisitionType from class property
-	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  acquisitionType;
-	else {
-		//	Try to initialize AcquisitionType from default device value
-		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  acquisitionType;
-	}
-	//	And try to extract AcquisitionType value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  acquisitionType;
 
 	//	Try to initialize XpadModel from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
@@ -277,15 +257,25 @@ void XpadPixelDetector::get_device_property()
 	//	And try to extract CalibrationAdjustingNumber value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  calibrationAdjustingNumber;
 
+	//	Try to initialize XpixDebug from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  xpixDebug;
+	else {
+		//	Try to initialize XpixDebug from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  xpixDebug;
+	}
+	//	And try to extract XpixDebug value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  xpixDebug;
+
 
 
 	//	End of Automatic code generation
 	//------------------------------------------------------------------
-    
-	create_property_if_empty(dev_prop,"SYNC","AcquisitionType");
-    create_property_if_empty(dev_prop,"TO_BE_DEFINED","XpadModel");
-    create_property_if_empty(dev_prop,"/no/path/defined","CalibrationPath");
-    create_property_if_empty(dev_prop,"1","CalibrationAdjustingNumber");
+
+	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop,"TO_BE_DEFINED, eg: IMXPAD_S70","XpadModel");
+	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop,"/no/path/defined","CalibrationPath");
+	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop,"1","CalibrationAdjustingNumber");
 }
 //+----------------------------------------------------------------------------
 //
@@ -315,6 +305,45 @@ void XpadPixelDetector::read_attr_hardware(vector<long> &attr_list)
 }
 //+----------------------------------------------------------------------------
 //
+// method : 		XpadPixelDetector::read_acquisitionType
+// 
+// description : 	Extract real attribute values for acquisitionType acquisition result.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::read_acquisitionType(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "XpadPixelDetector::read_acquisitionType(Tango::Attribute &attr) entering... "<< endl;
+
+	//- NOTHING: WRITE_ONLY Attribute !!
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		XpadPixelDetector::write_acquisitionType
+// 
+// description : 	Write acquisitionType attribute values to hardware.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::write_acquisitionType(Tango::WAttribute &attr)
+{
+	DEBUG_STREAM << "XpadPixelDetector::write_acquisitionType(Tango::WAttribute &attr) entering... "<< endl;
+
+	attr.get_write_value(attr_acquisitionType_write);
+	std::string acquisitionType = attr_acquisitionType_write;
+
+	if (acquisitionType == "SYNC")
+        m_camera->setAcquisitionType(lima::Xpad::Camera::SYNC);
+    else if (acquisitionType == "ASYNC")
+        m_camera->setAcquisitionType(lima::Xpad::Camera::ASYNC);
+	else
+		Tango::Except::throw_exception(
+					static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+					static_cast<const char*> ("Possible values for acquisitionType are: \n- SYNC\n- ASYNC"),
+					static_cast<const char*> ("XpadPixelDetector::write_acquisitionType"));
+}
+
+//+----------------------------------------------------------------------------
+//
 // method : 		XpadPixelDetector::read_enableGeometricalCorrection
 // 
 // description : 	Extract real attribute values for enableGeometricalCorrection acquisition result.
@@ -339,7 +368,7 @@ void XpadPixelDetector::write_enableGeometricalCorrection(Tango::WAttribute &att
 	DEBUG_STREAM << "XpadPixelDetector::write_enableGeometricalCorrection(Tango::WAttribute &attr) entering... "<< endl;
 
     attr.get_write_value(attr_enableGeometricalCorrection_write);
-	set_specific_parameters();
+	m_camera->setGeomCorrection(attr_enableGeometricalCorrection_write);
 }
 
 //+----------------------------------------------------------------------------
@@ -368,7 +397,7 @@ void XpadPixelDetector::write_busyOut(Tango::WAttribute &attr)
 	DEBUG_STREAM << "XpadPixelDetector::write_busyOut(Tango::WAttribute &attr) entering... "<< endl;
 
     attr.get_write_value(attr_busyOut_write);
-	set_specific_parameters();
+	m_camera->setBusyOutSel(attr_busyOut_write);
 }
 
 //+----------------------------------------------------------------------------
@@ -401,6 +430,35 @@ void XpadPixelDetector::read_ithl(Tango::Attribute &attr)
 
 //+----------------------------------------------------------------------------
 //
+// method : 		XpadPixelDetector::read_gp1
+// 
+// description : 	Extract real attribute values for gp1 acquisition result.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::read_gp1(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "XpadPixelDetector::read_gp1(Tango::Attribute &attr) entering... "<< endl;
+
+	//- NOTHING: WRITE_ONLY Attribute !!
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		XpadPixelDetector::write_gp1
+// 
+// description : 	Write gp1 attribute values to hardware.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::write_gp1(Tango::WAttribute &attr)
+{
+	DEBUG_STREAM << "XpadPixelDetector::write_gp1(Tango::WAttribute &attr) entering... "<< endl;
+
+	attr.get_write_value(attr_gp1_write);
+	set_general_purpose_params();
+}
+
+//+----------------------------------------------------------------------------
+//
 // method : 		XpadPixelDetector::read_gp2
 // 
 // description : 	Extract real attribute values for gp2 acquisition result.
@@ -425,7 +483,7 @@ void XpadPixelDetector::write_gp2(Tango::WAttribute &attr)
 	DEBUG_STREAM << "XpadPixelDetector::write_gp2(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_gp2_write);
-	set_specific_parameters();
+	set_general_purpose_params();
 }
 
 //+----------------------------------------------------------------------------
@@ -454,7 +512,7 @@ void XpadPixelDetector::write_gp3(Tango::WAttribute &attr)
 	DEBUG_STREAM << "XpadPixelDetector::write_gp3(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_gp3_write);
-	set_specific_parameters();
+	set_general_purpose_params();
 }
 
 //+----------------------------------------------------------------------------
@@ -483,7 +541,7 @@ void XpadPixelDetector::write_gp4(Tango::WAttribute &attr)
 	DEBUG_STREAM << "XpadPixelDetector::write_gp4(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_gp4_write);
-	set_specific_parameters();
+	set_general_purpose_params();
 }
 
 //+----------------------------------------------------------------------------
@@ -512,7 +570,18 @@ void XpadPixelDetector::write_deadTime(Tango::WAttribute &attr)
 	DEBUG_STREAM << "XpadPixelDetector::write_deadTime(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_deadTime_write);
-	set_specific_parameters();
+	try
+	{
+		m_camera->setDeadTime(attr_deadTime_write);
+	}
+	catch(Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		Tango::Except::throw_exception(
+					static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+					static_cast<const char*> (e.getErrMsg().c_str()),
+					static_cast<const char*> ("XpadPixelDetector::write_deadTime"));
+	}
 }
 
 //+----------------------------------------------------------------------------
@@ -541,7 +610,7 @@ void XpadPixelDetector::write_init(Tango::WAttribute &attr)
 	DEBUG_STREAM << "XpadPixelDetector::write_init(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_init_write);
-	set_specific_parameters();
+	m_camera->setInitTime(attr_init_write);
 }
 
 //+----------------------------------------------------------------------------
@@ -570,7 +639,7 @@ void XpadPixelDetector::write_shutter(Tango::WAttribute &attr)
 	DEBUG_STREAM << "XpadPixelDetector::write_shutter(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_shutter_write);
-	set_specific_parameters();
+	m_camera->setShutterTime(attr_shutter_write);
 }
 
 //+----------------------------------------------------------------------------
@@ -599,7 +668,18 @@ void XpadPixelDetector::write_ovf(Tango::WAttribute &attr)
 	DEBUG_STREAM << "XpadPixelDetector::write_ovf(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_ovf_write);
-	set_specific_parameters();
+	try
+	{
+		m_camera->setOverflowTime(attr_ovf_write);
+	}
+	catch(Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		Tango::Except::throw_exception(
+					static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+					static_cast<const char*> (e.getErrMsg().c_str()),
+					static_cast<const char*> ("XpadPixelDetector::write_ovf"));
+	}
 }
 
 //+----------------------------------------------------------------------------
@@ -628,7 +708,7 @@ void XpadPixelDetector::write_n(Tango::WAttribute &attr)
 	DEBUG_STREAM << "XpadPixelDetector::write_n(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_n_write);
-	set_specific_parameters();
+	m_camera->setNParameter(attr_n_write);
 }
 
 //+----------------------------------------------------------------------------
@@ -657,36 +737,7 @@ void XpadPixelDetector::write_p(Tango::WAttribute &attr)
 	DEBUG_STREAM << "XpadPixelDetector::write_p(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_p_write);
-	set_specific_parameters();
-}
-
-//+----------------------------------------------------------------------------
-//
-// method : 		XpadPixelDetector::read_gp1
-// 
-// description : 	Extract real attribute values for gp1 acquisition result.
-//
-//-----------------------------------------------------------------------------
-void XpadPixelDetector::read_gp1(Tango::Attribute &attr)
-{
-	DEBUG_STREAM << "XpadPixelDetector::read_gp1(Tango::Attribute &attr) entering... "<< endl;
-
-	//- NOTHING: WRITE_ONLY Attribute !!
-}
-
-//+----------------------------------------------------------------------------
-//
-// method : 		XpadPixelDetector::write_gp1
-// 
-// description : 	Write gp1 attribute values to hardware.
-//
-//-----------------------------------------------------------------------------
-void XpadPixelDetector::write_gp1(Tango::WAttribute &attr)
-{
-	DEBUG_STREAM << "XpadPixelDetector::write_gp1(Tango::WAttribute &attr) entering... "<< endl;
-
-	attr.get_write_value(attr_gp1_write);
-	set_specific_parameters();
+	m_camera->setPParameter(attr_p_write);
 }
 
 //+------------------------------------------------------------------
@@ -948,34 +999,6 @@ void XpadPixelDetector::load_all_config_g(const Tango::DevVarULongArray *argin)
     }
 }
 
-//+------------------------------------------------------------------
-/**
- *	method:	XpadPixelDetector::set_specific_parameters
- *
- */
-//+------------------------------------------------------------------
-void XpadPixelDetector::set_specific_parameters()
-{
-	DEBUG_STREAM << "XpadPixelDetector::set_specific_parameters(): entering... !" << endl;
-
-	try
-	{
-		m_camera->setSpecificParameters(attr_deadTime_write,attr_init_write,
-							            attr_shutter_write,attr_ovf_write,
-							            attr_n_write,attr_p_write,
-                                        attr_busyOut_write,
-                                        attr_enableGeometricalCorrection_write,
-							            attr_gp1_write,attr_gp2_write,attr_gp3_write,attr_gp4_write);
-	}
-	catch(Exception& e)
-	{
-		ERROR_STREAM << e.getErrMsg() << endl;
-		Tango::Except::throw_exception(
-					static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-					static_cast<const char*> (e.getErrMsg().c_str()),
-					static_cast<const char*> ("XpadPixelDetector::set_specific_parameters"));
-	}
-}
 
 //+------------------------------------------------------------------
 /**
@@ -1066,7 +1089,7 @@ void XpadPixelDetector::upload_wait_times(const Tango::DevVarULongArray *argin)
 
     try
     {
-        //- If we use this command (upload_wait_times), we have to inhibe the normal deadtime
+        //- If we use this command (upload_wait_times), we have to disable the normal deadtime
         //- value by putting a 0 (needed by xpix)
         Tango::WAttribute &deadTime = dev_attr->get_w_attr_by_name("deadTime");
         deadTime.set_write_value((Tango::DevULong)0);
@@ -1250,135 +1273,13 @@ Tango::DevVarUShortArray *XpadPixelDetector::get_ithl()
 	return argout;
 }
 
-
-
 /*-------------------------------------------------------------------------
-//       XpadPixelDetector::set_property
+//       XpadPixelDetector::set_general_purpose_params
 /-------------------------------------------------------------------------*/
-template <class T>
-void XpadPixelDetector::set_property(string property_name, T value)
+void XpadPixelDetector::set_general_purpose_params()
 {
-    if (!Tango::Util::instance()->_UseDb)
-    {
-        //- rethrow exception
-        Tango::Except::throw_exception(static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                       static_cast<const char*> ("NO DB"),
-                                       static_cast<const char*> ("XpadPixelDetector::set_property"));
-    }    
-    
-    Tango::DbDatum current_value(property_name);
-    current_value << value;
-    Tango::DbData db_data;
-    db_data.push_back(current_value);
-    try
-    {
-        get_db_device()->put_property(db_data);
-    }
-    catch (Tango::DevFailed &df)
-    {
-        string message = "Error in storing " + property_name + " in Configuration DataBase ";
-        LOG_ERROR((message));
-        ERROR_STREAM << df << endl;
-        //- rethrow exception
-        Tango::Except::re_throw_exception(df,
-                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                          static_cast<const char*> ("XpadPixelDetector::set_property"));
-    }
+	m_camera->setGeneralPurposeParams(attr_gp1_write,attr_gp2_write,attr_gp3_write,attr_gp4_write);
+
 }
-
-/*-------------------------------------------------------------------------
-//       XpadPixelDetector::get_property
-/-------------------------------------------------------------------------*/
-template <class T>
-T XpadPixelDetector::get_property(string property_name)
-{
-    if (!Tango::Util::instance()->_UseDb)
-    {
-        //- rethrow exception
-        Tango::Except::throw_exception(static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                       static_cast<const char*> ("NO DB"),
-                                       static_cast<const char*> ("XpadPixelDetector::get_property"));
-    }     
-    
-    T value;
-    Tango::DbDatum current_value(property_name);    
-    Tango::DbData db_data;
-    db_data.push_back(current_value);
-    try
-    {
-        get_db_device()->get_property(db_data);
-    }
-    catch (Tango::DevFailed &df)
-    {
-        string message = "Error in reading " + property_name + " in Configuration DataBase ";
-        LOG_ERROR((message));
-        ERROR_STREAM << df << endl;
-        //- rethrow exception
-        Tango::Except::re_throw_exception(df,
-                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                          static_cast<const char*> ("XpadPixelDetector::get_property"));
-    }
-    db_data[0] >> value;
-    return (value);
-}
-/*-------------------------------------------------------------------------
-//       XpadPixelDetector::create_property_if_empty
-/-------------------------------------------------------------------------*/
-template <class T>
-void XpadPixelDetector::create_property_if_empty(Tango::DbData& dev_prop,T value,string property_name)
-{
-    int iPropertyIndex = find_index_from_property_name(dev_prop,property_name);
-    if (iPropertyIndex == -1) return;
-    if (dev_prop[iPropertyIndex].is_empty())
-    {
-        Tango::DbDatum current_value(dev_prop[iPropertyIndex].name);
-        current_value << value;
-        Tango::DbData db_data;
-        db_data.push_back(current_value);
-
-        try
-        {
-            get_db_device()->put_property(db_data);
-        }
-        catch(Tango::DevFailed &df)
-        {
-            string message= "Error in storing " + property_name + " in Configuration DataBase ";
-            LOG_ERROR((message));
-            ERROR_STREAM<<df<<endl;
-            //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-                        static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                        static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                        static_cast<const char*> ("XpadPixelDetector::create_property_if_empty"));
-        }
-    }
-}
-
-
-/*-------------------------------------------------------------------------
-//       XpadPixelDetector::find_index_from_property_name
-/-------------------------------------------------------------------------*/
-int XpadPixelDetector::find_index_from_property_name(Tango::DbData& dev_prop, string property_name)
-{
-    size_t iNbProperties = dev_prop.size();
-    unsigned int i;
-    for (i=0;i<iNbProperties;i++)
-    {
-        string sPropertyName(dev_prop[i].name);
-        if (sPropertyName == property_name) return i;
-    }
-    if (i == iNbProperties) return -1;
-    return i;
-}
-
-
-
-
-
-
-
-
 
 }	//	namespace

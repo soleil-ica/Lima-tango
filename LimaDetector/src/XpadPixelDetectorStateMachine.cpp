@@ -432,6 +432,27 @@ bool XpadPixelDetector::is_enableGeometricalCorrection_allowed(Tango::AttReqType
 	}
 	return true;
 }
+//+----------------------------------------------------------------------------
+//
+// method : 		XpadPixelDetector::is_acquisitionType_allowed
+// 
+// description : 	Read/Write allowed for acquisitionType attribute.
+//
+//-----------------------------------------------------------------------------
+bool XpadPixelDetector::is_acquisitionType_allowed(Tango::AttReqType type)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::RUNNING	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::DISABLE)
+	{
+		//	End of Generated Code
+
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
 
 //=================================================
 //		Commands Allowed Methods
