@@ -45,6 +45,7 @@
 #include "tango.h"
 
 #include <yat4tango/PropertyHelper.h>
+#include <yat/threading/Mutex.h>
 #include "HwInterface.h"
 #include "CtControl.h"
 #include "CtAcquisition.h"

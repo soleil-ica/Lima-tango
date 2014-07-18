@@ -64,34 +64,6 @@ public:
 	{return (static_cast<AviexCCD *>(dev))->is_highSpeed_allowed(ty);}
 };
 
-class linearizationAttrib: public Tango::Attr
-{
-public:
-	linearizationAttrib():Attr("linearization", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
-	~linearizationAttrib() {};
-	
-	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<AviexCCD *>(dev))->read_linearization(att);}
-	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-	{(static_cast<AviexCCD *>(dev))->write_linearization(att);}
-	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<AviexCCD *>(dev))->is_linearization_allowed(ty);}
-};
-
-class offsetCorrectionAttrib: public Tango::Attr
-{
-public:
-	offsetCorrectionAttrib():Attr("offsetCorrection", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
-	~offsetCorrectionAttrib() {};
-	
-	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<AviexCCD *>(dev))->read_offsetCorrection(att);}
-	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-	{(static_cast<AviexCCD *>(dev))->write_offsetCorrection(att);}
-	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<AviexCCD *>(dev))->is_offsetCorrection_allowed(ty);}
-};
-
 class geomCorrectionAttrib: public Tango::Attr
 {
 public:
@@ -247,6 +219,54 @@ public:
 //=========================================
 //	Define classes for commands
 //=========================================
+class GetParamCmd : public Tango::Command
+{
+public:
+	GetParamCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	GetParamCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~GetParamCmd() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<AviexCCD *>(dev))->is_GetParam_allowed(any);}
+};
+
+
+
+class SetParamCmd : public Tango::Command
+{
+public:
+	SetParamCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	SetParamCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~SetParamCmd() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<AviexCCD *>(dev))->is_SetParam_allowed(any);}
+};
+
+
+
 //
 // The AviexCCDClass singleton definition
 //

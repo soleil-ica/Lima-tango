@@ -146,29 +146,12 @@ void MarCCD::init_device()
         //in fact LimaDetector is create the singleton control objet
         //so this call, will only return existing object, no need to give it the ip !!
         m_ct = ControlFactory::instance().get_control("MarCCD");
-
+        
         //- get interface to specific camera
         m_hw = dynamic_cast<Marccd::Interface*> (m_ct->hwInterface());
-        if (m_hw == 0)
-        {
-            INFO_STREAM << "Initialization Failed : Unable to get the interface of camera plugin !" << std::endl;
-            m_status_message << "Initialization Failed : Unable to get the interface of camera plugin !" << std::endl;
-            m_is_device_initialized = false;
-            set_state(Tango::FAULT);
-            return;
-        }
 
         //- get camera to specific detector
         m_camera = &(m_hw->getCamera());
-        if (m_camera == 0)
-        {
-            INFO_STREAM << "Initialization Failed : Unable to get the camera of plugin !" << endl;
-            m_status_message << "Initialization Failed : Unable to get the camera object !" << endl;
-            m_is_device_initialized = false;
-            set_state(Tango::FAULT);
-            return;
-        }
-
     }
     catch (Exception& e)
     {
@@ -187,6 +170,17 @@ void MarCCD::init_device()
         return;
     }
     m_is_device_initialized = true;
+    
+    //write at init, only if device is correctly initialized
+    if (m_is_device_initialized)
+    {
+        INFO_STREAM << "Write tango hardware at Init - waitFileOnDiskTime." << endl;
+        Tango::WAttribute &waitFileOnDiskTime = dev_attr->get_w_attr_by_name("waitFileOnDiskTime");
+        *attr_waitFileOnDiskTime_read = memorizedWaitFileOnDiskTime;
+        waitFileOnDiskTime.set_write_value(*attr_waitFileOnDiskTime_read);
+        write_waitFileOnDiskTime(waitFileOnDiskTime);
+    }    
+    
     set_state(Tango::STANDBY);
     this->dev_state();
 }
@@ -207,64 +201,76 @@ void MarCCD::get_device_property()
 
     //	Read device properties from database.(Automatic code generation)
     //------------------------------------------------------------------
-    Tango::DbData dev_prop;
-    dev_prop.push_back(Tango::DbDatum("DetectorIP"));
-    dev_prop.push_back(Tango::DbDatum("DetectorPort"));
-    dev_prop.push_back(Tango::DbDatum("DetectorTargetPath"));
-    dev_prop.push_back(Tango::DbDatum("ReaderTimeout"));
+	Tango::DbData	dev_prop;
+	dev_prop.push_back(Tango::DbDatum("DetectorIP"));
+	dev_prop.push_back(Tango::DbDatum("DetectorPort"));
+	dev_prop.push_back(Tango::DbDatum("DetectorTargetPath"));
+	dev_prop.push_back(Tango::DbDatum("ReaderTimeout"));
+	dev_prop.push_back(Tango::DbDatum("MemorizedWaitFileOnDiskTime"));
 
-    //	Call database and extract values
-    //--------------------------------------------
+	//	Call database and extract values
+	//--------------------------------------------
 	if (Tango::Util::instance()->_UseDb==true)
-        get_db_device()->get_property(dev_prop);
-    Tango::DbDatum def_prop, cl_prop;
-    MarCCDClass *ds_class =
+		get_db_device()->get_property(dev_prop);
+	Tango::DbDatum	def_prop, cl_prop;
+	MarCCDClass	*ds_class =
 		(static_cast<MarCCDClass *>(get_device_class()));
-    int i = -1;
+	int	i = -1;
 
-    //	Try to initialize DetectorIP from class property
-    cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	//	Try to initialize DetectorIP from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
 	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorIP;
 	else {
-        //	Try to initialize DetectorIP from default device value
-        def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		//	Try to initialize DetectorIP from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
 		if (def_prop.is_empty()==false)	def_prop  >>  detectorIP;
-    }
-    //	And try to extract DetectorIP value from database
+	}
+	//	And try to extract DetectorIP value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorIP;
 
-    //	Try to initialize DetectorPort from class property
-    cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	//	Try to initialize DetectorPort from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
 	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorPort;
 	else {
-        //	Try to initialize DetectorPort from default device value
-        def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		//	Try to initialize DetectorPort from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
 		if (def_prop.is_empty()==false)	def_prop  >>  detectorPort;
-    }
-    //	And try to extract DetectorPort value from database
+	}
+	//	And try to extract DetectorPort value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorPort;
 
-    //	Try to initialize DetectorTargetPath from class property
-    cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	//	Try to initialize DetectorTargetPath from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
 	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorTargetPath;
 	else {
-        //	Try to initialize DetectorTargetPath from default device value
-        def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		//	Try to initialize DetectorTargetPath from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
 		if (def_prop.is_empty()==false)	def_prop  >>  detectorTargetPath;
-    }
-    //	And try to extract DetectorTargetPath value from database
+	}
+	//	And try to extract DetectorTargetPath value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorTargetPath;
 
-    //	Try to initialize ReaderTimeout from class property
-    cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	//	Try to initialize ReaderTimeout from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
 	if (cl_prop.is_empty()==false)	cl_prop  >>  readerTimeout;
 	else {
-        //	Try to initialize ReaderTimeout from default device value
-        def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		//	Try to initialize ReaderTimeout from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
 		if (def_prop.is_empty()==false)	def_prop  >>  readerTimeout;
-    }
-    //	And try to extract ReaderTimeout value from database
+	}
+	//	And try to extract ReaderTimeout value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  readerTimeout;
+
+	//	Try to initialize MemorizedWaitFileOnDiskTime from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedWaitFileOnDiskTime;
+	else {
+		//	Try to initialize MemorizedWaitFileOnDiskTime from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedWaitFileOnDiskTime;
+	}
+	//	And try to extract MemorizedWaitFileOnDiskTime value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedWaitFileOnDiskTime;
 
 
 
@@ -274,6 +280,7 @@ void MarCCD::get_device_property()
     PropertyHelper::create_property_if_empty(this, dev_prop, "-1", "DetectorPort");
     PropertyHelper::create_property_if_empty(this, dev_prop, "/no/path/defined/", "DetectorTargetPath");
     PropertyHelper::create_property_if_empty(this, dev_prop, "10000", "ReaderTimeout");
+    PropertyHelper::create_property_if_empty(this, dev_prop, "0", "MemorizedWaitFileOnDiskTime");    
 }
 //+----------------------------------------------------------------------------
 //
@@ -291,13 +298,16 @@ void MarCCD::always_executed_hook()
         m_status_message.str("");
         //- get the singleton control objet used to pilot the lima framework
         m_ct = ControlFactory::instance().get_control("MarCCD");
-   
-        //- get interface to specific detector
-        if (m_ct != 0)
-            m_hw = dynamic_cast<Marccd::Interface*> (m_ct->hwInterface());
-        this->dev_state();
+        
+        //- get interface to specific camera
+        m_hw = dynamic_cast<Marccd::Interface*> (m_ct->hwInterface());
 
-}
+        //- get camera to specific detector
+        m_camera = &(m_hw->getCamera());
+		
+		//update state
+        dev_state();
+	}
     catch (Exception& e)
     {
         ERROR_STREAM << e.getErrMsg() << endl;
@@ -616,7 +626,7 @@ Tango::DevState MarCCD::dev_state()
     }
     else
     {
-        //state&status are retrieved from specific device
+        // state & status are retrieved from Factory, Factory is updated by Generic device
         DeviceState = ControlFactory::instance().get_state();
         DeviceStatus << ControlFactory::instance().get_status();
     }
@@ -628,4 +638,6 @@ Tango::DevState MarCCD::dev_state()
     return argout;
 }
 
-} //	namespace
+
+
+}	//	namespace

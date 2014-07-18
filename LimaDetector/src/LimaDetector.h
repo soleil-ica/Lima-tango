@@ -55,6 +55,7 @@
 #include "CtAccumulation.h"
 #include "CtSaving.h"
 #include "CtImage.h"
+#include "Data.h"
 #include "CtVideo.h"
 #include "CtShutter.h"
 
@@ -133,6 +134,7 @@ public :
         Tango::DevDouble    attr_shutterCloseTime_write;
         Tango::DevDouble    *attr_exposureAccTime_read;
         Tango::DevDouble    attr_exposureAccTime_write;
+        Tango::DevULong    *attr_currentAccFrame_read;
 		
 
 
@@ -234,6 +236,12 @@ public :
  *	Otherwise, use only NONE.
  */
 	string	detectorVideoMode;
+/**
+ *	Choose the source of Data given to the image attribute :<br>
+ *	- VIDEO : use ctVideo->LastImage()
+ *	- ACQUISITION : use ctControl->ReadImage()
+ */
+	string	imageSource;
 /**
  *	Define the format of image files :<BR>
  *	Availables values :<br>
@@ -794,6 +802,8 @@ public :
 
     void    read_exposureAccTime_callback(yat4tango::DynamicAttributeReadCallbackData& cbd);
     void    write_exposureAccTime_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd);
+    
+    void    read_currentAccFrame_callback(yat4tango::DynamicAttributeReadCallbackData& cbd);
 
     // return true if the device is correctly initialized in init_device
     bool    is_device_initialized(){return m_is_device_initialized;};
@@ -830,7 +840,7 @@ protected :
     //state & status stuff
     bool                                m_is_device_initialized ;
     stringstream                        m_status_message;
-    static bool                         m_is_created;		//indicate when the construction of "generic" device is completed.
+    static int                          m_init_count;		//indicate when the construction of "generic" device is completed.
 
     //LIMA objects
     HwInterface*                        m_hw;				//object to the generic interface of camera's

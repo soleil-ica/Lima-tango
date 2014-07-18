@@ -117,15 +117,27 @@
 #include <VieworksVPSyncCtrlObj.h>    
 #endif
 
+#ifdef HAMAMATSU_ENABLED
+#include <HamamatsuCamera.h>
+#include <HamamatsuBinCtrlObj.h>
+#include <HamamatsuDetInfoCtrlObj.h>
+#include <HamamatsuRoiCtrlObj.h>
+#include <HamamatsuSyncCtrlObj.h>   
+#include <HamamatsuInterface.h>
+#endif
+
 using namespace lima;
 
 class ControlFactory : public Singleton<ControlFactory>
 {
 public:
 
-    //get the main object of Lima CtConttrol
-    CtControl* get_control(const std::string& detector_type);
+    //create the main object of Lima CtConttrol
+    CtControl* create_control(const std::string& detector_type);
 
+    //get the main object of Lima CtConttrol
+    CtControl* get_control(const std::string& type="");
+    
     //initialize all pointers
     void reset(const std::string& detector_type);
     
@@ -143,9 +155,12 @@ public:
     
     //fix the status in a AutoMutex lock
     void set_status(const std::string& status);
+    
+    //return to the client the global mutex, in order to use ctControl in a scoped lock
+    yat::Mutex& get_global_mutex();
 
 private:
-    void initialize_pointers();
+    void initialize();
 
 
     void*                           m_camera;      //generic pointer, must be casted to real XXX::Camera when using it !
@@ -154,12 +169,15 @@ private:
     
     static bool                     m_is_created;
     std::string                     m_server_name;
-    std::string                     m_device_name;
+    std::string                     m_device_name_specific;
+#ifdef SHIFTING_ENABLED    
+    std::string                     m_device_name_shifting;
+#endif    
     Tango::DevState                 m_state;
     stringstream                    m_status;
 
     //lock the singleton acess
-    yat::Mutex                      object_lock;
+    yat::Mutex                      object_control_lock;
 
     //lock the singleton acess
     yat::Mutex                      object_state_lock;
@@ -167,4 +185,3 @@ private:
 } ;
 
 #endif
-

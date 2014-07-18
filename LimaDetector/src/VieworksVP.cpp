@@ -193,28 +193,12 @@ void VieworksVP::init_device()
         //in fact LimaDetector is create the singleton control objet
         //so this call, will only return existing object, no need to give it the ip !!
         m_ct = ControlFactory::instance().get_control("VieworksVP");
-
+        
         //- get interface to specific camera
         m_hw = dynamic_cast<lima::VieworksVP::Interface*> (m_ct->hwInterface());
-        if (m_hw == 0)
-        {
-            INFO_STREAM << "Initialization Failed : Unable to get the interface of camera plugin !" << std::endl;
-            m_status_message << "Initialization Failed : Unable to get the interface of camera plugin !" << std::endl;
-            m_is_device_initialized = false;
-            set_state(Tango::FAULT);
-            return;
-        }
 
         //- get camera to specific detector
-		m_camera = &(m_hw->getCamera());
-		if(m_camera == 0)
-		{
-			INFO_STREAM<<"Initialization Failed : Unable to get the camera of plugin !"<<endl;
-			m_status_message <<"Initialization Failed : Unable to get the camera object !"<< endl;
-			m_is_device_initialized = false;
-			set_state(Tango::FAULT);
-			return;			
-		}		
+		m_camera = &(m_hw->getCamera());	
     }
     catch (Exception& e)
     {
@@ -235,7 +219,7 @@ void VieworksVP::init_device()
 
     m_is_device_initialized = true;
     set_state(Tango::STANDBY);
-    this->dev_state();
+    dev_state();
 }
 
 
@@ -345,8 +329,39 @@ void VieworksVP::get_device_property()
 //-----------------------------------------------------------------------------
 void VieworksVP::always_executed_hook()
 {
-    //- update state
-    dev_state();	
+	try
+	{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
+		m_status_message.str("");
+		//- get the singleton control objet used to pilot the lima framework
+        m_ct = ControlFactory::instance().get_control("VieworksVP");
+        
+        //- get interface to specific camera
+        m_hw = dynamic_cast<lima::VieworksVP::Interface*> (m_ct->hwInterface());
+
+        //- get camera to specific detector
+		m_camera = &(m_hw->getCamera());	
+		
+		dev_state();
+
+	}
+	catch (Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
+		//- throw exception
+		set_state(Tango::FAULT);
+		m_is_device_initialized = false;
+		return;
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		m_status_message << "Initialization Failed : " << string(df.errors[0].desc) << endl;
+		m_is_device_initialized = false;
+		set_state(Tango::FAULT);
+		return;
+	}
 }
 //+----------------------------------------------------------------------------
 //

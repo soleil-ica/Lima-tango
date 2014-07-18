@@ -75,7 +75,7 @@ static const char *RcsId = "$Id:  $";
 namespace LimaDetector_ns
 {
 
-bool LimaDetector::m_is_created = false;
+int LimaDetector::m_init_count = 0;
 
 //+----------------------------------------------------------------------------
 //
@@ -87,18 +87,22 @@ bool LimaDetector::m_is_created = false;
 //      - s : Device name
 //
 //-----------------------------------------------------------------------------
+
 LimaDetector::LimaDetector(Tango::DeviceClass *cl, string &s)
-: Tango::Device_4Impl(cl, s.c_str())
+:Tango::Device_4Impl(cl, s.c_str())
 {
 	init_device();
+
 }
+
 LimaDetector::LimaDetector(Tango::DeviceClass *cl, const char *s)
-: Tango::Device_4Impl(cl, s)
+:Tango::Device_4Impl(cl, s)
 {
 	init_device();
 }
+
 LimaDetector::LimaDetector(Tango::DeviceClass *cl, const char *s, const char *d)
-: Tango::Device_4Impl(cl, s, d)
+:Tango::Device_4Impl(cl, s, d)
 {
 	init_device();
 }
@@ -109,6 +113,7 @@ LimaDetector::LimaDetector(Tango::DeviceClass *cl, const char *s, const char *d)
 // description :     will be called at device destruction or at init command.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::delete_device()
 {
 	INFO_STREAM << "LimaDetector::delete_device() delete device " << device_name << endl;
@@ -122,6 +127,7 @@ void LimaDetector::delete_device()
 	DELETE_SCALAR_ATTRIBUTE(attr_detectorPixelDepth_read);
 	DELETE_SCALAR_ATTRIBUTE(attr_nbFrames_read);
 	DELETE_SCALAR_ATTRIBUTE(attr_currentFrame_read);
+	DELETE_SCALAR_ATTRIBUTE(attr_currentAccFrame_read);
 	DELETE_SCALAR_ATTRIBUTE(attr_fileGeneration_read);
 	DELETE_DEVSTRING_ATTRIBUTE(attr_detectorDescription_read);
 	DELETE_DEVSTRING_ATTRIBUTE(attr_detectorType_read);
@@ -189,6 +195,7 @@ void LimaDetector::delete_device()
 // description :     will be called at device initialization.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::init_device()
 {
 	INFO_STREAM << "LimaDetector::LimaDetector() create device " << device_name << endl;
@@ -202,6 +209,7 @@ void LimaDetector::init_device()
 	m_acquisition_task = 0;
 	m_is_device_initialized = false;
 	m_status_message.str("");
+	transform(imageSource.begin(), imageSource.end(), imageSource.begin(), ::toupper);
 	//By default INIT, need to ensure that all objets are OK before set the device to STANDBY
 	set_state(Tango::INIT);
 
@@ -230,6 +238,7 @@ void LimaDetector::init_device()
 	CREATE_SCALAR_ATTRIBUTE(attr_detectorPixelDepth_read);
 	CREATE_SCALAR_ATTRIBUTE(attr_nbFrames_read);
 	CREATE_SCALAR_ATTRIBUTE(attr_currentFrame_read);
+	CREATE_SCALAR_ATTRIBUTE(attr_currentAccFrame_read);
 	CREATE_SCALAR_ATTRIBUTE(attr_fileGeneration_read);
 	CREATE_DEVSTRING_ATTRIBUTE(attr_detectorDescription_read, MAX_ATTRIBUTE_STRING_LENGTH);
 	CREATE_DEVSTRING_ATTRIBUTE(attr_detectorType_read, MAX_ATTRIBUTE_STRING_LENGTH);
@@ -249,6 +258,7 @@ void LimaDetector::init_device()
 	//- Create lima control object and configure acquistion parameters
 	try
 	{
+		LimaDetector::m_init_count++;		
 		//- add image dynamic attribute
 		//- create image dyn attr (UChar, UShort or ULong)
 		INFO_STREAM << "Add image dynamic attribute." << endl;
@@ -293,25 +303,24 @@ void LimaDetector::init_device()
 		DebParams::setTypeFlagsNameList(debugLevels);
 		DebParams::setFormatFlagsNameList(debugFormats);
 
-
 		//- get the main object used to pilot the lima framework
-		INFO_STREAM << "Get the main control object in order to pilot the DetectorType ("<< detectorType << ")." << endl;
-		m_ct = ControlFactory::instance().get_control(detectorType);
+		INFO_STREAM << "Create the main control object in order to pilot the DetectorType (" << detectorType << ")." << endl;
+		m_ct = ControlFactory::instance().create_control(detectorType);
 
 		//- get interface to specific camera
-		INFO_STREAM << "Get Interface to the DetectorType ("<< detectorType << ")." << endl;
+		INFO_STREAM << "Get Interface to the DetectorType (" << detectorType << ")." << endl;
 		m_hw = dynamic_cast<HwInterface*> (m_ct->hwInterface());
 		if (m_hw == 0)
 		{
-			INFO_STREAM << "Initialization Failed : Unable to get the interface of DetectorType ("<< detectorType << ")!" << endl;
-			m_status_message << "Initialization Failed : Unable to get the interface of DetectorType ("<< detectorType << ")!" << endl;
+			INFO_STREAM << "Initialization Failed : Unable to get the interface of DetectorType (" << detectorType << ")!" << endl;
+			m_status_message << "Initialization Failed : Unable to get the interface of DetectorType (" << detectorType << ")!" << endl;
 			m_is_device_initialized = false;
 			set_state(Tango::FAULT);
 			return;
 		}
 
 		//- define currentImageType of detector (16 bits, 32 bits, ...) according to "DetectorPixelDepth" device property
-		INFO_STREAM << "Define ImageType of detector (16 bits, 32 bits, ...) according to DetectorPixelDepth ("<< detectorPixelDepth << ") property." << endl;
+		INFO_STREAM << "Define ImageType of detector (16 bits, 32 bits, ...) according to DetectorPixelDepth (" << detectorPixelDepth << ") property." << endl;
 		HwDetInfoCtrlObj *hw_det_info;
 		m_hw->getHwCtrlObj(hw_det_info);
 		switch (detectorPixelDepth)
@@ -478,7 +487,7 @@ void LimaDetector::init_device()
 		mMyVideoMode["Y64"] = Y64;
 		mMyVideoMode["RGB555"] = RGB555;
 		mMyVideoMode["RGB565"] = RGB565;
-		mMyVideoMode["RGB24"] 		= RGB24;
+		mMyVideoMode["RGB24"] = RGB24;
 		mMyVideoMode["RGB32"] = RGB32;
 		mMyVideoMode["BGR24"] = BGR24;
 		mMyVideoMode["BGR32"] = BGR32;
@@ -541,18 +550,41 @@ void LimaDetector::init_device()
 		return;
 	}
 
-	//- Ensure to call this, only when sub device is already created by ClassFactory
-	if (LimaDetector::m_is_created)
+	try
 	{
-		//- force Init() on the specific sub device.
-		INFO_STREAM << "Force Initialization on the specific sub device." << endl;
-		ControlFactory::instance().init_specific_device(detectorType);
+		//- Ensure to call this, only when LimaDetector & specifcs devices are created by ClassFactory
+		//- That means, we need to call tis only at teh command Init() and not at the start of the device
+		if (LimaDetector::m_init_count>1)
+		{
+			//- force Init() on the specific sub device.
+			INFO_STREAM << "Force Initialization on the specific sub device." << endl;
+			ControlFactory::instance().init_specific_device(detectorType);
+		}
 	}
-
+	catch (Exception& e)
+	{
+		ERROR_STREAM << "Initialization Failed : " << e.getErrMsg() << endl;
+		m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
+		m_is_device_initialized = false;
+		set_state(Tango::FAULT);
+		return;
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		m_status_message << "Initialization Failed : ";
+		for (unsigned i = 0; i < df.errors.length(); i++)
+		{
+			m_status_message << df.errors[i].desc << endl;
+		}
+		m_is_device_initialized = false;
+		set_state(Tango::FAULT);
+		return;
+	}	
+	
 	// everything seems ok
-	m_is_device_initialized = true;
-	LimaDetector::m_is_created = true;
-
+	m_is_device_initialized = true;		
+	
 	//write at init, only if device is correctly initialized
 	if (m_is_device_initialized)
 	{
@@ -562,14 +594,14 @@ void LimaDetector::init_device()
 
 			Tango::WAttribute &acquisitionMode = dev_attr->get_w_attr_by_name("acquisitionMode");
 			m_acquisition_mode = memorizedAcquisitionMode;
-			strcpy(*attr_acquisitionMode_read,memorizedAcquisitionMode.c_str());
+			strcpy(*attr_acquisitionMode_read, memorizedAcquisitionMode.c_str());
 			acquisitionMode.set_write_value(m_acquisition_mode);
 			write_acquisitionMode(acquisitionMode);
 
 			INFO_STREAM << "Write tango hardware at Init - triggerMode." << endl;
 			Tango::WAttribute &triggerMode = dev_attr->get_w_attr_by_name("triggerMode");
 			m_trigger_mode = memorizedTriggerMode;
-			strcpy(*attr_triggerMode_read, memorizedTriggerMode.c_str());						
+			strcpy(*attr_triggerMode_read, memorizedTriggerMode.c_str());
 			triggerMode.set_write_value(m_trigger_mode);
 			write_triggerMode(triggerMode);
 
@@ -578,7 +610,7 @@ void LimaDetector::init_device()
 				INFO_STREAM << "Write tango hardware at Init - shutterMode." << endl;
 				Tango::WAttribute &shutterMode = dev_attr->get_w_attr_by_name("shutterMode");
 				m_shutter_mode = memorizedShutterMode;
-				strcpy(*attr_shutterMode_read, memorizedShutterMode.c_str());				
+				strcpy(*attr_shutterMode_read, memorizedShutterMode.c_str());
 				shutterMode.set_write_value(m_shutter_mode);
 				yat4tango::DynamicAttributeWriteCallbackData cbd_shutterMode;
 				cbd_shutterMode.tga = &shutterMode;
@@ -679,7 +711,7 @@ void LimaDetector::init_device()
 	}
 
 	set_state(Tango::STANDBY);
-	this->dev_state();
+	dev_state();
 }
 
 
@@ -690,6 +722,7 @@ void LimaDetector::init_device()
 // description :     Read the device properties from database.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::get_device_property()
 {
 	//    Initialize your default values here (if not done with  POGO).
@@ -702,6 +735,7 @@ void LimaDetector::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("DetectorType"));
 	dev_prop.push_back(Tango::DbDatum("DetectorPixelDepth"));
 	dev_prop.push_back(Tango::DbDatum("DetectorVideoMode"));
+	dev_prop.push_back(Tango::DbDatum("ImageSource"));
 	dev_prop.push_back(Tango::DbDatum("FileFormat"));
 	dev_prop.push_back(Tango::DbDatum("FilePrefix"));
 	dev_prop.push_back(Tango::DbDatum("FileIndexPattern"));
@@ -728,309 +762,348 @@ void LimaDetector::get_device_property()
 
 	//	Call database and extract values
 	//--------------------------------------------
-	if (Tango::Util::instance()->_UseDb==true)
+	if (Tango::Util::instance()->_UseDb == true)
 		get_db_device()->get_property(dev_prop);
 	Tango::DbDatum	def_prop, cl_prop;
 	LimaDetectorClass	*ds_class =
-		(static_cast<LimaDetectorClass *>(get_device_class()));
+	 (static_cast<LimaDetectorClass *> (get_device_class()));
 	int	i = -1;
 
 	//	Try to initialize DetectorDescription from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorDescription;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  detectorDescription;
+	else
+	{
 		//	Try to initialize DetectorDescription from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  detectorDescription;
+		if (def_prop.is_empty() == false)	def_prop  >>  detectorDescription;
 	}
 	//	And try to extract DetectorDescription value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorDescription;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  detectorDescription;
 
 	//	Try to initialize DetectorType from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorType;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  detectorType;
+	else
+	{
 		//	Try to initialize DetectorType from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  detectorType;
+		if (def_prop.is_empty() == false)	def_prop  >>  detectorType;
 	}
 	//	And try to extract DetectorType value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorType;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  detectorType;
 
 	//	Try to initialize DetectorPixelDepth from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorPixelDepth;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  detectorPixelDepth;
+	else
+	{
 		//	Try to initialize DetectorPixelDepth from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  detectorPixelDepth;
+		if (def_prop.is_empty() == false)	def_prop  >>  detectorPixelDepth;
 	}
 	//	And try to extract DetectorPixelDepth value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorPixelDepth;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  detectorPixelDepth;
 
 	//	Try to initialize DetectorVideoMode from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorVideoMode;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  detectorVideoMode;
+	else
+	{
 		//	Try to initialize DetectorVideoMode from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  detectorVideoMode;
+		if (def_prop.is_empty() == false)	def_prop  >>  detectorVideoMode;
 	}
 	//	And try to extract DetectorVideoMode value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorVideoMode;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  detectorVideoMode;
+
+	//	Try to initialize ImageSource from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty() == false)	cl_prop  >>  imageSource;
+	else
+	{
+		//	Try to initialize ImageSource from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty() == false)	def_prop  >>  imageSource;
+	}
+	//	And try to extract ImageSource value from database
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  imageSource;
 
 	//	Try to initialize FileFormat from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  fileFormat;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  fileFormat;
+	else
+	{
 		//	Try to initialize FileFormat from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  fileFormat;
+		if (def_prop.is_empty() == false)	def_prop  >>  fileFormat;
 	}
 	//	And try to extract FileFormat value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  fileFormat;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  fileFormat;
 
 	//	Try to initialize FilePrefix from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  filePrefix;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  filePrefix;
+	else
+	{
 		//	Try to initialize FilePrefix from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  filePrefix;
+		if (def_prop.is_empty() == false)	def_prop  >>  filePrefix;
 	}
 	//	And try to extract FilePrefix value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  filePrefix;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  filePrefix;
 
 	//	Try to initialize FileIndexPattern from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  fileIndexPattern;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  fileIndexPattern;
+	else
+	{
 		//	Try to initialize FileIndexPattern from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  fileIndexPattern;
+		if (def_prop.is_empty() == false)	def_prop  >>  fileIndexPattern;
 	}
 	//	And try to extract FileIndexPattern value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  fileIndexPattern;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  fileIndexPattern;
 
 	//	Try to initialize FileNbFrames from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  fileNbFrames;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  fileNbFrames;
+	else
+	{
 		//	Try to initialize FileNbFrames from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  fileNbFrames;
+		if (def_prop.is_empty() == false)	def_prop  >>  fileNbFrames;
 	}
 	//	And try to extract FileNbFrames value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  fileNbFrames;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  fileNbFrames;
 
 	//	Try to initialize FileTargetPath from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  fileTargetPath;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  fileTargetPath;
+	else
+	{
 		//	Try to initialize FileTargetPath from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  fileTargetPath;
+		if (def_prop.is_empty() == false)	def_prop  >>  fileTargetPath;
 	}
 	//	And try to extract FileTargetPath value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  fileTargetPath;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  fileTargetPath;
 
 	//	Try to initialize DebugModules from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  debugModules;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  debugModules;
+	else
+	{
 		//	Try to initialize DebugModules from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  debugModules;
+		if (def_prop.is_empty() == false)	def_prop  >>  debugModules;
 	}
 	//	And try to extract DebugModules value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  debugModules;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  debugModules;
 
 	//	Try to initialize DebugLevels from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  debugLevels;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  debugLevels;
+	else
+	{
 		//	Try to initialize DebugLevels from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  debugLevels;
+		if (def_prop.is_empty() == false)	def_prop  >>  debugLevels;
 	}
 	//	And try to extract DebugLevels value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  debugLevels;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  debugLevels;
 
 	//	Try to initialize DebugFormats from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  debugFormats;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  debugFormats;
+	else
+	{
 		//	Try to initialize DebugFormats from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  debugFormats;
+		if (def_prop.is_empty() == false)	def_prop  >>  debugFormats;
 	}
 	//	And try to extract DebugFormats value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  debugFormats;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  debugFormats;
 
 	//	Try to initialize MemorizedRoi from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedRoi;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedRoi;
+	else
+	{
 		//	Try to initialize MemorizedRoi from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedRoi;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedRoi;
 	}
 	//	And try to extract MemorizedRoi value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedRoi;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedRoi;
 
 	//	Try to initialize MemorizedBinningH from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedBinningH;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedBinningH;
+	else
+	{
 		//	Try to initialize MemorizedBinningH from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedBinningH;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedBinningH;
 	}
 	//	And try to extract MemorizedBinningH value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedBinningH;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedBinningH;
 
 	//	Try to initialize MemorizedBinningV from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedBinningV;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedBinningV;
+	else
+	{
 		//	Try to initialize MemorizedBinningV from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedBinningV;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedBinningV;
 	}
 	//	And try to extract MemorizedBinningV value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedBinningV;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedBinningV;
 
 	//	Try to initialize MemorizedAcquisitionMode from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedAcquisitionMode;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedAcquisitionMode;
+	else
+	{
 		//	Try to initialize MemorizedAcquisitionMode from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedAcquisitionMode;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedAcquisitionMode;
 	}
 	//	And try to extract MemorizedAcquisitionMode value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedAcquisitionMode;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedAcquisitionMode;
 
 	//	Try to initialize MemorizedTriggerMode from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedTriggerMode;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedTriggerMode;
+	else
+	{
 		//	Try to initialize MemorizedTriggerMode from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedTriggerMode;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedTriggerMode;
 	}
 	//	And try to extract MemorizedTriggerMode value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedTriggerMode;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedTriggerMode;
 
 	//	Try to initialize MemorizedShutterMode from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedShutterMode;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedShutterMode;
+	else
+	{
 		//	Try to initialize MemorizedShutterMode from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedShutterMode;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedShutterMode;
 	}
 	//	And try to extract MemorizedShutterMode value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedShutterMode;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedShutterMode;
 
 	//	Try to initialize MemorizedShutterOpenTime from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedShutterOpenTime;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedShutterOpenTime;
+	else
+	{
 		//	Try to initialize MemorizedShutterOpenTime from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedShutterOpenTime;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedShutterOpenTime;
 	}
 	//	And try to extract MemorizedShutterOpenTime value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedShutterOpenTime;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedShutterOpenTime;
 
 	//	Try to initialize MemorizedShutterCloseTime from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedShutterCloseTime;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedShutterCloseTime;
+	else
+	{
 		//	Try to initialize MemorizedShutterCloseTime from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedShutterCloseTime;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedShutterCloseTime;
 	}
 	//	And try to extract MemorizedShutterCloseTime value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedShutterCloseTime;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedShutterCloseTime;
 
 	//	Try to initialize MemorizedExposureTime from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedExposureTime;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedExposureTime;
+	else
+	{
 		//	Try to initialize MemorizedExposureTime from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedExposureTime;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedExposureTime;
 	}
 	//	And try to extract MemorizedExposureTime value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedExposureTime;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedExposureTime;
 
 	//	Try to initialize MemorizedExposureAccTime from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedExposureAccTime;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedExposureAccTime;
+	else
+	{
 		//	Try to initialize MemorizedExposureAccTime from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedExposureAccTime;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedExposureAccTime;
 	}
 	//	And try to extract MemorizedExposureAccTime value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedExposureAccTime;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedExposureAccTime;
 
 	//	Try to initialize MemorizedLatencyTime from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedLatencyTime;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedLatencyTime;
+	else
+	{
 		//	Try to initialize MemorizedLatencyTime from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedLatencyTime;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedLatencyTime;
 	}
 	//	And try to extract MemorizedLatencyTime value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedLatencyTime;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedLatencyTime;
 
 	//	Try to initialize MemorizedNbFrames from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedNbFrames;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedNbFrames;
+	else
+	{
 		//	Try to initialize MemorizedNbFrames from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedNbFrames;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedNbFrames;
 	}
 	//	And try to extract MemorizedNbFrames value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedNbFrames;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedNbFrames;
 
 	//	Try to initialize MemorizedFileGeneration from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedFileGeneration;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedFileGeneration;
+	else
+	{
 		//	Try to initialize MemorizedFileGeneration from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedFileGeneration;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedFileGeneration;
 	}
 	//	And try to extract MemorizedFileGeneration value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedFileGeneration;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedFileGeneration;
 
 	//	Try to initialize MemorizedFlipX from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedFlipX;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedFlipX;
+	else
+	{
 		//	Try to initialize MemorizedFlipX from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedFlipX;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedFlipX;
 	}
 	//	And try to extract MemorizedFlipX value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedFlipX;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedFlipX;
 
 	//	Try to initialize MemorizedFlipY from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedFlipY;
-	else {
+	if (cl_prop.is_empty() == false)	cl_prop  >>  memorizedFlipY;
+	else
+	{
 		//	Try to initialize MemorizedFlipY from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty()==false)	def_prop  >>  memorizedFlipY;
+		if (def_prop.is_empty() == false)	def_prop  >>  memorizedFlipY;
 	}
 	//	And try to extract MemorizedFlipY value from database
-	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedFlipY;
+	if (dev_prop[i].is_empty() == false)	dev_prop[i]  >>  memorizedFlipY;
 
 
 
@@ -1042,6 +1115,7 @@ void LimaDetector::get_device_property()
 	PropertyHelper::create_property_if_empty(this, dev_prop, "SimulatorCCD", "DetectorType");
 	PropertyHelper::create_property_if_empty(this, dev_prop, "16", "DetectorPixelDepth");
 	PropertyHelper::create_property_if_empty(this, dev_prop, "NONE", "DetectorVideoMode");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "VIDEO", "ImageSource");
 	PropertyHelper::create_property_if_empty(this, dev_prop, "NXS", "FileFormat");
 	PropertyHelper::create_property_if_empty(this, dev_prop, "Image", "FilePrefix");
 	PropertyHelper::create_property_if_empty(this, dev_prop, "%06d", "FileIndexPattern");
@@ -1087,8 +1161,8 @@ void LimaDetector::get_device_property()
 	PropertyHelper::create_property_if_empty(this, dev_prop, "0", "MemorizedLatencyTime");
 	PropertyHelper::create_property_if_empty(this, dev_prop, "1", "MemorizedNbFrames");
 	PropertyHelper::create_property_if_empty(this, dev_prop, "false", "MemorizedFileGeneration");
-	PropertyHelper::create_property_if_empty(this, dev_prop,"false","MemorizedFlipX");
-	PropertyHelper::create_property_if_empty(this, dev_prop,"false","MemorizedFlipY");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "false", "MemorizedFlipX");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "false", "MemorizedFlipY");
 }
 //+----------------------------------------------------------------------------
 //
@@ -1097,6 +1171,7 @@ void LimaDetector::get_device_property()
 // description :     method always executed before any command is executed
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::always_executed_hook()
 {
 	//- update state
@@ -1110,6 +1185,7 @@ void LimaDetector::always_executed_hook()
 // description :     Hardware acquisition for attributes.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_attr_hardware(vector<long> &attr_list)
 {
 	DEBUG_STREAM << "LimaDetector::read_attr_hardware(vector<long> &attr_list) entering... " << endl;
@@ -1123,6 +1199,7 @@ void LimaDetector::read_attr_hardware(vector<long> &attr_list)
 // description :     Extract real attribute values for detectorDescription acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_detectorDescription(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_detectorDescription(Tango::Attribute &attr) entering... " << endl;
@@ -1149,6 +1226,7 @@ void LimaDetector::read_detectorDescription(Tango::Attribute &attr)
 // description :     Extract real attribute values for detectorType acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_detectorType(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_detectorType(Tango::Attribute &attr) entering... " << endl;
@@ -1190,6 +1268,7 @@ void LimaDetector::read_detectorType(Tango::Attribute &attr)
 // description :     Extract real attribute values for detectorModel acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_detectorModel(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_detectorModel(Tango::Attribute &attr) entering... " << endl;
@@ -1232,6 +1311,7 @@ void LimaDetector::read_detectorModel(Tango::Attribute &attr)
 // description : 	Extract real attribute values for binnedWidthMax acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_binnedWidthMax(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_binnedWidthMax(Tango::Attribute &attr) entering... " << endl;
@@ -1276,6 +1356,7 @@ void LimaDetector::read_binnedWidthMax(Tango::Attribute &attr)
 // description : 	Extract real attribute values for binnedHeightMax acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_binnedHeightMax(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_binnedHeightMax(Tango::Attribute &attr) entering... " << endl;
@@ -1320,6 +1401,7 @@ void LimaDetector::read_binnedHeightMax(Tango::Attribute &attr)
 // description : 	Extract real attribute values for detectorPixelDepth acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_detectorPixelDepth(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_detectorPixelDepth(Tango::Attribute &attr) entering... " << endl;
@@ -1361,6 +1443,7 @@ void LimaDetector::read_detectorPixelDepth(Tango::Attribute &attr)
 // description :     Extract real attribute values for triggerMode acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_triggerMode(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_triggerMode(Tango::Attribute &attr) entering... " << endl;
@@ -1421,6 +1504,7 @@ void LimaDetector::read_triggerMode(Tango::Attribute &attr)
 // description :     Write triggerMode attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_triggerMode(Tango::WAttribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::write_triggerMode(Tango::WAttribute &attr) entering... " << endl;
@@ -1437,21 +1521,19 @@ void LimaDetector::write_triggerMode(Tango::WAttribute &attr)
 			current != "INTERNAL_MULTI" &&
 			current != "EXTERNAL_START_STOP" &&
 			current != "EXTERNAL_READOUT")
-		{			
-			delete[] attr_triggerMode_write;			
-			attr_triggerMode_write = new char [m_trigger_mode.size() + 1];
+		{
 			strcpy(attr_triggerMode_write, m_trigger_mode.c_str());
 
 			Tango::Except::throw_exception(	(const char*) ("CONFIGURATION_ERROR"),
-											(const char*) ("Available Trigger Modes are:"
-											"\n- INTERNAL_SINGLE"
-											"\n- EXTERNAL_SINGLE"
-											"\n- EXTERNAL_MULTI"
-											"\n- EXTERNAL_GATE"
-											"\n- INTERNAL_MULTI"
-											"\n- EXTERNAL_START_STOP"
-											"\n- EXTERNAL_READOUT"),
-											(const char*) ("LimaDetector::write_triggerMode"));
+										(const char*) ("Available Trigger Modes are:"
+													   "\n- INTERNAL_SINGLE"
+													   "\n- EXTERNAL_SINGLE"
+													   "\n- EXTERNAL_MULTI"
+													   "\n- EXTERNAL_GATE"
+													   "\n- INTERNAL_MULTI"
+													   "\n- EXTERNAL_START_STOP"
+													   "\n- EXTERNAL_READOUT"),
+										(const char*) ("LimaDetector::write_triggerMode"));
 		}
 
 		TrigMode trig_mode = IntTrig;
@@ -1469,7 +1551,7 @@ void LimaDetector::write_triggerMode(Tango::WAttribute &attr)
 			trig_mode = ExtStartStop;
 		else if (current == "EXTERNAL_READOUT")
 			trig_mode = ExtTrigReadout;
-		
+
 		//- THIS IS AN AVAILABLE TRIGGER MODE
 		m_trigger_mode = current;
 		m_ct->acquisition()->setTriggerMode(trig_mode);
@@ -1502,6 +1584,7 @@ void LimaDetector::write_triggerMode(Tango::WAttribute &attr)
 // description :     Extract real attribute values for acquisitionMode acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_acquisitionMode(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_acquisitionMode(Tango::Attribute &attr) entering... " << endl;
@@ -1542,6 +1625,7 @@ void LimaDetector::read_acquisitionMode(Tango::Attribute &attr)
 // description :     Write acquisitionMode attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::write_acquisitionMode(Tango::WAttribute &attr) entering... " << endl;
@@ -1555,15 +1639,13 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 		if (current != "SINGLE" &&
 			current != "ACCUMULATION")
 		{
-			delete[] attr_acquisitionMode_write;
-			attr_acquisitionMode_write = new char [m_acquisition_mode.size() + 1];
 			strcpy(attr_acquisitionMode_write, m_acquisition_mode.c_str());
 
 			Tango::Except::throw_exception(	(const char*) ("CONFIGURATION_ERROR"),
-											(const char*) ("Available Acquisition Modes are:"
-											"\n- SINGLE"
-											"\n- ACCUMULATION"),
-											(const char*) ("LimaDetector::write_acquisitionMode"));
+										(const char*) ("Available Acquisition Modes are:"
+													   "\n- SINGLE"
+													   "\n- ACCUMULATION"),
+										(const char*) ("LimaDetector::write_acquisitionMode"));
 		}
 
 		//- current IS AN AVAILABLE ACQUISITION MODE
@@ -1581,6 +1663,17 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 			{
 				//- Attribute already exist: don't need to remove it
 			}
+
+			//- Remove dynamic attribute currentAccFrame
+			try
+			{
+				m_dam->get_attribute("currentAccFrame");
+				m_dam->remove_attribute("currentAccFrame");
+			}
+			catch (Tango::DevFailed& df)
+			{
+				//- Attribute already exist: don't need to remove it
+			}
 		}
 
 		if (current == "ACCUMULATION")
@@ -1588,21 +1681,37 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 			m_ct->acquisition()->setAcqMode(Accumulation);
 
 			//- Create dynamic attribute exposureAccTime
-			DynamicAttributeInfo dai;
-			dai.dev = this;
-			dai.tai.name = "exposureAccTime";
-			dai.tai.unit = "ms";
-			dai.tai.data_format = Tango::SCALAR;
-			dai.tai.data_type = Tango::DEV_DOUBLE;
-			dai.tai.writable = Tango::READ_WRITE;
-			dai.tai.disp_level = Tango::OPERATOR;
-			dai.tai.description = "Set/Get exposure time ONLY in mode ACCUMULATION (in ms)<br>";
+			DynamicAttributeInfo dai1;
+			dai1.dev = this;
+			dai1.tai.name = "exposureAccTime";
+			dai1.tai.unit = "ms";
+			dai1.tai.data_format = Tango::SCALAR;
+			dai1.tai.data_type = Tango::DEV_DOUBLE;
+			dai1.tai.writable = Tango::READ_WRITE;
+			dai1.tai.disp_level = Tango::OPERATOR;
+			dai1.tai.description = "Set/Get exposure time ONLY in mode ACCUMULATION (in ms)<br>";
 
-			dai.rcb = DynamicAttributeReadCallback::instanciate(*this, &LimaDetector::read_exposureAccTime_callback);
-			dai.wcb = DynamicAttributeWriteCallback::instanciate(*this, &LimaDetector::write_exposureAccTime_callback);
+			dai1.rcb = DynamicAttributeReadCallback::instanciate(*this, &LimaDetector::read_exposureAccTime_callback);
+			dai1.wcb = DynamicAttributeWriteCallback::instanciate(*this, &LimaDetector::write_exposureAccTime_callback);
 
 			//- add the attribute to the dam
-			m_dam->add_attribute(dai);
+			m_dam->add_attribute(dai1);
+
+			//- Create dynamic attribute currentAccFrame
+			DynamicAttributeInfo dai2;
+			dai2.dev = this;
+			dai2.tai.name = "currentAccFrame";
+			dai2.tai.unit = " ";
+			dai2.tai.data_format = Tango::SCALAR;
+			dai2.tai.data_type = Tango::DEV_ULONG;
+			dai2.tai.writable = Tango::READ;
+			dai2.tai.disp_level = Tango::OPERATOR;
+			dai2.tai.description = "Get current accumulated acquired frame ONLY in mode ACCUMULATION<br>";
+
+			dai2.rcb = DynamicAttributeReadCallback::instanciate(*this, &LimaDetector::read_currentAccFrame_callback);
+
+			//- add the attribute to the dam
+			m_dam->add_attribute(dai2);
 		}
 
 		PropertyHelper::set_property(this, "MemorizedAcquisitionMode", current);
@@ -1612,7 +1721,7 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 
 		//- THIS IS AN AVAILABLE ACQUISTION MODE
 		m_acquisition_mode = current;
-		
+
 		//- reset image number (this will disable the refresh of image attribute)
 		m_ct->resetStatus(false);
 
@@ -1620,7 +1729,7 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 		// Everytime we change acquisition mode, we have to adapt dynamic "image" attribute type
 		//this is due to Lima/control/Accumulation.cpp module implementation: in ACCUMULATION image type is always 32 bits		
 		//**************************************************************************************************************		
-		
+
 		//remove attributes from dam
 		INFO_STREAM << "Remove image dynamic attribute." << endl;
 		m_dam->remove_attribute("image");
@@ -1686,6 +1795,7 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 // description :     Extract real attribute values for exposureTime acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_exposureTime(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_exposureTime(Tango::Attribute &attr) entering... " << endl;
@@ -1723,6 +1833,7 @@ void LimaDetector::read_exposureTime(Tango::Attribute &attr)
 // description :     Write exposureTime attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_exposureTime(Tango::WAttribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::write_exposureTime(Tango::WAttribute &attr) entering... " << endl;
@@ -1760,6 +1871,7 @@ void LimaDetector::write_exposureTime(Tango::WAttribute &attr)
 // description :
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_exposureAccTime_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
 {
 	DEBUG_STREAM << "LimaDetector::read_exposureAccTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -1799,6 +1911,7 @@ void LimaDetector::read_exposureAccTime_callback(yat4tango::DynamicAttributeRead
 // description :
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_exposureAccTime_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd)
 {
 	DEBUG_STREAM << "LimaDetector::write_exposureAccTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -1835,6 +1948,7 @@ void LimaDetector::write_exposureAccTime_callback(yat4tango::DynamicAttributeWri
 // description : 	Extract real attribute values for latencyTime acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_latencyTime(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_latencyTime(Tango::Attribute &attr) entering... " << endl;
@@ -1872,6 +1986,7 @@ void LimaDetector::read_latencyTime(Tango::Attribute &attr)
 // description : 	Write latencyTime attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_latencyTime(Tango::WAttribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::write_latencyTime(Tango::WAttribute &attr) entering... " << endl;
@@ -1909,6 +2024,7 @@ void LimaDetector::write_latencyTime(Tango::WAttribute &attr)
 // description : 	Extract real attribute values for roiX acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_roiX(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_roiX(Tango::Attribute &attr) entering... " << endl;
@@ -1946,6 +2062,7 @@ void LimaDetector::read_roiX(Tango::Attribute &attr)
 // description : 	Extract real attribute values for roiY acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_roiY(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_roiY(Tango::Attribute &attr) entering... " << endl;
@@ -1983,6 +2100,7 @@ void LimaDetector::read_roiY(Tango::Attribute &attr)
 // description : 	Extract real attribute values for roiWidth acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_roiWidth(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_roiWidth(Tango::Attribute &attr) entering... " << endl;
@@ -2020,6 +2138,7 @@ void LimaDetector::read_roiWidth(Tango::Attribute &attr)
 // description : 	Extract real attribute values for roiHeight acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_roiHeight(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_roiHeight(Tango::Attribute &attr) entering... " << endl;
@@ -2058,6 +2177,7 @@ void LimaDetector::read_roiHeight(Tango::Attribute &attr)
 // description : 	Extract real attribute values for binningH acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_binningH(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_binningH(Tango::Attribute &attr) entering... " << endl;
@@ -2095,6 +2215,7 @@ void LimaDetector::read_binningH(Tango::Attribute &attr)
 // description : 	Extract real attribute values for binningV acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_binningV(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_binningV(Tango::Attribute &attr) entering... " << endl;
@@ -2132,6 +2253,7 @@ void LimaDetector::read_binningV(Tango::Attribute &attr)
 // description :     Extract real attribute values for nbFrames acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_nbFrames(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_nbFrames(Tango::Attribute &attr) entering... " << endl;
@@ -2169,6 +2291,7 @@ void LimaDetector::read_nbFrames(Tango::Attribute &attr)
 // description :     Write nbFrames attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_nbFrames(Tango::WAttribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::write_nbFrames(Tango::WAttribute &attr) entering... " << endl;
@@ -2205,15 +2328,13 @@ void LimaDetector::write_nbFrames(Tango::WAttribute &attr)
 // description :     Extract real attribute values for currentFrame acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_currentFrame(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_currentFrame(Tango::Attribute &attr) entering... " << endl;
 	try
 	{
-		if (m_acquisition_mode == "SINGLE")
-			*attr_currentFrame_read = m_hw->getNbHwAcquiredFrames();
-		else
-			*attr_currentFrame_read = get_last_image_counter() + 1;
+		*attr_currentFrame_read = get_last_image_counter();
 		attr.set_value(attr_currentFrame_read);
 	}
 	catch (Tango::DevFailed& df)
@@ -2236,18 +2357,66 @@ void LimaDetector::read_currentFrame(Tango::Attribute &attr)
 	}
 }
 
+
+//+----------------------------------------------------------------------------
+//
+// method :         LimaDetector::read_currentAccFrame_callback()
+//
+// description :
+//
+//-----------------------------------------------------------------------------
+
+void LimaDetector::read_currentAccFrame_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
+{
+	DEBUG_STREAM << "LimaDetector::read_currentAccFrame_callback()" << endl; //  << cbd.dya->get_name() << endl;
+
+	try
+	{
+		unsigned long image_acquired_counter;
+		image_acquired_counter = m_hw->getNbHwAcquiredFrames();
+		*attr_currentAccFrame_read = image_acquired_counter;
+		cbd.tga->set_value(attr_currentAccFrame_read);
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		//- rethrow exception
+		Tango::Except::re_throw_exception(df,
+										static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+										static_cast<const char*> (string(df.errors[0].desc).c_str()),
+										static_cast<const char*> ("LimaDetector::read_currentAccFrame_callback"));
+	}
+	catch (Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		//- throw exception
+		Tango::Except::throw_exception(
+									static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+									static_cast<const char*> (e.getErrMsg().c_str()),
+									static_cast<const char*> ("LimaDetector::read_currentAccFrame_callback"));
+	}
+}
 //+----------------------------------------------------------------------------
 //
 // method :         LimaDetector::get_last_image_counter
 //
 //-----------------------------------------------------------------------------
+
 long long LimaDetector::get_last_image_counter(void)
 {
 	DEBUG_STREAM << "LimaDetector::get_last_image_counter()" << endl;
 	long long last_image_counter = 0;
 	try
 	{
-		m_ct->video()->getLastImageCounter(last_image_counter);
+		if (m_acquisition_mode == "SINGLE")
+		{
+			last_image_counter = m_hw->getNbHwAcquiredFrames();
+		}
+		else
+		{
+			m_ct->video()->getLastImageCounter(last_image_counter);
+			last_image_counter += 1;
+		}
 	}
 	catch (Exception& e)
 	{
@@ -2268,6 +2437,7 @@ long long LimaDetector::get_last_image_counter(void)
 // description :
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_shutterState_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
 {
 	DEBUG_STREAM << "LimaDetector::read_shutterState_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2305,6 +2475,7 @@ void LimaDetector::read_shutterState_callback(yat4tango::DynamicAttributeReadCal
 // description :
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_shutterOpenTime_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
 {
 	DEBUG_STREAM << "LimaDetector::read_shutterOpenTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2343,6 +2514,7 @@ void LimaDetector::read_shutterOpenTime_callback(yat4tango::DynamicAttributeRead
 // description :
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_shutterOpenTime_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd)
 {
 	DEBUG_STREAM << "LimaDetector::write_shutterOpenTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2381,6 +2553,7 @@ void LimaDetector::write_shutterOpenTime_callback(yat4tango::DynamicAttributeWri
 // description :
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_shutterCloseTime_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
 {
 	DEBUG_STREAM << "LimaDetector::read_shutterCloseTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2420,6 +2593,7 @@ void LimaDetector::read_shutterCloseTime_callback(yat4tango::DynamicAttributeRea
 // description :
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_shutterCloseTime_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd)
 {
 	DEBUG_STREAM << "LimaDetector::write_shutterCloseTime_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2458,6 +2632,7 @@ void LimaDetector::write_shutterCloseTime_callback(yat4tango::DynamicAttributeWr
 // description :
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_shutterMode_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
 {
 	DEBUG_STREAM << "LimaDetector::read_shutterMode_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2507,6 +2682,7 @@ void LimaDetector::read_shutterMode_callback(yat4tango::DynamicAttributeReadCall
 // description :
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_shutterMode_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd)
 {
 	DEBUG_STREAM << "LimaDetector::write_shutterMode_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2521,17 +2697,15 @@ void LimaDetector::write_shutterMode_callback(yat4tango::DynamicAttributeWriteCa
 		if (current != "MANUAL" &&
 			current != "AUTO_FRAME" &&
 			current != "AUTO_SEQUENCE")
-		{			
-			delete[] attr_shutterMode_write;			
-			attr_shutterMode_write = new char [m_shutter_mode.size() + 1];
+		{
 			strcpy(attr_shutterMode_write, m_shutter_mode.c_str());
 			//- Error: Not supported
 			Tango::Except::throw_exception(	(const char*) ("CONFIGURATION_ERROR"),
-											(const char*) ("Available Shutter Modes are:"
-											"\n- MANUAL"
-											"\n- AUTO_FRAME"
-											"\n- AUTO_SEQUENCE"),
-											(const char*) ("LimaDetector::write_shutterMode"));
+										(const char*) ("Available Shutter Modes are:"
+													   "\n- MANUAL"
+													   "\n- AUTO_FRAME"
+													   "\n- AUTO_SEQUENCE"),
+										(const char*) ("LimaDetector::write_shutterMode"));
 		}
 
 		//- Transform Shutter mode from string to Lima types
@@ -2554,12 +2728,12 @@ void LimaDetector::write_shutterMode_callback(yat4tango::DynamicAttributeWriteCa
 		{
 			//- Error: Not supported
 			Tango::Except::throw_exception(	(const char*) ("CONFIGURATION_ERROR"),
-											(const char*) ("this shutter mode is not supported by this camera"),
-											(const char*) ("LimaDetector::write_shutterMode"));
+										(const char*) ("this shutter mode is not supported by this camera"),
+										(const char*) ("LimaDetector::write_shutterMode"));
 		}
 
 		//- THIS IS AN AVAILABLE SHUTTER MODE
-		m_shutter_mode = current;		
+		m_shutter_mode = current;
 		m_ct->shutter()->setMode(new_shutter_mode);
 		PropertyHelper::set_property(this, "MemorizedShutterMode", m_shutter_mode);
 	}
@@ -2590,6 +2764,7 @@ void LimaDetector::write_shutterMode_callback(yat4tango::DynamicAttributeWriteCa
 // description :
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
 {
 	DEBUG_STREAM << "LimaDetector::read_image_callback()" << endl; //  << cbd.dya->get_name() << endl;
@@ -2600,52 +2775,108 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
 
 		long long counter = get_last_image_counter();
 
-		if (counter >= 0)
+
+		if (imageSource == "ACQUISITION")
 		{
-			DEBUG_STREAM << "last_image_counter -> " << counter << endl;
-
-			CtVideo::Image last_image; //never put this variable in the class data member, refrence is locked in ctVideo (mantis 0021083)
-			m_ct->video()->getLastImage(last_image); //last image acquired
-
-			if (last_image.buffer() != 0)
+#define DIMENSIONS_WIDTH_INDEX   0        
+#define DIMENSIONS_HEIGHT_INDEX  1                       
+			if (counter > 0)
 			{
-				switch (cbd.dya->get_tango_data_type())
+				INFO_STREAM << "last_image_counter -> " << counter << endl;
+
+				Data last_image;
+				m_ct->ReadImage(last_image, -1);
+
+				if (last_image.data() != 0)
 				{
-						//8 bits
-					case TangoTraits<Tango::DevUChar>::type_id:
-						DEBUG_STREAM << "image->set_value() : DevUChar" << endl;
-						cbd.tga->set_value((Tango::DevUChar*)last_image.buffer(),
-										last_image.width(), //- width
-										last_image.height()//- height
-										);
-						break;
+					switch (cbd.dya->get_tango_data_type())
+					{
+							//8 bits
+						case TangoTraits<Tango::DevUChar>::type_id:
+							DEBUG_STREAM << "image->set_value() : DevUChar" << endl;
+							cbd.tga->set_value((Tango::DevUChar*)last_image.data(),
+											last_image.dimensions[DIMENSIONS_WIDTH_INDEX], //- width
+											last_image.dimensions[DIMENSIONS_HEIGHT_INDEX] //- height
+											);
+							break;
 
-						//16 bits
-					case TangoTraits<Tango::DevUShort>::type_id:
-						DEBUG_STREAM << "image->set_value() : DevUShort" << endl;
-						cbd.tga->set_value((Tango::DevUShort*)last_image.buffer(),
-										last_image.width(), //- width
-										last_image.height()//- height
-										);
-						break;
+							//16 bits
+						case TangoTraits<Tango::DevUShort>::type_id:
+							DEBUG_STREAM << "image->set_value() : DevUShort" << endl;
+							cbd.tga->set_value((Tango::DevUShort*)last_image.data(),
+											last_image.dimensions[DIMENSIONS_WIDTH_INDEX], //- width
+											last_image.dimensions[DIMENSIONS_HEIGHT_INDEX] //- height
+											);
+							break;
 
-						//32 bits
-					case TangoTraits<Tango::DevULong>::type_id:
-						DEBUG_STREAM << "image->set_value() : DevULong" << endl;
-						cbd.tga->set_value((Tango::DevULong*)last_image.buffer(),
-										last_image.width(), //- width
-										last_image.height()//- height
-										);
-						break;
+							//32 bits
+						case TangoTraits<Tango::DevULong>::type_id:
+							DEBUG_STREAM << "image->set_value() : DevULong" << endl;
+							cbd.tga->set_value((Tango::DevULong*)last_image.data(),
+											last_image.dimensions[DIMENSIONS_WIDTH_INDEX], //- width
+											last_image.dimensions[DIMENSIONS_HEIGHT_INDEX] //- height
+											);
+							break;
 
-						//ERROR : resolution not supported
-					default:
-						DEBUG_STREAM << "image->set_value() : ERROR, resolution not supported !" << endl;
-						//- throw exception
-						Tango::Except::throw_exception((const char*) ("CONFIGURATION_ERROR"),
-													(const char*) ("Tango data type of image DynamicAttribute, is not supported!\n"),
-													(const char*) ("LimaDetector::read_image_callback"));
-						break;
+							//ERROR : resolution not supported
+						default:
+							DEBUG_STREAM << "image->set_value() : ERROR, resolution not supported !" << endl;
+							//- throw exception
+							Tango::Except::throw_exception((const char*) ("CONFIGURATION_ERROR"),
+														(const char*) ("Tango data type of image DynamicAttribute, is not supported!\n"),
+														(const char*) ("LimaDetector::read_image_callback"));
+							break;
+					}
+				}
+			}
+		}
+		else if (imageSource == "VIDEO")
+		{
+			if (counter >= 0)
+			{
+				INFO_STREAM << "last_image_counter -> " << counter << endl;
+				CtVideo::Image last_image; //never put this variable in the class data member, refrence is locked in ctVideo (mantis 0021083)
+				m_ct->video()->getLastImage(last_image); //last image acquired
+				if (last_image.buffer() != 0)
+				{
+					switch (cbd.dya->get_tango_data_type())
+					{
+							//8 bits
+						case TangoTraits<Tango::DevUChar>::type_id:
+							DEBUG_STREAM << "image->set_value() : DevUChar" << endl;
+							cbd.tga->set_value((Tango::DevUChar*)last_image.buffer(),
+											last_image.width(), //- width
+											last_image.height()//- height
+											);
+							break;
+
+							//16 bits
+						case TangoTraits<Tango::DevUShort>::type_id:
+							DEBUG_STREAM << "image->set_value() : DevUShort" << endl;
+							cbd.tga->set_value((Tango::DevUShort*)last_image.buffer(),
+											last_image.width(), //- width
+											last_image.height()//- height
+											);
+							break;
+
+							//32 bits
+						case TangoTraits<Tango::DevULong>::type_id:
+							DEBUG_STREAM << "image->set_value() : DevULong" << endl;
+							cbd.tga->set_value((Tango::DevULong*)last_image.buffer(),
+											last_image.width(), //- width
+											last_image.height()//- height
+											);
+							break;
+
+							//ERROR : resolution not supported
+						default:
+							DEBUG_STREAM << "image->set_value() : ERROR, resolution not supported !" << endl;
+							//- throw exception
+							Tango::Except::throw_exception((const char*) ("CONFIGURATION_ERROR"),
+														(const char*) ("Tango data type of image DynamicAttribute, is not supported!\n"),
+														(const char*) ("LimaDetector::read_image_callback"));
+							break;
+					}
 				}
 			}
 		}
@@ -2677,6 +2908,7 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
 // description :     Extract real attribute values for fileGeneration acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_fileGeneration(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_fileGeneration(Tango::Attribute &attr) entering... " << endl;
@@ -2709,6 +2941,7 @@ void LimaDetector::read_fileGeneration(Tango::Attribute &attr)
 // description :     Write fileGeneration attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_fileGeneration(Tango::WAttribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::write_fileGeneration(Tango::WAttribute &attr) entering... " << endl;
@@ -2739,6 +2972,7 @@ void LimaDetector::write_fileGeneration(Tango::WAttribute &attr)
 // description : 	Extract real attribute values for flipX acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_flipX(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_flipX(Tango::Attribute &attr) entering... " << endl;
@@ -2771,6 +3005,7 @@ void LimaDetector::read_flipX(Tango::Attribute &attr)
 // description : 	Write flipX attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_flipX(Tango::WAttribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::write_flipX(Tango::WAttribute &attr) entering... " << endl;
@@ -2806,6 +3041,7 @@ void LimaDetector::write_flipX(Tango::WAttribute &attr)
 // description : 	Extract real attribute values for flipY acquisition result.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::read_flipY(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::read_flipY(Tango::Attribute &attr) entering... " << endl;
@@ -2838,6 +3074,7 @@ void LimaDetector::read_flipY(Tango::Attribute &attr)
 // description : 	Write flipY attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::write_flipY(Tango::WAttribute &attr)
 {
 	DEBUG_STREAM << "LimaDetector::write_flipY(Tango::WAttribute &attr) entering... " << endl;
@@ -2874,6 +3111,7 @@ void LimaDetector::write_flipY(Tango::WAttribute &attr)
  *
  */
 //+------------------------------------------------------------------
+
 void LimaDetector::snap()
 {
 	DEBUG_STREAM << "LimaDetector::snap(): entering... !" << endl;
@@ -2888,9 +3126,9 @@ void LimaDetector::snap()
 		{
 			//- throw exception
 			Tango::Except::throw_exception(	(const char*) ("CONFIGURATION_ERROR"),
-											(const char*) ("Snap command is not Available when 'nbFrames' is 0"
-											"\nUse Start command to diplay a 'video' stream.\n"),
-											(const char*) ("LimaDetector::snap"));
+										(const char*) ("Snap command is not Available when 'nbFrames' is 0"
+													   "\nUse Start command to diplay a 'video' stream.\n"),
+										(const char*) ("LimaDetector::snap"));
 		}
 
 		m_saving_par.nbframes = attr_nbFrames_write;
@@ -2949,6 +3187,7 @@ void LimaDetector::snap()
  *
  */
 //+------------------------------------------------------------------
+
 void LimaDetector::start()
 {
 	DEBUG_STREAM << "LimaDetector::start(): entering... !" << endl;
@@ -3016,6 +3255,7 @@ void LimaDetector::start()
  *
  */
 //+------------------------------------------------------------------
+
 void LimaDetector::stop()
 {
 	DEBUG_STREAM << "LimaDetector::stop(): entering... !" << endl;
@@ -3025,7 +3265,7 @@ void LimaDetector::stop()
 	{
 		if (dev_state() == Tango::STANDBY)//mantis #22238
 			return;
-		m_ct->video()->stopLive();
+		//		m_ct->video()->stopLive();
 		yat::Message* msg = yat::Message::allocate(DEVICE_STOP_MSG, DEFAULT_MSG_PRIORITY, true);
 		m_acquisition_task->wait_msg_handled(msg, 5000); //to ensure that state was updated in lima
 	}
@@ -3065,6 +3305,7 @@ void LimaDetector::stop()
  *
  */
 //+------------------------------------------------------------------
+
 void LimaDetector::set_roi(const Tango::DevVarULongArray *argin)
 {
 	DEBUG_STREAM << "LimaDetector::set_roi(): entering... !" << endl;
@@ -3134,6 +3375,7 @@ void LimaDetector::set_roi(const Tango::DevVarULongArray *argin)
  *
  */
 //+------------------------------------------------------------------
+
 void LimaDetector::set_binning(const Tango::DevVarULongArray *argin)
 {
 	DEBUG_STREAM << "LimaDetector::set_binning(): entering... !" << endl;
@@ -3193,6 +3435,7 @@ void LimaDetector::set_binning(const Tango::DevVarULongArray *argin)
  *
  */
 //+------------------------------------------------------------------
+
 void LimaDetector::reset_roi()
 {
 	DEBUG_STREAM << "LimaDetector::reset_roi(): entering... !" << endl;
@@ -3246,6 +3489,7 @@ void LimaDetector::reset_roi()
  *
  */
 //+------------------------------------------------------------------
+
 void LimaDetector::reset_binning()
 {
 	DEBUG_STREAM << "LimaDetector::reset_binning(): entering... !" << endl;
@@ -3292,6 +3536,7 @@ void LimaDetector::reset_binning()
  *
  */
 //+------------------------------------------------------------------
+
 Tango::DevVarStringArray *LimaDetector::get_attribute_available_values(Tango::DevString argin)
 {
 	//	POGO has generated a method core with argout allocation.
@@ -3379,6 +3624,7 @@ Tango::DevVarStringArray *LimaDetector::get_attribute_available_values(Tango::De
  *
  */
 //+------------------------------------------------------------------
+
 Tango::DevState LimaDetector::dev_state()
 {
 	Tango::DevState argout = DeviceImpl::dev_state();
@@ -3396,11 +3642,6 @@ Tango::DevState LimaDetector::dev_state()
 		DeviceStatus << m_status_message.str();
 		DeviceStatus << endl;
 	}
-	else if (m_ct == 0)
-	{
-		DeviceState = Tango::FAULT;
-		DeviceStatus << "Initialization Failed : Unable to get the lima control object !\n\n";
-	}
 	else
 	{
 		// if error in acquisition task
@@ -3411,60 +3652,50 @@ Tango::DevState LimaDetector::dev_state()
 		}
 		else
 		{
-			CtControl::Status status;
-			m_ct->getStatus(status);
-			HwInterface::StatusType state;
-			m_hw->getStatus(state);
+			// let's take a look at the status of control & the status of the plugin
+			CtControl::Status ctStatus;
+			m_ct->getStatus(ctStatus);
+			/*
+			HwInterface::StatusType hwStatus;
+			m_hw->getStatus(hwStatus);
+			 */
 
-
-			if (status.AcquisitionStatus == lima::AcqReady)
+			switch (ctStatus.AcquisitionStatus)
 			{
-				if (state.acq == AcqRunning && state.det == DetExposure)
-				{
-					DeviceState = Tango::RUNNING;
-					DeviceStatus << "Acquisition is Running ...\n" << endl;
-				}
-				else if (state.acq == AcqFault && state.det == DetFault)
-				{
-					DeviceState = Tango::FAULT; //INIT if state could be more accurate
-					DeviceStatus << "Acquisition is in Init\n" << endl;
-				}
-				else if (state.acq == AcqFault && state.det == DetIdle)
-				{
-					DeviceState = Tango::FAULT;
-					DeviceStatus << "Acquisition is in Fault\n" << endl;
-				}
-				else
+				case lima::AcqReady:
 				{
 					DeviceState = Tango::STANDBY;
 					DeviceStatus << "Waiting for Request ...\n" << endl;
 				}
-			}
-			else if (status.AcquisitionStatus == lima::AcqRunning)
-			{
-				DeviceState = Tango::RUNNING;
-				DeviceStatus << "Acquisition is Running ...\n" << endl;
-			}
-			else if (status.AcquisitionStatus == lima::AcqConfig)
-			{
-				if (state.acq == AcqConfig && state.det == DetExposure)
+					break;
+
+				case lima::AcqRunning:
+				{
+					DeviceState = Tango::RUNNING;
+					DeviceStatus << "Acquisition is Running ...\n" << endl;
+				}
+					break;
+
+				case lima::AcqConfig:
 				{
 					DeviceState = Tango::DISABLE;
-					DeviceStatus << "Detector is Calibrating...\n" << endl;
+					DeviceStatus << "--> Detector is Calibrating...\n" << endl;
 				}
-			}
-			else //- lima::AcqFault
-			{
-				if (state.acq == AcqFault && state.det == DetFault)
-				{
-					DeviceState = Tango::FAULT; //INIT if state could be more accurate
-					DeviceStatus << "Acquisition is in Init\n" << endl;
-				}
-				else
+					break;
+
+				case lima::AcqFault:
 				{
 					DeviceState = Tango::FAULT;
 					DeviceStatus << "Acquisition is in Fault\n" << endl;
 				}
+					break;
+
+				default:
+				{
+					DeviceState = Tango::FAULT;
+					DeviceStatus << "--> Acquisition is in Fault\n" << endl;
+				}
+					break;
 			}
 		}
 	}
@@ -3483,6 +3714,7 @@ Tango::DevState LimaDetector::dev_state()
 // method :         LimaDetector::create_acquisition_task
 //
 //-----------------------------------------------------------------------------
+
 bool LimaDetector::create_acquisition_task(void)
 {
 	DEBUG_STREAM << "LimaDetector::CreateAcquisitionTask()" << endl;
@@ -3541,6 +3773,7 @@ bool LimaDetector::create_acquisition_task(void)
 // method :         LimaDetector::print_acq_conf
 //
 //-----------------------------------------------------------------------------
+
 void LimaDetector::print_acq_conf(void)
 {
 	INFO_STREAM << "\n" << endl;
@@ -3568,8 +3801,8 @@ void LimaDetector::print_acq_conf(void)
 	INFO_STREAM << "framesPerFile\t  = " << m_saving_par.framesPerFile << endl;
 	INFO_STREAM << "nbframes\t  = " << m_saving_par.nbframes << endl;
 	INFO_STREAM << "fileGeneration\t  = " << attr_fileGeneration_write << endl;
-	INFO_STREAM << "flipX\t  = "     			<< attr_flipX_write << endl;
-	INFO_STREAM << "flipY\t  = "     			<< attr_flipY_write << endl;
+	INFO_STREAM << "flipX\t  = " << attr_flipX_write << endl;
+	INFO_STREAM << "flipY\t  = " << attr_flipY_write << endl;
 
 	//display BIN
 	Bin bin;
@@ -3593,6 +3826,7 @@ void LimaDetector::print_acq_conf(void)
  *
  */
 //+------------------------------------------------------------------
+
 void LimaDetector::open_shutter()
 {
 	DEBUG_STREAM << "LimaDetector::open_shutter(): entering... !" << endl;
@@ -3652,6 +3886,7 @@ void LimaDetector::open_shutter()
  *
  */
 //+------------------------------------------------------------------
+
 void LimaDetector::close_shutter()
 {
 	DEBUG_STREAM << "LimaDetector::close_shutter(): entering... !" << endl;
@@ -3714,6 +3949,7 @@ void LimaDetector::close_shutter()
  *
  */
 //+------------------------------------------------------------------
+
 void LimaDetector::reset_file_index()
 {
 	DEBUG_STREAM << "LimaDetector::reset_file_index(): entering... !" << endl;
@@ -3723,5 +3959,6 @@ void LimaDetector::reset_file_index()
 	m_ct->saving()->clear();
 
 }
+
 
 }	//	namespace

@@ -144,14 +144,7 @@ void AdscCCD::init_device()
       
       //- get interface to specific camera
       m_hw = dynamic_cast<Adsc::Interface*>(m_ct->hwInterface());
-      if(m_hw==0)
-      {
-          INFO_STREAM<<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"AdscCCD"<<") !"<< endl;
-          m_status_message <<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"AdscCCD"<<") !"<< endl;
-          m_is_device_initialized = false;
-          set_state(Tango::FAULT);
-          return;
-      }
+
   }
   catch(Exception& e)
   {
@@ -242,9 +235,37 @@ void AdscCCD::always_executed_hook()
 {
 	DEBUG_STREAM << "AdscCCD::always_executed_hook() entering... "<< endl;
 	
-    //- update state
-    dev_state();
+	try
+	{
+		yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
+		m_status_message.str("");
+		//- get the singleton control objet used to pilot the lima framework
+		m_ct = ControlFactory::instance().get_control("AdscCCD");
+      
+		//- get interface to specific camera
+		m_hw = dynamic_cast<Adsc::Interface*>(m_ct->hwInterface());
+		
+		dev_state();
+	}
+	catch (Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
+		//- throw exception
+		set_state(Tango::FAULT);
+		m_is_device_initialized = false;
+		return;
+	}
+	catch (Tango::DevFailed& df)
+	{
+		ERROR_STREAM << df << endl;
+		m_status_message << "Initialization Failed : " << string(df.errors[0].desc) << endl;
+		m_is_device_initialized = false;
+		set_state(Tango::FAULT);
+		return;
+	}
 }
+
 //+----------------------------------------------------------------------------
 //
 // method : 		AdscCCD::read_attr_hardware

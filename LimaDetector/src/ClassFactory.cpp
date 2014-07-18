@@ -38,6 +38,11 @@ static const char *RcsId = "$Id:  $";
 #endif
 #include <LimaDetectorClass.h>
 
+
+#ifdef SHIFTING_ENABLED
+#include <ShiftingClass.h>
+#endif
+
 #ifdef SIMULATOR_ENABLED
 #include <SimulatorCCDClass.h>
 #endif
@@ -92,6 +97,10 @@ static const char *RcsId = "$Id:  $";
 
 #ifdef VIEWORKSVP_ENABLED
 #include <VieworksVPClass.h>
+#endif
+
+#ifdef HAMAMATSU_ENABLED
+#include <HamamatsuClass.h>
 #endif
 
 #ifndef WIN32
@@ -160,6 +169,14 @@ void Tango::DServer::class_factory()
 
 #ifdef VIEWORKSVP_ENABLED
     add_class(VieworksVP_ns::Andor3Class::init("VieworksVP"));
+#endif
+
+#ifdef HAMAMATSU_ENABLED
+    add_class(Hamamatsu_ns::HamamatsuClass::init("Hamamatsu"));
+#endif
+
+#ifdef SHIFTING_ENABLED    
+    add_class(Shifting_ns::ShiftingClass::init("Shifting"));
 #endif
 }
 

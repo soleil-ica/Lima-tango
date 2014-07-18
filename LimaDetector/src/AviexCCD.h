@@ -124,10 +124,6 @@ public :
 		Tango::DevBoolean	attr_floodCorrection_write;
 		Tango::DevBoolean	*attr_geomCorrection_read;
 		Tango::DevBoolean	attr_geomCorrection_write;
-		Tango::DevBoolean	*attr_offsetCorrection_read;
-		Tango::DevBoolean	attr_offsetCorrection_write;
-		Tango::DevBoolean	*attr_linearization_read;
-		Tango::DevBoolean	attr_linearization_write;
 		Tango::DevBoolean	*attr_highSpeed_read;
 		Tango::DevBoolean	attr_highSpeed_write;
 //@}
@@ -157,35 +153,34 @@ public :
  */
 	string	memorizedInternalAcquisitionMode;
 /**
+ *	Memorize all the flags correction in this Property:<br>
+ *	mask -> bit 0 <br>
+ *	bias -> bit 1 <br>
+ *	dark -> bit 2 <br>
+ *	flood -> bit 3 <br>
+ *	geom -> bit 12 <br>
+ *	
  *	
  */
 	Tango::DevULong	memorizedCorrectionFlags;
 /**
- *	
+ *	Memorize/Define  the initialDelayTime attribute in ms at Init device:<br>
  */
 	Tango::DevDouble	memorizedInitialDelayTime;
 /**
- *	
+ *	Memorize/Define  the readoutDelayTime attribute in ms at Init device:<br>
  */
 	Tango::DevDouble	memorizedReadoutDelayTime;
 /**
- *	
+ *	Memorize/Define  the exposureMultiplier attribute at Init device:<br>
  */
 	Tango::DevDouble	memorizedExposureMultiplier;
 /**
- *	
+ *	Memorize/Define  the gapMultiplier attribute at Init device:<br>
  */
 	Tango::DevDouble	memorizedGapMultiplier;
 /**
- *	
- */
-	Tango::DevBoolean	memorizedOffsetCorrection;
-/**
- *	
- */
-	Tango::DevBoolean	memorizedLinearization;
-/**
- *	
+ *	Memorize/Define  the highSpeed attribute at Init device:<br>
  */
 	Tango::DevBoolean	memorizedHighSpeed;
 //@}
@@ -345,22 +340,6 @@ public :
  */
 	virtual void write_geomCorrection(Tango::WAttribute &attr);
 /**
- *	Extract real attribute values for offsetCorrection acquisition result.
- */
-	virtual void read_offsetCorrection(Tango::Attribute &attr);
-/**
- *	Write offsetCorrection attribute values to hardware.
- */
-	virtual void write_offsetCorrection(Tango::WAttribute &attr);
-/**
- *	Extract real attribute values for linearization acquisition result.
- */
-	virtual void read_linearization(Tango::Attribute &attr);
-/**
- *	Write linearization attribute values to hardware.
- */
-	virtual void write_linearization(Tango::WAttribute &attr);
-/**
  *	Extract real attribute values for highSpeed acquisition result.
  */
 	virtual void read_highSpeed(Tango::Attribute &attr);
@@ -413,23 +392,36 @@ public :
  */
 	virtual bool is_geomCorrection_allowed(Tango::AttReqType type);
 /**
- *	Read/Write allowed for offsetCorrection attribute.
- */
-	virtual bool is_offsetCorrection_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for linearization attribute.
- */
-	virtual bool is_linearization_allowed(Tango::AttReqType type);
-/**
  *	Read/Write allowed for highSpeed attribute.
  */
 	virtual bool is_highSpeed_allowed(Tango::AttReqType type);
+/**
+ *	Execution allowed for SetParam command.
+ */
+	virtual bool is_SetParam_allowed(const CORBA::Any &any);
+/**
+ *	Execution allowed for GetParam command.
+ */
+	virtual bool is_GetParam_allowed(const CORBA::Any &any);
 /**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code
  *	@exception DevFailed
  */
 	virtual Tango::DevState	dev_state();
+/**
+ * 
+ *	@param	argin	name,value
+ *	@exception DevFailed
+ */
+	void	set_param(const Tango::DevVarStringArray *);
+/**
+ * 
+ *	@param	argin	name
+ *	@return	value
+ *	@exception DevFailed
+ */
+	Tango::DevString	get_param(Tango::DevString);
 
 /**
  *	Read the device properties from database

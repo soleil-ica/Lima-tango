@@ -5,12 +5,12 @@ static const char *SvnPath    = "$HeadURL: $";
 static const char *HttpServer = "http://www.esrf.fr/computing/cs/tango/tango_doc/ds_doc/";
 //+=============================================================================
 //
-// file :        MarCCDClass.cpp
+// file :        HamamatsuClass.cpp
 //
-// description : C++ source for the MarCCDClass. A singleton
+// description : C++ source for the HamamatsuClass. A singleton
 //               class derived from DeviceClass. It implements the
 //               command list and all properties and methods required
-//               by the MarCCD once per process.
+//               by the Hamamatsu once per process.
 //
 // project :     TANGO Device Server
 //
@@ -32,21 +32,16 @@ static const char *HttpServer = "http://www.esrf.fr/computing/cs/tango/tango_doc
 //         (c) - Software Engineering Group - ESRF
 //=============================================================================
 
-#ifdef WIN32
-#include "tango.h"
-#endif
 
-#include <MarCCD.h>
-#include <MarCCDClass.h>
+#include <tango.h>
 
-#ifndef WIN32
-#include "tango.h"
-#endif
+#include <Hamamatsu.h>
+#include <HamamatsuClass.h>
 
 
 //+----------------------------------------------------------------------------
 /**
- *	Create MarCCDClass singleton and return it in a C function for Python usage
+ *	Create HamamatsuClass singleton and return it in a C function for Python usage
  */
 //+----------------------------------------------------------------------------
 extern "C" {
@@ -56,42 +51,14 @@ __declspec(dllexport)
 
 #endif
 
-	Tango::DeviceClass *_create_MarCCD_class(const char *name) {
-		return MarCCD_ns::MarCCDClass::init(name);
+	Tango::DeviceClass *_create_Hamamatsu_class(const char *name) {
+		return Hamamatsu_ns::HamamatsuClass::init(name);
 	}
 }
 
 
-namespace MarCCD_ns
+namespace Hamamatsu_ns
 {
-
-//+----------------------------------------------------------------------------
-//
-// method : 		TakeBackgroundCmd::execute()
-// 
-// description : 	method to trigger the execution of the command.
-//                PLEASE DO NOT MODIFY this method core without pogo   
-//
-// in : - device : The device on which the command must be executed
-//		- in_any : The command input data
-//
-// returns : The command output data (packed in the Any object)
-//
-//-----------------------------------------------------------------------------
-CORBA::Any *TakeBackgroundCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
-{
-
-	cout2 << "TakeBackgroundCmd::execute(): arrived" << endl;
-
-	((static_cast<MarCCD *>(device))->take_background());
-	return new CORBA::Any();
-}
-
-
-
-
-
-
 
 
 //
@@ -99,43 +66,43 @@ CORBA::Any *TakeBackgroundCmd::execute(Tango::DeviceImpl *device,const CORBA::An
 //	Initialize pointer for singleton pattern
 //----------------------------------------------------------------
 //
-MarCCDClass *MarCCDClass::_instance = NULL;
+HamamatsuClass *HamamatsuClass::_instance = NULL;
 
 //+----------------------------------------------------------------------------
 //
-// method : 		MarCCDClass::MarCCDClass(string &s)
+// method : 		HamamatsuClass::HamamatsuClass(string &s)
 // 
-// description : 	constructor for the MarCCDClass
+// description : 	constructor for the HamamatsuClass
 //
 // in : - s : The class name
 //
 //-----------------------------------------------------------------------------
-MarCCDClass::MarCCDClass(string &s):DeviceClass(s)
+HamamatsuClass::HamamatsuClass(string &s):DeviceClass(s)
 {
 
-	cout2 << "Entering MarCCDClass constructor" << endl;
+	cout2 << "Entering HamamatsuClass constructor" << endl;
 	set_default_property();
 	get_class_property();
 	write_class_property();
 	
-	cout2 << "Leaving MarCCDClass constructor" << endl;
+	cout2 << "Leaving HamamatsuClass constructor" << endl;
 
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		MarCCDClass::~MarCCDClass()
+// method : 		HamamatsuClass::~HamamatsuClass()
 // 
-// description : 	destructor for the MarCCDClass
+// description : 	destructor for the HamamatsuClass
 //
 //-----------------------------------------------------------------------------
-MarCCDClass::~MarCCDClass()
+HamamatsuClass::~HamamatsuClass()
 {
 	_instance = NULL;
 }
 
 //+----------------------------------------------------------------------------
 //
-// method : 		MarCCDClass::instance
+// method : 		HamamatsuClass::instance
 // 
 // description : 	Create the object if not already done. Otherwise, just
 //			return a pointer to the object
@@ -143,14 +110,14 @@ MarCCDClass::~MarCCDClass()
 // in : - name : The class name
 //
 //-----------------------------------------------------------------------------
-MarCCDClass *MarCCDClass::init(const char *name)
+HamamatsuClass *HamamatsuClass::init(const char *name)
 {
 	if (_instance == NULL)
 	{
 		try
 		{
 			string s(name);
-			_instance = new MarCCDClass(s);
+			_instance = new HamamatsuClass(s);
 		}
 		catch (bad_alloc)
 		{
@@ -160,7 +127,7 @@ MarCCDClass *MarCCDClass::init(const char *name)
 	return _instance;
 }
 
-MarCCDClass *MarCCDClass::instance()
+HamamatsuClass *HamamatsuClass::instance()
 {
 	if (_instance == NULL)
 	{
@@ -172,19 +139,14 @@ MarCCDClass *MarCCDClass::instance()
 
 //+----------------------------------------------------------------------------
 //
-// method : 		MarCCDClass::command_factory
+// method : 		HamamatsuClass::command_factory
 // 
 // description : 	Create the command object(s) and store them in the 
 //			command list
 //
 //-----------------------------------------------------------------------------
-void MarCCDClass::command_factory()
+void HamamatsuClass::command_factory()
 {
-	command_list.push_back(new TakeBackgroundCmd("TakeBackground",
-		Tango::DEV_VOID, Tango::DEV_VOID,
-		"no argin",
-		"no argout",
-		Tango::OPERATOR));
 
 	//	add polling if any
 	for (unsigned int i=0 ; i<command_list.size(); i++)
@@ -194,14 +156,14 @@ void MarCCDClass::command_factory()
 
 //+----------------------------------------------------------------------------
 //
-// method : 		MarCCDClass::get_class_property
+// method : 		HamamatsuClass::get_class_property
 // 
 // description : 	Get the class property for specified name.
 //
 // in :		string	name : The property name
 //
 //+----------------------------------------------------------------------------
-Tango::DbDatum MarCCDClass::get_class_property(string &prop_name)
+Tango::DbDatum HamamatsuClass::get_class_property(string &prop_name)
 {
 	for (unsigned int i=0 ; i<cl_prop.size() ; i++)
 		if (cl_prop[i].name == prop_name)
@@ -211,12 +173,12 @@ Tango::DbDatum MarCCDClass::get_class_property(string &prop_name)
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		MarCCDClass::get_default_device_property()
+// method : 		HamamatsuClass::get_default_device_property()
 // 
 // description : 	Return the default value for device property.
 //
 //-----------------------------------------------------------------------------
-Tango::DbDatum MarCCDClass::get_default_device_property(string &prop_name)
+Tango::DbDatum HamamatsuClass::get_default_device_property(string &prop_name)
 {
 	for (unsigned int i=0 ; i<dev_def_prop.size() ; i++)
 		if (dev_def_prop[i].name == prop_name)
@@ -227,12 +189,12 @@ Tango::DbDatum MarCCDClass::get_default_device_property(string &prop_name)
 
 //+----------------------------------------------------------------------------
 //
-// method : 		MarCCDClass::get_default_class_property()
+// method : 		HamamatsuClass::get_default_class_property()
 // 
 // description : 	Return the default value for class property.
 //
 //-----------------------------------------------------------------------------
-Tango::DbDatum MarCCDClass::get_default_class_property(string &prop_name)
+Tango::DbDatum HamamatsuClass::get_default_class_property(string &prop_name)
 {
 	for (unsigned int i=0 ; i<cl_def_prop.size() ; i++)
 		if (cl_def_prop[i].name == prop_name)
@@ -242,7 +204,7 @@ Tango::DbDatum MarCCDClass::get_default_class_property(string &prop_name)
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		MarCCDClass::device_factory
+// method : 		HamamatsuClass::device_factory
 // 
 // description : 	Create the device object(s) and store them in the 
 //			device list
@@ -250,7 +212,7 @@ Tango::DbDatum MarCCDClass::get_default_class_property(string &prop_name)
 // in :		Tango::DevVarStringArray *devlist_ptr : The device name list
 //
 //-----------------------------------------------------------------------------
-void MarCCDClass::device_factory(const Tango::DevVarStringArray *devlist_ptr)
+void HamamatsuClass::device_factory(const Tango::DevVarStringArray *devlist_ptr)
 {
 
 	//	Create all devices.(Automatic code generation)
@@ -261,7 +223,7 @@ void MarCCDClass::device_factory(const Tango::DevVarStringArray *devlist_ptr)
 						
 		// Create devices and add it into the device list
 		//----------------------------------------------------
-		device_list.push_back(new MarCCD(this, (*devlist_ptr)[i]));							 
+		device_list.push_back(new Hamamatsu(this, (*devlist_ptr)[i]));							 
 
 		// Export device to the outside world
 		// Check before if database used.
@@ -276,66 +238,51 @@ void MarCCDClass::device_factory(const Tango::DevVarStringArray *devlist_ptr)
 
 }
 //+----------------------------------------------------------------------------
-//	Method: MarCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
+//	Method: HamamatsuClass::attribute_factory(vector<Tango::Attr *> &att_list)
 //-----------------------------------------------------------------------------
-void MarCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
+void HamamatsuClass::attribute_factory(vector<Tango::Attr *> &att_list)
 {
-	//	Attribute : imageName
-	imageNameAttrib	*image_name = new imageNameAttrib();
-	Tango::UserDefaultAttrProp	image_name_prop;
-	image_name_prop.set_label("image name");
-	image_name_prop.set_unit(" ");
-	image_name_prop.set_standard_unit(" ");
-	image_name_prop.set_display_unit(" ");
-	image_name_prop.set_format("%s");
-	image_name_prop.set_description("The image file name");
-	image_name->set_default_properties(image_name_prop);
-	att_list.push_back(image_name);
+	//	Attribute : readoutSpeed
+	readoutSpeedAttrib	*readout_speed = new readoutSpeedAttrib();
+	Tango::UserDefaultAttrProp	readout_speed_prop;
+	readout_speed_prop.set_label("Readout speed");
+	readout_speed_prop.set_description("Possible values are:<br>\nNORMAL<br>\nSLOW<br>");
+	readout_speed->set_default_properties(readout_speed_prop);
+	att_list.push_back(readout_speed);
 
-	//	Attribute : imageIndex
-	imageIndexAttrib	*image_index = new imageIndexAttrib();
-	Tango::UserDefaultAttrProp	image_index_prop;
-	image_index_prop.set_label("image index");
-	image_index_prop.set_unit(" ");
-	image_index_prop.set_standard_unit(" ");
-	image_index_prop.set_display_unit(" ");
-	image_index_prop.set_format("%6d");
-	image_index_prop.set_min_value("0");
-	image_index_prop.set_description("The current image index");
-	image_index->set_default_properties(image_index_prop);
-	att_list.push_back(image_index);
+	//	Attribute : lostFrames
+	lostFramesAttrib	*lost_frames = new lostFramesAttrib();
+	Tango::UserDefaultAttrProp	lost_frames_prop;
+	lost_frames_prop.set_label("Lost frames");
+	lost_frames_prop.set_unit(" ");
+	lost_frames_prop.set_format("%d");
+	lost_frames_prop.set_description("Number of frames lost during the current or last acquisition.");
+	lost_frames->set_default_properties(lost_frames_prop);
+	att_list.push_back(lost_frames);
 
-	//	Attribute : waitFileOnDiskTime
-	waitFileOnDiskTimeAttrib	*wait_file_on_disk_time = new waitFileOnDiskTimeAttrib();
-	Tango::UserDefaultAttrProp	wait_file_on_disk_time_prop;
-	wait_file_on_disk_time_prop.set_unit("ms");
-	wait_file_on_disk_time_prop.set_description("The waiting time (in ms) of the arrival of the detector file on the disk.<br>\nTarget is defined in the detectorTargetPath attribute.");
-	wait_file_on_disk_time->set_default_properties(wait_file_on_disk_time_prop);
-	wait_file_on_disk_time->set_memorized();
-	wait_file_on_disk_time->set_memorized_init(false);
-	att_list.push_back(wait_file_on_disk_time);
+	//	Attribute : fps
+	fpsAttrib	*fps = new fpsAttrib();
+	Tango::UserDefaultAttrProp	fps_prop;
+	fps_prop.set_label("FPS");
+	fps_prop.set_unit(" ");
+	fps_prop.set_format("%.2f");
+	fps_prop.set_description("The last computed frame per second (the value is computed every 100 frames only)");
+	fps->set_default_properties(fps_prop);
+	att_list.push_back(fps);
 
 	//	End of Automatic code generation
 	//-------------------------------------------------------------
 }
 
 
-
-
-
-
-
-
-
-
 //+----------------------------------------------------------------------------
 //
-// method : 		MarCCDClass::get_class_property()
+// method : 		HamamatsuClass::get_class_property()
 // 
 // description : 	Read the class properties from database.
 //
 //-----------------------------------------------------------------------------
-void MarCCDClass::get_class_property()
+void HamamatsuClass::get_class_property()
 {
 	//	Initialize your default values here (if not done with  POGO).
 	//------------------------------------------------------------------
@@ -358,7 +305,7 @@ void MarCCDClass::get_class_property()
 
 //+----------------------------------------------------------------------------
 //
-// method : 	MarCCDClass::set_default_property
+// method : 	HamamatsuClass::set_default_property
 // 
 // description: Set default property (class and device) for wizard.
 //              For each property, add to wizard property name and description
@@ -366,7 +313,7 @@ void MarCCDClass::get_class_property()
 //              store it in a DbDatum.
 //
 //-----------------------------------------------------------------------------
-void MarCCDClass::set_default_property()
+void HamamatsuClass::set_default_property()
 {
 	string	prop_name;
 	string	prop_desc;
@@ -375,66 +322,8 @@ void MarCCDClass::set_default_property()
 	vector<string>	vect_data;
 	//	Set Default Class Properties
 	//	Set Default Device Properties
-	prop_name = "DetectorIP";
-	prop_desc = "Detector IP address";
-	prop_def  = "";
-	vect_data.clear();
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "DetectorPort";
-	prop_desc = "Detector port number";
-	prop_def  = "";
-	vect_data.clear();
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "DetectorTargetPath";
-	prop_desc = "Detector generated image(s) path.";
-	prop_def  = "/no/path/defined/";
-	vect_data.clear();
-	vect_data.push_back("/no/path/defined/");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "ReaderTimeout";
-	prop_desc = "During acquisition, this is the time before declaring that is no available image returned by detector. (in ms)";
-	prop_def  = "10000";
-	vect_data.clear();
-	vect_data.push_back("10000");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedWaitFileOnDiskTime";
-	prop_desc = "";
+	prop_name = "DetectorNum";
+	prop_desc = "id of the camera";
 	prop_def  = "0";
 	vect_data.clear();
 	vect_data.push_back("0");
@@ -448,15 +337,30 @@ void MarCCDClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
+	prop_name = "MemorizedReadoutSpeed";
+	prop_desc = "Memorize/Define the readoutSpeed attribute at Init device<br>\nAvailables values :<br>\nNORMAL<br>\nSLOW<br>";
+	prop_def  = "NORMAL";
+	vect_data.clear();
+	vect_data.push_back("NORMAL");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		MarCCDClass::write_class_property
+// method : 		HamamatsuClass::write_class_property
 // 
 // description : 	Set class description as property in database
 //
 //-----------------------------------------------------------------------------
-void MarCCDClass::write_class_property()
+void HamamatsuClass::write_class_property()
 {
 	//	First time, check if database used
 	//--------------------------------------------

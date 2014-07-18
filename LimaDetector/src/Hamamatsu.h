@@ -1,8 +1,8 @@
 //=============================================================================
 //
-// file :        MarCCD.h
+// file :        Hamamatsu.h
 //
-// description : Include for the MarCCD class.
+// description : Include for the Hamamatsu class.
 //
 // project :	
 //
@@ -30,11 +30,13 @@
 //
 //         (c) - Software Engineering Group - ESRF
 //=============================================================================
-#ifndef _MarCCD_H
-#define _MarCCD_H
+#ifndef _HAMAMATSU_H
+#define _HAMAMATSU_H
 
+#include <tango.h>
 
-//using namespace Tango;
+//- YAT/YAT4TANGO
+#include <yat4tango/PropertyHelper.h>
 
 /**
  * @author	$Author:  $
@@ -43,26 +45,19 @@
 
  //	Add your own constant definitions here.
  //-----------------------------------------------
-#include "tango.h"
-
-//- YAT/YAT4TANGO
-#include <yat4tango/PropertyHelper.h>
-
+#include "Factory.h"
 #include "HwInterface.h"
 #include "CtControl.h"
-#include "CtImage.h"
 #include "CtAcquisition.h"
-#include <MarccdCamera.h>
-#include <MarccdInterface.h>
-#include "Factory.h"
+#include "CtImage.h"
+#include "HamamatsuInterface.h"
+#include "HamamatsuCamera.h"
 
-#define MAX_ATTRIBUTE_STRING_LENGTH 	256
-
+//using namespace lima::Hamamatsu;
 using namespace lima;
-using namespace std;
 using namespace yat4tango;
 
-namespace MarCCD_ns
+namespace Hamamatsu_ns
 {
 
 /**
@@ -79,7 +74,7 @@ namespace MarCCD_ns
  */
 
 
-class MarCCD: public Tango::Device_4Impl
+class Hamamatsu: public Tango::Device_4Impl
 {
 public :
 	//	Add your own data members here
@@ -93,12 +88,10 @@ public :
  *	Attribute member data.
  */
 //@{
-		Tango::DevString	*attr_imageName_read;
-		Tango::DevString	attr_imageName_write;
-		Tango::DevUShort	*attr_imageIndex_read;
-		Tango::DevUShort	attr_imageIndex_write;
-		Tango::DevDouble	*attr_waitFileOnDiskTime_read;
-		Tango::DevDouble	attr_waitFileOnDiskTime_write;
+		Tango::DevString	*attr_readoutSpeed_read;
+		Tango::DevString	attr_readoutSpeed_write;
+		Tango::DevLong	*attr_lostFrames_read;
+		Tango::DevDouble	*attr_fps_read;
 //@}
 
 /**
@@ -107,25 +100,16 @@ public :
  */
 //@{
 /**
- *	Detector IP address
+ *	id of the camera
  */
-	string	detectorIP;
+	Tango::DevLong	detectorNum;
 /**
- *	Detector port number
+ *	Memorize/Define the readoutSpeed attribute at Init device<br>
+ *	Availables values :<br>
+ *	NORMAL<br>
+ *	SLOW<br>
  */
-	Tango::DevULong	detectorPort;
-/**
- *	Detector generated image(s) path.
- */
-	string	detectorTargetPath;
-/**
- *	During acquisition, this is the time before declaring that is no available image returned by detector. (in ms)
- */
-	Tango::DevUShort	readerTimeout;
-/**
- *	
- */
-	Tango::DevDouble	memorizedWaitFileOnDiskTime;
+	string	memorizedReadoutSpeed;
 //@}
 
 /**
@@ -144,14 +128,14 @@ public :
  *	@param cl	Class.
  *	@param s 	Device Name
  */
-	MarCCD(Tango::DeviceClass *cl,string &s);
+	Hamamatsu(Tango::DeviceClass *cl,string &s);
 /**
  * Constructs a newly allocated Command object.
  *
  *	@param cl	Class.
  *	@param s 	Device Name
  */
-	MarCCD(Tango::DeviceClass *cl,const char *s);
+	Hamamatsu(Tango::DeviceClass *cl,const char *s);
 /**
  * Constructs a newly allocated Command object.
  *
@@ -159,7 +143,7 @@ public :
  *	@param s 	Device name
  *	@param d	Device description.
  */
-	MarCCD(Tango::DeviceClass *cl,const char *s,const char *d);
+	Hamamatsu(Tango::DeviceClass *cl,const char *s,const char *d);
 //@}
 
 /**@name Destructor
@@ -168,7 +152,7 @@ public :
 /**
  * The object destructor.
  */	
-	~MarCCD() {delete_device();};
+	~Hamamatsu() {delete_device();};
 /**
  *	will be called at device destruction or at init command.
  */
@@ -190,7 +174,7 @@ public :
 //@}
 
 /**
- * @name MarCCD methods prototypes
+ * @name Hamamatsu methods prototypes
  */
 
 //@{
@@ -199,56 +183,39 @@ public :
  */
 	virtual void read_attr_hardware(vector<long> &attr_list);
 /**
- *	Extract real attribute values for imageName acquisition result.
+ *	Extract real attribute values for readoutSpeed acquisition result.
  */
-	virtual void read_imageName(Tango::Attribute &attr);
+	virtual void read_readoutSpeed(Tango::Attribute &attr);
 /**
- *	Write imageName attribute values to hardware.
+ *	Write readoutSpeed attribute values to hardware.
  */
-	virtual void write_imageName(Tango::WAttribute &attr);
+	virtual void write_readoutSpeed(Tango::WAttribute &attr);
 /**
- *	Extract real attribute values for imageIndex acquisition result.
+ *	Extract real attribute values for lostFrames acquisition result.
  */
-	virtual void read_imageIndex(Tango::Attribute &attr);
+	virtual void read_lostFrames(Tango::Attribute &attr);
 /**
- *	Write imageIndex attribute values to hardware.
+ *	Extract real attribute values for fps acquisition result.
  */
-	virtual void write_imageIndex(Tango::WAttribute &attr);
+	virtual void read_fps(Tango::Attribute &attr);
 /**
- *	Extract real attribute values for waitFileOnDiskTime acquisition result.
+ *	Read/Write allowed for readoutSpeed attribute.
  */
-	virtual void read_waitFileOnDiskTime(Tango::Attribute &attr);
+	virtual bool is_readoutSpeed_allowed(Tango::AttReqType type);
 /**
- *	Write waitFileOnDiskTime attribute values to hardware.
+ *	Read/Write allowed for lostFrames attribute.
  */
-	virtual void write_waitFileOnDiskTime(Tango::WAttribute &attr);
+	virtual bool is_lostFrames_allowed(Tango::AttReqType type);
 /**
- *	Read/Write allowed for imageName attribute.
+ *	Read/Write allowed for fps attribute.
  */
-	virtual bool is_imageName_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for imageIndex attribute.
- */
-	virtual bool is_imageIndex_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for waitFileOnDiskTime attribute.
- */
-	virtual bool is_waitFileOnDiskTime_allowed(Tango::AttReqType type);
-/**
- *	Execution allowed for TakeBackground command.
- */
-	virtual bool is_TakeBackground_allowed(const CORBA::Any &any);
+	virtual bool is_fps_allowed(Tango::AttReqType type);
 /**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code
  *	@exception DevFailed
  */
 	virtual Tango::DevState	dev_state();
-/**
- * Command to force the MarCCD detector to get a background frame.
- *	@exception DevFailed
- */
-	void	take_background();
 
 /**
  *	Read the device properties from database
@@ -258,22 +225,22 @@ public :
 
 	//	Here is the end of the automatic code generation part
 	//-------------------------------------------------------------	
-	// return true if the device is correctly initialized in init_device
-	bool is_device_initialized(){return m_is_device_initialized;};
+
 
 
 protected :	
 	//	Add your own data members here
 	//-----------------------------------------
-	bool 				    m_is_device_initialized ;
-	std::stringstream		m_status_message;
-	
-	//LIMA objects
-    Marccd::Camera*         m_camera;
-	Marccd::Interface*		m_hw;
-	CtControl*				m_ct;	
+	bool                  m_is_device_initialized;
+    stringstream          m_status_message;
+	string				  m_readoutSpeed;
+
+    //lima OBJECTS
+    lima::Hamamatsu::Interface* m_hw;
+    CtControl*            m_ct;
+    lima::Hamamatsu::Camera*    m_camera;		
 };
 
 }	// namespace_ns
 
-#endif	// _MarCCD_H
+#endif	// _HAMAMATSU_H

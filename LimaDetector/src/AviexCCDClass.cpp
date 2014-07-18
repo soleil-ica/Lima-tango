@@ -62,6 +62,55 @@ __declspec(dllexport)
 
 namespace AviexCCD_ns
 {
+//+----------------------------------------------------------------------------
+//
+// method : 		GetParamCmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *GetParamCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "GetParamCmd::execute(): arrived" << endl;
+
+	Tango::DevString	argin;
+	extract(in_any, argin);
+
+	return insert((static_cast<AviexCCD *>(device))->get_param(argin));
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		SetParamCmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *SetParamCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "SetParamCmd::execute(): arrived" << endl;
+
+	const Tango::DevVarStringArray	*argin;
+	extract(in_any, argin);
+
+	((static_cast<AviexCCD *>(device))->set_param(argin));
+	return new CORBA::Any();
+}
+
 
 
 
@@ -153,6 +202,16 @@ AviexCCDClass *AviexCCDClass::instance()
 //-----------------------------------------------------------------------------
 void AviexCCDClass::command_factory()
 {
+	command_list.push_back(new SetParamCmd("SetParam",
+		Tango::DEVVAR_STRINGARRAY, Tango::DEV_VOID,
+		"name,value",
+		"",
+		Tango::OPERATOR));
+	command_list.push_back(new GetParamCmd("GetParam",
+		Tango::DEV_STRING, Tango::DEV_STRING,
+		"name",
+		"value",
+		Tango::OPERATOR));
 
 	//	add polling if any
 	for (unsigned int i=0 ; i<command_list.size(); i++)
@@ -306,14 +365,6 @@ void AviexCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	geomCorrectionAttrib	*geom_correction = new geomCorrectionAttrib();
 	att_list.push_back(geom_correction);
 
-	//	Attribute : offsetCorrection
-	offsetCorrectionAttrib	*offset_correction = new offsetCorrectionAttrib();
-	att_list.push_back(offset_correction);
-
-	//	Attribute : linearization
-	linearizationAttrib	*linearization = new linearizationAttrib();
-	att_list.push_back(linearization);
-
 	//	Attribute : highSpeed
 	highSpeedAttrib	*high_speed = new highSpeedAttrib();
 	att_list.push_back(high_speed);
@@ -430,7 +481,7 @@ void AviexCCDClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "MemorizedCorrectionFlags";
-	prop_desc = "";
+	prop_desc = "Memorize all the flags correction in this Property:<br>\nmask -> bit 0 <br>\nbias -> bit 1 <br>\ndark -> bit 2 <br>\nflood -> bit 3 <br>\ngeom -> bit 12 <br>\n\n";
 	prop_def  = "0";
 	vect_data.clear();
 	vect_data.push_back("0");
@@ -445,7 +496,7 @@ void AviexCCDClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "MemorizedInitialDelayTime";
-	prop_desc = "";
+	prop_desc = "Memorize/Define  the initialDelayTime attribute in ms at Init device:<br>";
 	prop_def  = "0";
 	vect_data.clear();
 	vect_data.push_back("0");
@@ -460,7 +511,7 @@ void AviexCCDClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "MemorizedReadoutDelayTime";
-	prop_desc = "";
+	prop_desc = "Memorize/Define  the readoutDelayTime attribute in ms at Init device:<br>";
 	prop_def  = "0";
 	vect_data.clear();
 	vect_data.push_back("0");
@@ -475,7 +526,7 @@ void AviexCCDClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "MemorizedExposureMultiplier";
-	prop_desc = "";
+	prop_desc = "Memorize/Define  the exposureMultiplier attribute at Init device:<br>";
 	prop_def  = "1.0";
 	vect_data.clear();
 	vect_data.push_back("1.0");
@@ -490,7 +541,7 @@ void AviexCCDClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "MemorizedGapMultiplier";
-	prop_desc = "";
+	prop_desc = "Memorize/Define  the gapMultiplier attribute at Init device:<br>";
 	prop_def  = "1.0";
 	vect_data.clear();
 	vect_data.push_back("1.0");
@@ -504,38 +555,8 @@ void AviexCCDClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
-	prop_name = "MemorizedOffsetCorrection";
-	prop_desc = "";
-	prop_def  = "false";
-	vect_data.clear();
-	vect_data.push_back("false");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedLinearization";
-	prop_desc = "";
-	prop_def  = "false";
-	vect_data.clear();
-	vect_data.push_back("false");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
 	prop_name = "MemorizedHighSpeed";
-	prop_desc = "";
+	prop_desc = "Memorize/Define  the highSpeed attribute at Init device:<br>";
 	prop_def  = "false";
 	vect_data.clear();
 	vect_data.push_back("false");

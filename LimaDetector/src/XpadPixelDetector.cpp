@@ -288,6 +288,25 @@ void XpadPixelDetector::always_executed_hook()
 {
 	DEBUG_STREAM << "XpadPixelDetector::always_executed_hook() entering... "<< endl;
 	
+    try
+    {
+        m_status_message.str("");
+        yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
+        //- get the main object used to pilot the lima framework
+
+        m_ct = ControlFactory::instance().get_control("XpadPixelDetector");    
+        
+        //- get interface to specific camera
+        m_hw = dynamic_cast<lima::Xpad::Interface*>(m_ct->hwInterface());
+
+        //- get camera to specific detector
+		m_camera = &(m_hw->getCamera());
+
+        if (acquisitionType == "SYNC")
+            m_camera->setAcquisitionType(lima::Xpad::Camera::SYNC);
+        else
+            m_camera->setAcquisitionType(lima::Xpad::Camera::ASYNC);
+
     //- update state
     dev_state();
 }
@@ -798,7 +817,7 @@ Tango::DevState XpadPixelDetector::dev_state()
     }
     else
 	{
-		//state&status are retrieved from specific device
+		// state & status are retrieved from Factory, Factory is updated by Generic device
 		DeviceState = ControlFactory::instance().get_state();
 		DeviceStatus << ControlFactory::instance().get_status();		
     }
