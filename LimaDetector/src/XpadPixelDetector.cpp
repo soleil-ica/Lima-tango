@@ -287,28 +287,43 @@ void XpadPixelDetector::get_device_property()
 void XpadPixelDetector::always_executed_hook()
 {
 	DEBUG_STREAM << "XpadPixelDetector::always_executed_hook() entering... "<< endl;
-	
+
     try
     {
         m_status_message.str("");
-        yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
-        //- get the main object used to pilot the lima framework
-
-        m_ct = ControlFactory::instance().get_control("XpadPixelDetector");    
-        
-        //- get interface to specific camera
-        m_hw = dynamic_cast<lima::Xpad::Interface*>(m_ct->hwInterface());
-
-        //- get camera to specific detector
+        //- get the singleton control objet used to pilot the lima framework
+		m_ct = ControlFactory::instance().get_control("XpadPixelDetector");
+		
+		//- get interface to specific camera
+		m_hw = dynamic_cast<lima::XpadPixelDetector::Interface*>(m_ct->hwInterface());
+		
+		//- get camera to specific detector
 		m_camera = &(m_hw->getCamera());
 
-        if (acquisitionType == "SYNC")
-            m_camera->setAcquisitionType(lima::Xpad::Camera::SYNC);
-        else
-            m_camera->setAcquisitionType(lima::Xpad::Camera::ASYNC);
-
-    //- update state
-    dev_state();
+		//- Xpix Debug
+		m_camera->xpixDebug(xpixDebug);
+		
+		//update state
+        dev_state();
+	}
+    catch (Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        m_status_message << "Initialization Failed : " << e.getErrMsg() << endl;
+        //- throw exception
+        set_state(Tango::FAULT);
+        m_is_device_initialized = false;
+        return;
+    }
+    catch (...)
+    {
+        ERROR_STREAM << "Initialization Failed : UNKNOWN" << endl;
+        m_status_message << "Initialization Failed : UNKNOWN" << endl;
+        //- throw exception
+        set_state(Tango::FAULT);
+        m_is_device_initialized = false;
+        return;
+    }
 }
 //+----------------------------------------------------------------------------
 //
