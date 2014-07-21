@@ -295,7 +295,7 @@ void XpadPixelDetector::always_executed_hook()
 		m_ct = ControlFactory::instance().get_control("XpadPixelDetector");
 		
 		//- get interface to specific camera
-		m_hw = dynamic_cast<lima::XpadPixelDetector::Interface*>(m_ct->hwInterface());
+		m_hw = dynamic_cast<lima::Xpad::Interface*>(m_ct->hwInterface());
 		
 		//- get camera to specific detector
 		m_camera = &(m_hw->getCamera());
