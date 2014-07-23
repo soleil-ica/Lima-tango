@@ -626,6 +626,8 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	dead_time_prop.set_description("time between images");
 	dead_time->set_default_properties(dead_time_prop);
 	dead_time->set_disp_level(Tango::EXPERT);
+	dead_time->set_memorized();
+	dead_time->set_memorized_init(true);
 	att_list.push_back(dead_time);
 
 	//	Attribute : init
@@ -636,6 +638,8 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	init_prop.set_description("time before start");
 	init->set_default_properties(init_prop);
 	init->set_disp_level(Tango::EXPERT);
+	init->set_memorized();
+	init->set_memorized_init(true);
 	att_list.push_back(init);
 
 	//	Attribute : shutter
@@ -646,6 +650,8 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	shutter_prop.set_description("shutter time");
 	shutter->set_default_properties(shutter_prop);
 	shutter->set_disp_level(Tango::EXPERT);
+	shutter->set_memorized();
+	shutter->set_memorized_init(true);
 	att_list.push_back(shutter);
 
 	//	Attribute : ovf
@@ -656,6 +662,8 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	ovf_prop.set_description("ovf time");
 	ovf->set_default_properties(ovf_prop);
 	ovf->set_disp_level(Tango::EXPERT);
+	ovf->set_memorized();
+	ovf->set_memorized_init(true);
 	att_list.push_back(ovf);
 
 	//	Attribute : n
@@ -666,6 +674,8 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	n_prop.set_description("?	");
 	n->set_default_properties(n_prop);
 	n->set_disp_level(Tango::EXPERT);
+	n->set_memorized();
+	n->set_memorized_init(true);
 	att_list.push_back(n);
 
 	//	Attribute : p
@@ -676,6 +686,8 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	p_prop.set_description("?");
 	p->set_default_properties(p_prop);
 	p->set_disp_level(Tango::EXPERT);
+	p->set_memorized();
+	p->set_memorized_init(true);
 	att_list.push_back(p);
 
 	//	Attribute : busyOut
@@ -686,6 +698,8 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	busy_out_prop.set_description("Selection of the busy out:\n0-busy, 1-busy shutter, 2-read img ena, 3-ovf updt ena, 4- exp ceg(0), 5-xpad proc busy, 6-gpout(img transfer), 7-dsfifo full, 8-ext gate, 9-init ovf update");
 	busy_out->set_default_properties(busy_out_prop);
 	busy_out->set_disp_level(Tango::EXPERT);
+	busy_out->set_memorized();
+	busy_out->set_memorized_init(true);
 	att_list.push_back(busy_out);
 
 	//	Attribute : gp1
@@ -696,6 +710,8 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	gp1_prop.set_description("?");
 	gp1->set_default_properties(gp1_prop);
 	gp1->set_disp_level(Tango::EXPERT);
+	gp1->set_memorized();
+	gp1->set_memorized_init(true);
 	att_list.push_back(gp1);
 
 	//	Attribute : gp2
@@ -706,6 +722,8 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	gp2_prop.set_description("?");
 	gp2->set_default_properties(gp2_prop);
 	gp2->set_disp_level(Tango::EXPERT);
+	gp2->set_memorized();
+	gp2->set_memorized_init(true);
 	att_list.push_back(gp2);
 
 	//	Attribute : gp3
@@ -716,6 +734,8 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	gp3_prop.set_description("?");
 	gp3->set_default_properties(gp3_prop);
 	gp3->set_disp_level(Tango::EXPERT);
+	gp3->set_memorized();
+	gp3->set_memorized_init(true);
 	att_list.push_back(gp3);
 
 	//	Attribute : gp4
@@ -726,6 +746,8 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	gp4_prop.set_description("?");
 	gp4->set_default_properties(gp4_prop);
 	gp4->set_disp_level(Tango::EXPERT);
+	gp4->set_memorized();
+	gp4->set_memorized_init(true);
 	att_list.push_back(gp4);
 
 	//	Attribute : enableGeometricalCorrection
@@ -738,6 +760,16 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	enable_geometrical_correction->set_memorized();
 	enable_geometrical_correction->set_memorized_init(true);
 	att_list.push_back(enable_geometrical_correction);
+
+	//	Attribute : acquisitionType
+	acquisitionTypeAttrib	*acquisition_type = new acquisitionTypeAttrib();
+	Tango::UserDefaultAttrProp	acquisition_type_prop;
+	acquisition_type_prop.set_description("Acquisition Type:\nSYNC : Synchrone\nASYNC: Asynchrone");
+	acquisition_type->set_default_properties(acquisition_type_prop);
+	acquisition_type->set_disp_level(Tango::EXPERT);
+	acquisition_type->set_memorized();
+	acquisition_type->set_memorized_init(true);
+	att_list.push_back(acquisition_type);
 
 	//	Attribute : dacl
 	daclAttrib	*dacl = new daclAttrib();
@@ -806,21 +838,6 @@ void XpadPixelDetectorClass::set_default_property()
 	vector<string>	vect_data;
 	//	Set Default Class Properties
 	//	Set Default Device Properties
-	prop_name = "AcquisitionType";
-	prop_desc = "Type of Acquisition:<BR>\nSYNC -> Synchrone<BR>\nASYNC-> Asynchrone<BR>";
-	prop_def  = "SYNC";
-	vect_data.clear();
-	vect_data.push_back("SYNC");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
 	prop_name = "XpadModel";
 	prop_desc = "Define the model of the XPAD (architecture)<BR>\nAvailables models :<BR>\n- BACKPLANE<BR>\n- IMXPAD_S70<BR>\n- IMXPAD_S140<BR>\n- IMXPAD_S340<BR>\n- IMXPAD_S540<BR>";
 	prop_def  = "UNKNOWN";
@@ -856,6 +873,21 @@ void XpadPixelDetectorClass::set_default_property()
 	prop_def  = "1";
 	vect_data.clear();
 	vect_data.push_back("1");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "XpixDebug";
+	prop_desc = "Flag used to enable Xpix library debug";
+	prop_def  = "false";
+	vect_data.clear();
+	vect_data.push_back("false");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);

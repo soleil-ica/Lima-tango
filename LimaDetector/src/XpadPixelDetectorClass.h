@@ -75,6 +75,20 @@ public:
 	{return (static_cast<XpadPixelDetector *>(dev))->is_dacl_allowed(ty);}
 };
 
+class acquisitionTypeAttrib: public Tango::Attr
+{
+public:
+	acquisitionTypeAttrib():Attr("acquisitionType", Tango::DEV_STRING, Tango::WRITE) {};
+	~acquisitionTypeAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<XpadPixelDetector *>(dev))->read_acquisitionType(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<XpadPixelDetector *>(dev))->write_acquisitionType(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<XpadPixelDetector *>(dev))->is_acquisitionType_allowed(ty);}
+};
+
 class enableGeometricalCorrectionAttrib: public Tango::Attr
 {
 public:
