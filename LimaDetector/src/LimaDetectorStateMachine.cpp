@@ -313,62 +313,6 @@ bool LimaDetector::is_currentFrame_allowed(Tango::AttReqType type)
 
 //+----------------------------------------------------------------------------
 //
-// method : 		LimaDetector::is_flipX_allowed
-// 
-// description : 	Read/Write allowed for flipX attribute.
-//
-//-----------------------------------------------------------------------------
-bool LimaDetector::is_flipX_allowed(Tango::AttReqType type)
-{
-	if (get_state() == Tango::INIT	||
-		get_state() == Tango::FAULT	||
-		get_state() == Tango::RUNNING)
-	{
-		//	End of Generated Code
-		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
-		{
-           return true;
-		}
-		
-		if ( get_state()==Tango::FAULT && is_device_initialized() )
-		{
-           return true;
-		}	
-		//	Re-Start of Generated Code
-		return false;
-	}
-	return true;
-}
-//+----------------------------------------------------------------------------
-//
-// method : 		LimaDetector::is_flipY_allowed
-// 
-// description : 	Read/Write allowed for flipY attribute.
-//
-//-----------------------------------------------------------------------------
-bool LimaDetector::is_flipY_allowed(Tango::AttReqType type)
-{
-	if (get_state() == Tango::INIT	||
-		get_state() == Tango::FAULT	||
-		get_state() == Tango::RUNNING)
-	{
-		//	End of Generated Code
-		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
-		{
-           return true;
-		}
-		
-		if ( get_state()==Tango::FAULT && is_device_initialized() )
-		{
-           return true;
-		}	
-		//	Re-Start of Generated Code
-		return false;
-	}
-	return true;
-}
-//+----------------------------------------------------------------------------
-//
 // method : 		LimaDetector::is_binningH_allowed
 // 
 // description : 	Read/Write allowed for binningH attribute.
@@ -638,6 +582,62 @@ bool LimaDetector::is_binnedHeightMax_allowed(Tango::AttReqType type)
 		{
            return true;
 		}	
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		LimaDetector::is_detectorWidthMax_allowed
+// 
+// description : 	Read/Write allowed for detectorWidthMax attribute.
+//
+//-----------------------------------------------------------------------------
+bool LimaDetector::is_detectorWidthMax_allowed(Tango::AttReqType type)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
+	{
+		//	End of Generated Code
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
+		
+		if ( get_state()==Tango::FAULT && is_device_initialized() )
+		{
+           return true;
+		}		
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		LimaDetector::is_detectorHeightMax_allowed
+// 
+// description : 	Read/Write allowed for detectorHeightMax attribute.
+//
+//-----------------------------------------------------------------------------
+bool LimaDetector::is_detectorHeightMax_allowed(Tango::AttReqType type)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
+	{
+		//	End of Generated Code
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
+		
+		if ( get_state()==Tango::FAULT && is_device_initialized() )
+		{
+           return true;
+		}		
 		//	Re-Start of Generated Code
 		return false;
 	}

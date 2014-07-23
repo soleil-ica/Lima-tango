@@ -49,34 +49,6 @@ namespace LimaDetector_ns
 {//=====================================
 //	Define classes for attributes
 //=====================================
-class flipYAttrib: public Tango::Attr
-{
-public:
-	flipYAttrib():Attr("flipY", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
-	~flipYAttrib() {};
-	
-	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<LimaDetector *>(dev))->read_flipY(att);}
-	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-	{(static_cast<LimaDetector *>(dev))->write_flipY(att);}
-	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<LimaDetector *>(dev))->is_flipY_allowed(ty);}
-};
-
-class flipXAttrib: public Tango::Attr
-{
-public:
-	flipXAttrib():Attr("flipX", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
-	~flipXAttrib() {};
-	
-	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<LimaDetector *>(dev))->read_flipX(att);}
-	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-	{(static_cast<LimaDetector *>(dev))->write_flipX(att);}
-	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<LimaDetector *>(dev))->is_flipX_allowed(ty);}
-};
-
 class fileGenerationAttrib: public Tango::Attr
 {
 public:
@@ -245,18 +217,6 @@ public:
 	{return (static_cast<LimaDetector *>(dev))->is_triggerMode_allowed(ty);}
 };
 
-class detectorPixelDepthAttrib: public Tango::Attr
-{
-public:
-	detectorPixelDepthAttrib():Attr("detectorPixelDepth", Tango::DEV_USHORT, Tango::READ) {};
-	~detectorPixelDepthAttrib() {};
-	
-	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<LimaDetector *>(dev))->read_detectorPixelDepth(att);}
-	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<LimaDetector *>(dev))->is_detectorPixelDepth_allowed(ty);}
-};
-
 class binnedHeightMaxAttrib: public Tango::Attr
 {
 public:
@@ -279,6 +239,42 @@ public:
 	{(static_cast<LimaDetector *>(dev))->read_binnedWidthMax(att);}
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
 	{return (static_cast<LimaDetector *>(dev))->is_binnedWidthMax_allowed(ty);}
+};
+
+class detectorPixelDepthAttrib: public Tango::Attr
+{
+public:
+	detectorPixelDepthAttrib():Attr("detectorPixelDepth", Tango::DEV_USHORT, Tango::READ) {};
+	~detectorPixelDepthAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<LimaDetector *>(dev))->read_detectorPixelDepth(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<LimaDetector *>(dev))->is_detectorPixelDepth_allowed(ty);}
+};
+
+class detectorHeightMaxAttrib: public Tango::Attr
+{
+public:
+	detectorHeightMaxAttrib():Attr("detectorHeightMax", Tango::DEV_USHORT, Tango::READ) {};
+	~detectorHeightMaxAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<LimaDetector *>(dev))->read_detectorHeightMax(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<LimaDetector *>(dev))->is_detectorHeightMax_allowed(ty);}
+};
+
+class detectorWidthMaxAttrib: public Tango::Attr
+{
+public:
+	detectorWidthMaxAttrib():Attr("detectorWidthMax", Tango::DEV_USHORT, Tango::READ) {};
+	~detectorWidthMaxAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<LimaDetector *>(dev))->read_detectorWidthMax(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<LimaDetector *>(dev))->is_detectorWidthMax_allowed(ty);}
 };
 
 class detectorModelAttrib: public Tango::Attr
