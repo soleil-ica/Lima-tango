@@ -88,6 +88,8 @@ namespace XpadPixelDetector_ns
          *	Attribute member data.
          */
         //@{
+		Tango::DevString	attr_acquisitionType_write;
+		Tango::DevBoolean	attr_enableGeometricalCorrection_write;
 		Tango::DevULong	attr_deadTime_write;
 		Tango::DevULong	attr_init_write;
 		Tango::DevULong	attr_shutter_write;
@@ -99,8 +101,6 @@ namespace XpadPixelDetector_ns
 		Tango::DevULong	attr_gp2_write;
 		Tango::DevULong	attr_gp3_write;
 		Tango::DevULong	attr_gp4_write;
-		Tango::DevBoolean	attr_enableGeometricalCorrection_write;
-		Tango::DevString	attr_acquisitionType_write;
 		Tango::DevULong	*attr_dacl_read;
 		Tango::DevULong	*attr_ithl_read;
 //@}
@@ -209,6 +209,22 @@ namespace XpadPixelDetector_ns
  */
 	virtual void read_attr_hardware(vector<long> &attr_list);
 /**
+ *	Extract real attribute values for acquisitionType acquisition result.
+ */
+	virtual void read_acquisitionType(Tango::Attribute &attr);
+/**
+ *	Write acquisitionType attribute values to hardware.
+ */
+	virtual void write_acquisitionType(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for enableGeometricalCorrection acquisition result.
+ */
+	virtual void read_enableGeometricalCorrection(Tango::Attribute &attr);
+/**
+ *	Write enableGeometricalCorrection attribute values to hardware.
+ */
+	virtual void write_enableGeometricalCorrection(Tango::WAttribute &attr);
+/**
  *	Extract real attribute values for deadTime acquisition result.
  */
 	virtual void read_deadTime(Tango::Attribute &attr);
@@ -297,22 +313,6 @@ namespace XpadPixelDetector_ns
  */
 	virtual void write_gp4(Tango::WAttribute &attr);
 /**
- *	Extract real attribute values for enableGeometricalCorrection acquisition result.
- */
-	virtual void read_enableGeometricalCorrection(Tango::Attribute &attr);
-/**
- *	Write enableGeometricalCorrection attribute values to hardware.
- */
-	virtual void write_enableGeometricalCorrection(Tango::WAttribute &attr);
-/**
- *	Extract real attribute values for acquisitionType acquisition result.
- */
-	virtual void read_acquisitionType(Tango::Attribute &attr);
-/**
- *	Write acquisitionType attribute values to hardware.
- */
-	virtual void write_acquisitionType(Tango::WAttribute &attr);
-/**
  *	Extract real attribute values for dacl acquisition result.
  */
 	virtual void read_dacl(Tango::Attribute &attr);
@@ -320,6 +320,14 @@ namespace XpadPixelDetector_ns
  *	Extract real attribute values for ithl acquisition result.
  */
 	virtual void read_ithl(Tango::Attribute &attr);
+/**
+ *	Read/Write allowed for acquisitionType attribute.
+ */
+	virtual bool is_acquisitionType_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for enableGeometricalCorrection attribute.
+ */
+	virtual bool is_enableGeometricalCorrection_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for deadTime attribute.
  */
@@ -364,14 +372,6 @@ namespace XpadPixelDetector_ns
  *	Read/Write allowed for gp4 attribute.
  */
 	virtual bool is_gp4_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for enableGeometricalCorrection attribute.
- */
-	virtual bool is_enableGeometricalCorrection_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for acquisitionType attribute.
- */
-	virtual bool is_acquisitionType_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for dacl attribute.
  */

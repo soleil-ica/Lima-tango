@@ -618,11 +618,30 @@ void XpadPixelDetectorClass::device_factory(const Tango::DevVarStringArray *devl
 //-----------------------------------------------------------------------------
 void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 {
+	//	Attribute : acquisitionType
+	acquisitionTypeAttrib	*acquisition_type = new acquisitionTypeAttrib();
+	Tango::UserDefaultAttrProp	acquisition_type_prop;
+	acquisition_type_prop.set_description("Acquisition Type:\nSYNC : Synchrone\nASYNC: Asynchrone");
+	acquisition_type->set_default_properties(acquisition_type_prop);
+	acquisition_type->set_memorized();
+	acquisition_type->set_memorized_init(true);
+	att_list.push_back(acquisition_type);
+
+	//	Attribute : enableGeometricalCorrection
+	enableGeometricalCorrectionAttrib	*enable_geometrical_correction = new enableGeometricalCorrectionAttrib();
+	Tango::UserDefaultAttrProp	enable_geometrical_correction_prop;
+	enable_geometrical_correction_prop.set_label("Enable Geom Corr");
+	enable_geometrical_correction_prop.set_description("Enable/disable Geometrical Correction");
+	enable_geometrical_correction->set_default_properties(enable_geometrical_correction_prop);
+	enable_geometrical_correction->set_memorized();
+	enable_geometrical_correction->set_memorized_init(true);
+	att_list.push_back(enable_geometrical_correction);
+
 	//	Attribute : deadTime
 	deadTimeAttrib	*dead_time = new deadTimeAttrib();
 	Tango::UserDefaultAttrProp	dead_time_prop;
 	dead_time_prop.set_unit("탎");
-	dead_time_prop.set_format("%d");
+	dead_time_prop.set_format("%6d");
 	dead_time_prop.set_description("time between images");
 	dead_time->set_default_properties(dead_time_prop);
 	dead_time->set_disp_level(Tango::EXPERT);
@@ -634,7 +653,7 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	initAttrib	*init = new initAttrib();
 	Tango::UserDefaultAttrProp	init_prop;
 	init_prop.set_unit("탎");
-	init_prop.set_format("%d");
+	init_prop.set_format("%6d");
 	init_prop.set_description("time before start");
 	init->set_default_properties(init_prop);
 	init->set_disp_level(Tango::EXPERT);
@@ -646,7 +665,7 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	shutterAttrib	*shutter = new shutterAttrib();
 	Tango::UserDefaultAttrProp	shutter_prop;
 	shutter_prop.set_unit("탎");
-	shutter_prop.set_format("%d");
+	shutter_prop.set_format("%6d");
 	shutter_prop.set_description("shutter time");
 	shutter->set_default_properties(shutter_prop);
 	shutter->set_disp_level(Tango::EXPERT);
@@ -658,7 +677,7 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	ovfAttrib	*ovf = new ovfAttrib();
 	Tango::UserDefaultAttrProp	ovf_prop;
 	ovf_prop.set_unit("탎");
-	ovf_prop.set_format("%d");
+	ovf_prop.set_format("%6d");
 	ovf_prop.set_description("ovf time");
 	ovf->set_default_properties(ovf_prop);
 	ovf->set_disp_level(Tango::EXPERT);
@@ -694,7 +713,7 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	busyOutAttrib	*busy_out = new busyOutAttrib();
 	Tango::UserDefaultAttrProp	busy_out_prop;
 	busy_out_prop.set_unit(" ");
-	busy_out_prop.set_format("%1d");
+	busy_out_prop.set_format("%2d");
 	busy_out_prop.set_description("Selection of the busy out:\n0-busy, 1-busy shutter, 2-read img ena, 3-ovf updt ena, 4- exp ceg(0), 5-xpad proc busy, 6-gpout(img transfer), 7-dsfifo full, 8-ext gate, 9-init ovf update");
 	busy_out->set_default_properties(busy_out_prop);
 	busy_out->set_disp_level(Tango::EXPERT);
@@ -749,27 +768,6 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	gp4->set_memorized();
 	gp4->set_memorized_init(true);
 	att_list.push_back(gp4);
-
-	//	Attribute : enableGeometricalCorrection
-	enableGeometricalCorrectionAttrib	*enable_geometrical_correction = new enableGeometricalCorrectionAttrib();
-	Tango::UserDefaultAttrProp	enable_geometrical_correction_prop;
-	enable_geometrical_correction_prop.set_label("Enable Geom Corr");
-	enable_geometrical_correction_prop.set_description("Enable/disable Geometrical Correction");
-	enable_geometrical_correction->set_default_properties(enable_geometrical_correction_prop);
-	enable_geometrical_correction->set_disp_level(Tango::EXPERT);
-	enable_geometrical_correction->set_memorized();
-	enable_geometrical_correction->set_memorized_init(true);
-	att_list.push_back(enable_geometrical_correction);
-
-	//	Attribute : acquisitionType
-	acquisitionTypeAttrib	*acquisition_type = new acquisitionTypeAttrib();
-	Tango::UserDefaultAttrProp	acquisition_type_prop;
-	acquisition_type_prop.set_description("Acquisition Type:\nSYNC : Synchrone\nASYNC: Asynchrone");
-	acquisition_type->set_default_properties(acquisition_type_prop);
-	acquisition_type->set_disp_level(Tango::EXPERT);
-	acquisition_type->set_memorized();
-	acquisition_type->set_memorized_init(true);
-	att_list.push_back(acquisition_type);
 
 	//	Attribute : dacl
 	daclAttrib	*dacl = new daclAttrib();
