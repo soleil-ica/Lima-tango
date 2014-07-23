@@ -148,9 +148,11 @@ public :
 		Tango::DevString	*attr_detectorDescription_read;
 		Tango::DevString	*attr_detectorType_read;
 		Tango::DevString	*attr_detectorModel_read;
+		Tango::DevUShort	*attr_detectorWidthMax_read;
+		Tango::DevUShort	*attr_detectorHeightMax_read;
+		Tango::DevUShort	*attr_detectorPixelDepth_read;
 		Tango::DevUShort	*attr_binnedWidthMax_read;
 		Tango::DevUShort	*attr_binnedHeightMax_read;
-		Tango::DevUShort	*attr_detectorPixelDepth_read;
 		Tango::DevString	*attr_triggerMode_read;
 		Tango::DevString	attr_triggerMode_write;
 		Tango::DevString	*attr_acquisitionMode_read;
@@ -170,10 +172,6 @@ public :
 		Tango::DevULong	*attr_currentFrame_read;
 		Tango::DevBoolean	*attr_fileGeneration_read;
 		Tango::DevBoolean	attr_fileGeneration_write;
-		Tango::DevBoolean	*attr_flipX_read;
-		Tango::DevBoolean	attr_flipX_write;
-		Tango::DevBoolean	*attr_flipY_read;
-		Tango::DevBoolean	attr_flipY_write;
 //@}
 
 /**
@@ -384,14 +382,6 @@ public :
  *	Memorize/Define the fileGeneration attribute at Init device<br>
  */
 	Tango::DevBoolean	memorizedFileGeneration;
-/**
- *	Memorize/Define the flipX attribute at Init device<br>
- */
-	Tango::DevBoolean	memorizedFlipX;
-/**
- *	Memorize/Define the flipY attribute at Init device<br>
- */
-	Tango::DevBoolean	memorizedFlipY;
 //@}
 
 /**
@@ -477,6 +467,18 @@ public :
  */
 	virtual void read_detectorModel(Tango::Attribute &attr);
 /**
+ *	Extract real attribute values for detectorWidthMax acquisition result.
+ */
+	virtual void read_detectorWidthMax(Tango::Attribute &attr);
+/**
+ *	Extract real attribute values for detectorHeightMax acquisition result.
+ */
+	virtual void read_detectorHeightMax(Tango::Attribute &attr);
+/**
+ *	Extract real attribute values for detectorPixelDepth acquisition result.
+ */
+	virtual void read_detectorPixelDepth(Tango::Attribute &attr);
+/**
  *	Extract real attribute values for binnedWidthMax acquisition result.
  */
 	virtual void read_binnedWidthMax(Tango::Attribute &attr);
@@ -484,10 +486,6 @@ public :
  *	Extract real attribute values for binnedHeightMax acquisition result.
  */
 	virtual void read_binnedHeightMax(Tango::Attribute &attr);
-/**
- *	Extract real attribute values for detectorPixelDepth acquisition result.
- */
-	virtual void read_detectorPixelDepth(Tango::Attribute &attr);
 /**
  *	Extract real attribute values for triggerMode acquisition result.
  */
@@ -565,22 +563,6 @@ public :
  */
 	virtual void write_fileGeneration(Tango::WAttribute &attr);
 /**
- *	Extract real attribute values for flipX acquisition result.
- */
-	virtual void read_flipX(Tango::Attribute &attr);
-/**
- *	Write flipX attribute values to hardware.
- */
-	virtual void write_flipX(Tango::WAttribute &attr);
-/**
- *	Extract real attribute values for flipY acquisition result.
- */
-	virtual void read_flipY(Tango::Attribute &attr);
-/**
- *	Write flipY attribute values to hardware.
- */
-	virtual void write_flipY(Tango::WAttribute &attr);
-/**
  *	Read/Write allowed for detectorDescription attribute.
  */
 	virtual bool is_detectorDescription_allowed(Tango::AttReqType type);
@@ -593,6 +575,18 @@ public :
  */
 	virtual bool is_detectorModel_allowed(Tango::AttReqType type);
 /**
+ *	Read/Write allowed for detectorWidthMax attribute.
+ */
+	virtual bool is_detectorWidthMax_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for detectorHeightMax attribute.
+ */
+	virtual bool is_detectorHeightMax_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for detectorPixelDepth attribute.
+ */
+	virtual bool is_detectorPixelDepth_allowed(Tango::AttReqType type);
+/**
  *	Read/Write allowed for binnedWidthMax attribute.
  */
 	virtual bool is_binnedWidthMax_allowed(Tango::AttReqType type);
@@ -600,10 +594,6 @@ public :
  *	Read/Write allowed for binnedHeightMax attribute.
  */
 	virtual bool is_binnedHeightMax_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for detectorPixelDepth attribute.
- */
-	virtual bool is_detectorPixelDepth_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for triggerMode attribute.
  */
@@ -656,14 +646,6 @@ public :
  *	Read/Write allowed for fileGeneration attribute.
  */
 	virtual bool is_fileGeneration_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for flipX attribute.
- */
-	virtual bool is_flipX_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for flipY attribute.
- */
-	virtual bool is_flipY_allowed(Tango::AttReqType type);
 /**
  *	Execution allowed for Snap command.
  */

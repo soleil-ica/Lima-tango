@@ -581,6 +581,33 @@ void LimaDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	detector_model->set_default_properties(detector_model_prop);
 	att_list.push_back(detector_model);
 
+	//	Attribute : detectorWidthMax
+	detectorWidthMaxAttrib	*detector_width_max = new detectorWidthMaxAttrib();
+	Tango::UserDefaultAttrProp	detector_width_max_prop;
+	detector_width_max_prop.set_unit(" ");
+	detector_width_max_prop.set_format("%6d");
+	detector_width_max->set_default_properties(detector_width_max_prop);
+	att_list.push_back(detector_width_max);
+
+	//	Attribute : detectorHeightMax
+	detectorHeightMaxAttrib	*detector_height_max = new detectorHeightMaxAttrib();
+	Tango::UserDefaultAttrProp	detector_height_max_prop;
+	detector_height_max_prop.set_unit(" ");
+	detector_height_max_prop.set_format("%6d");
+	detector_height_max->set_default_properties(detector_height_max_prop);
+	att_list.push_back(detector_height_max);
+
+	//	Attribute : detectorPixelDepth
+	detectorPixelDepthAttrib	*detector_pixel_depth = new detectorPixelDepthAttrib();
+	Tango::UserDefaultAttrProp	detector_pixel_depth_prop;
+	detector_pixel_depth_prop.set_unit(" ");
+	detector_pixel_depth_prop.set_standard_unit(" ");
+	detector_pixel_depth_prop.set_display_unit(" ");
+	detector_pixel_depth_prop.set_format("%6d");
+	detector_pixel_depth_prop.set_description("Pixel resolution in bits:<br>\n8<br>\n16<br>\n32<br>");
+	detector_pixel_depth->set_default_properties(detector_pixel_depth_prop);
+	att_list.push_back(detector_pixel_depth);
+
 	//	Attribute : binnedWidthMax
 	binnedWidthMaxAttrib	*binned_width_max = new binnedWidthMaxAttrib();
 	Tango::UserDefaultAttrProp	binned_width_max_prop;
@@ -602,17 +629,6 @@ void LimaDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	binned_height_max_prop.set_description("Detector max width taking into account the current Vertical Binning.");
 	binned_height_max->set_default_properties(binned_height_max_prop);
 	att_list.push_back(binned_height_max);
-
-	//	Attribute : detectorPixelDepth
-	detectorPixelDepthAttrib	*detector_pixel_depth = new detectorPixelDepthAttrib();
-	Tango::UserDefaultAttrProp	detector_pixel_depth_prop;
-	detector_pixel_depth_prop.set_unit(" ");
-	detector_pixel_depth_prop.set_standard_unit(" ");
-	detector_pixel_depth_prop.set_display_unit(" ");
-	detector_pixel_depth_prop.set_format("%6d");
-	detector_pixel_depth_prop.set_description("Pixel resolution in bits:<br>\n8<br>\n16<br>\n32<br>");
-	detector_pixel_depth->set_default_properties(detector_pixel_depth_prop);
-	att_list.push_back(detector_pixel_depth);
 
 	//	Attribute : triggerMode
 	triggerModeAttrib	*trigger_mode = new triggerModeAttrib();
@@ -747,16 +763,6 @@ void LimaDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	file_generation->set_memorized();
 	file_generation->set_memorized_init(false);
 	att_list.push_back(file_generation);
-
-	//	Attribute : flipX
-	flipXAttrib	*flip_x = new flipXAttrib();
-	flip_x->set_disp_level(Tango::EXPERT);
-	att_list.push_back(flip_x);
-
-	//	Attribute : flipY
-	flipYAttrib	*flip_y = new flipYAttrib();
-	flip_y->set_disp_level(Tango::EXPERT);
-	att_list.push_back(flip_y);
 
 	//	End of Automatic code generation
 	//-------------------------------------------------------------
@@ -1195,36 +1201,6 @@ void LimaDetectorClass::set_default_property()
 
 	prop_name = "MemorizedFileGeneration";
 	prop_desc = "Memorize/Define the fileGeneration attribute at Init device<br>";
-	prop_def  = "false";
-	vect_data.clear();
-	vect_data.push_back("false");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedFlipX";
-	prop_desc = "Memorize/Define the flipX attribute at Init device<br>";
-	prop_def  = "false";
-	vect_data.clear();
-	vect_data.push_back("false");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedFlipY";
-	prop_desc = "Memorize/Define the flipY attribute at Init device<br>";
 	prop_def  = "false";
 	vect_data.clear();
 	vect_data.push_back("false");
