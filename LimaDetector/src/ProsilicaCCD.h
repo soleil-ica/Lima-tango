@@ -45,6 +45,9 @@
  //-----------------------------------------------
 #include "tango.h"
 
+//- YAT/YAT4TANGO
+#include <yat4tango/PropertyHelper.h>
+
 #include "HwInterface.h"
 #include "CtControl.h"
 #include "CtAcquisition.h"
@@ -58,6 +61,7 @@
 
 using namespace lima;
 using namespace std;
+using namespace yat4tango;
 
 namespace ProsilicaCCD_ns
 {
@@ -195,16 +199,6 @@ public :
 protected :    
     //    Add your own data members here
     //-----------------------------------------
-    
-    //- Store the values into the property
-    //- Properties stuff    
-    int                 find_index_from_property_name(Tango::DbData& dev_prop, string property_name);
-    template <class T>
-    void                create_property_if_empty(Tango::DbData& dev_prop,T value, string property_name);    
-    template <class T>
-    void                set_property(string property_name, T value);
-    template <class T>
-    T                   get_property(string property_name) ;
 	
     //state & status stuff
     bool                        m_is_device_initialized ;
