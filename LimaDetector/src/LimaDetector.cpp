@@ -1385,7 +1385,7 @@ void LimaDetector::read_binnedHeightMax(Tango::Attribute &attr)
 		HwDetInfoCtrlObj *hw_det_info;
 		m_hw->getHwCtrlObj(hw_det_info);
 		Size size;
-		hw_det_info->getDetectorImageSize(size);
+		hw_det_info->getMaxImageSize(size);
 
 		Bin bin;
 		m_ct->image()->getBin(bin);
@@ -1768,6 +1768,7 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 			{
 				case 8: dai.tai.data_type = Tango::DEV_UCHAR;
 					break;
+				case 12:
 				case 16: dai.tai.data_type = Tango::DEV_USHORT;
 					break;
 				case 32: dai.tai.data_type = Tango::DEV_ULONG;
