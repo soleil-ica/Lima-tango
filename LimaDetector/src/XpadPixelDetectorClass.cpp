@@ -66,6 +66,31 @@ namespace XpadPixelDetector_ns
 {
 //+----------------------------------------------------------------------------
 //
+// method : 		LoadConfigGClass::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *LoadConfigGClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "LoadConfigGClass::execute(): arrived" << endl;
+
+	const Tango::DevVarULongArray	*argin;
+	extract(in_any, argin);
+
+	((static_cast<XpadPixelDetector *>(device))->load_config_g(argin));
+	return new CORBA::Any();
+}
+
+//+----------------------------------------------------------------------------
+//
 // method : 		GetIthlCmd::execute()
 // 
 // description : 	method to trigger the execution of the command.
@@ -481,6 +506,11 @@ void XpadPixelDetectorClass::command_factory()
 	command_list.push_back(new LoadConfigCmd("LoadConfig",
 		Tango::DEVVAR_ULONGARRAY, Tango::DEV_VOID,
 		"modNum(1..8), calibId(0..6)",
+		"",
+		Tango::OPERATOR));
+	command_list.push_back(new LoadConfigGClass("LoadConfigG",
+		Tango::DEVVAR_ULONGARRAY, Tango::DEV_VOID,
+		"modNum(1..8), chipId(0..6), register ID, register value",
 		"",
 		Tango::OPERATOR));
 	command_list.push_back(new ResetClass("Reset",

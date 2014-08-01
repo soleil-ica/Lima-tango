@@ -354,7 +354,7 @@ void LimaDetector::init_device()
 		if ((memorizedRoi.at(0) < 0) || (memorizedRoi.at(1) < 0) || (memorizedRoi.at(2) <= 0) || (memorizedRoi.at(3) <= 0)) //Roi not initialized, then we consider all detector area as Roi
 		{
 			Size size;
-			hw_det_info->getDetectorImageSize(size);
+			hw_det_info->getMaxImageSize(size);
 			myRoi = Roi(0, 0, size.getWidth(), size.getHeight());
 		}
 		else //Roi is initialized, then we consider all memorizedRoi property values as Roi

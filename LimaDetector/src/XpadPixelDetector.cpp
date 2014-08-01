@@ -54,6 +54,7 @@ static const char *RcsId = "$Id:  $";
 //  SaveConfigL        |  save_config_l()
 //  SaveConfigG        |  save_config_g()
 //  LoadConfig         |  load_config()
+//  LoadConfigG        |  load_config_g()
 //  Reset              |  reset()
 //  GetDacl            |  get_dacl()
 //  GetIthl            |  get_ithl()
@@ -134,10 +135,10 @@ void XpadPixelDetector::init_device()
     set_state(Tango::INIT);
 	m_status_message.str("");
 
-	attr_deadTime_write = 0;
+	attr_deadTime_write = 5000;
 	attr_init_write = 0;
 	attr_shutter_write = 0;
-	attr_ovf_write = 0;
+	attr_ovf_write = 4000;
 	attr_n_write = 0;
 	attr_p_write = 0;
 	attr_gp1_write = 0;
@@ -176,6 +177,38 @@ void XpadPixelDetector::init_device()
 		//- Xpix Debug
 		m_camera->xpixDebug(xpixDebug);
 
+		//- init the wattributes
+		Tango::WAttribute &deadtime_attr = dev_attr->get_w_attr_by_name("deadTime");
+		string deadTime_mem_value = deadtime_attr.get_mem_value();
+		if (deadTime_mem_value == "Not used yet")
+		{
+			deadtime_attr.set_write_value(attr_deadTime_write);
+			write_deadTime(deadtime_attr);
+		}
+
+		Tango::WAttribute &ovf_attr = dev_attr->get_w_attr_by_name("ovf");
+		string ovf_mem_value = ovf_attr.get_mem_value();
+		if (ovf_mem_value == "Not used yet")
+		{
+			ovf_attr.set_write_value(attr_ovf_write);
+			write_ovf(ovf_attr);
+		}
+
+		Tango::WAttribute &acqtype_attr = dev_attr->get_w_attr_by_name("acquisitionType");
+		string acqtype_mem_value = acqtype_attr.get_mem_value();
+		if (acqtype_mem_value == "Not used yet")
+		{
+			acqtype_attr.set_write_value("SYNC");
+			write_acquisitionType(acqtype_attr);
+		}
+
+		Tango::WAttribute &enablegeomcorr_attr = dev_attr->get_w_attr_by_name("enableGeometricalCorrection");
+		string enablegeomcorr_mem_value = enablegeomcorr_attr.get_mem_value();
+		if (enablegeomcorr_mem_value == "Not used yet")
+		{
+			enablegeomcorr_attr.set_write_value(attr_enableGeometricalCorrection_write);
+			write_enableGeometricalCorrection(enablegeomcorr_attr);
+		}
     }
     catch(Exception& e)
     {
@@ -300,9 +333,6 @@ void XpadPixelDetector::always_executed_hook()
 		//- get camera to specific detector
 		m_camera = &(m_hw->getCamera());
 
-		//- Xpix Debug
-		m_camera->xpixDebug(xpixDebug);
-		
 		//update state
         dev_state();
 	}
@@ -401,8 +431,21 @@ void XpadPixelDetector::write_enableGeometricalCorrection(Tango::WAttribute &att
 {
 	DEBUG_STREAM << "XpadPixelDetector::write_enableGeometricalCorrection(Tango::WAttribute &attr) entering... "<< endl;
 
-    attr.get_write_value(attr_enableGeometricalCorrection_write);
-	m_camera->setGeomCorrection(attr_enableGeometricalCorrection_write);
+	attr.get_write_value(attr_enableGeometricalCorrection_write);
+	try
+	{
+		m_camera->setGeomCorrection(attr_enableGeometricalCorrection_write);
+		//- Test FL: call reset to set the good image size
+		//m_hw->reset(lima::HwInterface::HardReset);
+	}
+	catch(Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		Tango::Except::throw_exception(
+					static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+					static_cast<const char*> (e.getErrMsg().c_str()),
+					static_cast<const char*> ("XpadPixelDetector::write_enableGeometricalCorrection"));
+	}
 }
 
 //+----------------------------------------------------------------------------
@@ -966,6 +1009,57 @@ void XpadPixelDetector::load_config(const Tango::DevVarULongArray *argin)
 
 //+------------------------------------------------------------------
 /**
+ *	method:	XpadPixelDetector::load_config_g
+ *
+ *	description:	method to execute "LoadConfigG"
+ *	Load a value of a wanted config G register.
+ *	register IDs are:
+ *	CMOS_DSBL_V32  0x01
+ *	AMP_TP_V32     0x1F
+ *	ITHH_V32       0x33
+ *	VADJ_V32       0x35
+ *	VREF_V32       0x36
+ *	IMFP_V32       0x3b
+ *	IOTA_V32       0x3c
+ *	IPRE_V32       0x3d
+ *	ITHL_V32       0x3e
+ *	TUNE_V32      0x3f
+ *	IBUFFER_V32    0x40
+ *
+ * @param	argin	modNum(1..8), chipId(0..6), register ID, register value
+ *
+ */
+//+------------------------------------------------------------------
+void XpadPixelDetector::load_config_g(const Tango::DevVarULongArray *argin)
+{
+	DEBUG_STREAM << "XpadPixelDetector::load_config_g(): entering... !" << endl;
+
+	//	Add your own code to control device here
+
+	//- argin length doit etre de taille 4: module number, chip Id, register ID , register value
+    if(argin->length()!= 4)
+    {
+        Tango::Except::throw_exception(
+                    static_cast<const char*> ("PARAMETER_ERROR"),
+					static_cast<const char*> ("The size of the argin paramater is not good: there should be 4 values"),
+                    static_cast<const char*> ("XpadPixelDetector::load_config_g"));
+    }
+    try
+    {
+        m_camera->loadConfigG((*argin)[0],(*argin)[1],(*argin)[2],(*argin)[3]);
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        Tango::Except::throw_exception(
+                    static_cast<const char*> ("LIMA_ERROR"),
+                    static_cast<const char*> (e.getErrMsg().c_str()),
+                    static_cast<const char*> ("XpadPixelDetector::load_config_g"));
+    }
+}
+
+//+------------------------------------------------------------------
+/**
  *	method:	XpadPixelDetector::reset
  *
  *	description:	method to execute "Reset"
@@ -1113,14 +1207,6 @@ void XpadPixelDetector::upload_wait_times(const Tango::DevVarULongArray *argin)
 	//	Add your own code to control device here
 
     //- TODO: recuperer le nbre d'image de la sequence et le comparer avec argin
-    /*if(argin->length()!= 13)
-    {
-        Tango::Except::throw_exception(
-                    static_cast<const char*> ("PARAMETER_ERROR"),
-                    static_cast<const char*> ("The size of the argin paramater is not good: there should be 3 values (2+11)"),
-                    static_cast<const char*> ("XpadPixelDetector::upload_wait_times"));
-    }*/
-
     try
     {
         //- If we use this command (upload_wait_times), we have to disable the normal deadtime
