@@ -66,6 +66,100 @@ namespace XpadPixelDetector_ns
 {
 //+----------------------------------------------------------------------------
 //
+// method : 		CalibrateOTNCmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *CalibrateOTNCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "CalibrateOTNCmd::execute(): arrived" << endl;
+
+	const Tango::DevVarULongArray	*argin;
+	extract(in_any, argin);
+
+	((static_cast<XpadPixelDetector *>(device))->calibrate_otn(argin));
+	return new CORBA::Any();
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		CalibrateBEAMCmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *CalibrateBEAMCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "CalibrateBEAMCmd::execute(): arrived" << endl;
+
+	const Tango::DevVarULongArray	*argin;
+	extract(in_any, argin);
+
+	((static_cast<XpadPixelDetector *>(device))->calibrate_beam(argin));
+	return new CORBA::Any();
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		CalibrateOTNFastCmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *CalibrateOTNFastCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "CalibrateOTNFastCmd::execute(): arrived" << endl;
+
+	((static_cast<XpadPixelDetector *>(device))->calibrate_otnfast());
+	return new CORBA::Any();
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		CalibrateOTNMediumCmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *CalibrateOTNMediumCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "CalibrateOTNMediumCmd::execute(): arrived" << endl;
+
+	((static_cast<XpadPixelDetector *>(device))->calibrate_otnmedium());
+	return new CORBA::Any();
+}
+
+//+----------------------------------------------------------------------------
+//
 // method : 		LoadConfigGClass::execute()
 // 
 // description : 	method to trigger the execution of the command.
@@ -533,6 +627,26 @@ void XpadPixelDetectorClass::command_factory()
 		"",
 		"",
 		Tango::OPERATOR));
+	command_list.push_back(new CalibrateOTNMediumCmd("CalibrateOTNMedium",
+		Tango::DEV_VOID, Tango::DEV_VOID,
+		"",
+		"",
+		Tango::OPERATOR));
+	command_list.push_back(new CalibrateOTNFastCmd("CalibrateOTNFast",
+		Tango::DEV_VOID, Tango::DEV_VOID,
+		"",
+		"",
+		Tango::OPERATOR));
+	command_list.push_back(new CalibrateBEAMCmd("CalibrateBEAM",
+		Tango::DEVVAR_ULONGARRAY, Tango::DEV_VOID,
+		"Texp, ithl_max, itune, imfp",
+		"",
+		Tango::OPERATOR));
+	command_list.push_back(new CalibrateOTNCmd("CalibrateOTN",
+		Tango::DEVVAR_ULONGARRAY, Tango::DEV_VOID,
+		"itune, imfp",
+		"",
+		Tango::OPERATOR));
 	command_list.push_back(new UploadCalibrationCmd("UploadCalibration",
 		Tango::DEV_VOID, Tango::DEV_VOID,
 		"",
@@ -667,10 +781,32 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	enable_geometrical_correction->set_memorized_init(true);
 	att_list.push_back(enable_geometrical_correction);
 
+	//	Attribute : enableDoublePixelCorrection
+	enableDoublePixelCorrectionAttrib	*enable_double_pixel_correction = new enableDoublePixelCorrectionAttrib();
+	Tango::UserDefaultAttrProp	enable_double_pixel_correction_prop;
+	enable_double_pixel_correction_prop.set_label("Enable Double Pixel Corr");
+	enable_double_pixel_correction_prop.set_description("Enable/disable Double Pixel Correction");
+	enable_double_pixel_correction->set_default_properties(enable_double_pixel_correction_prop);
+	enable_double_pixel_correction->set_memorized();
+	enable_double_pixel_correction->set_memorized_init(true);
+	att_list.push_back(enable_double_pixel_correction);
+
+	//	Attribute : normalizationFactor
+	normalizationFactorAttrib	*normalization_factor = new normalizationFactorAttrib();
+	Tango::UserDefaultAttrProp	normalization_factor_prop;
+	normalization_factor_prop.set_label("Normalization Factor");
+	normalization_factor_prop.set_unit(" ");
+	normalization_factor_prop.set_description("Normalization Factor of the intensities, used for the doubel pixel correction algorithm");
+	normalization_factor->set_default_properties(normalization_factor_prop);
+	normalization_factor->set_disp_level(Tango::EXPERT);
+	normalization_factor->set_memorized();
+	normalization_factor->set_memorized_init(true);
+	att_list.push_back(normalization_factor);
+
 	//	Attribute : deadTime
 	deadTimeAttrib	*dead_time = new deadTimeAttrib();
 	Tango::UserDefaultAttrProp	dead_time_prop;
-	dead_time_prop.set_unit("µs");
+	dead_time_prop.set_unit("ms");
 	dead_time_prop.set_format("%6d");
 	dead_time_prop.set_description("time between images");
 	dead_time->set_default_properties(dead_time_prop);
@@ -682,7 +818,7 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : init
 	initAttrib	*init = new initAttrib();
 	Tango::UserDefaultAttrProp	init_prop;
-	init_prop.set_unit("µs");
+	init_prop.set_unit("ms");
 	init_prop.set_format("%6d");
 	init_prop.set_description("time before start");
 	init->set_default_properties(init_prop);
@@ -694,7 +830,7 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : shutter
 	shutterAttrib	*shutter = new shutterAttrib();
 	Tango::UserDefaultAttrProp	shutter_prop;
-	shutter_prop.set_unit("µs");
+	shutter_prop.set_unit("ms");
 	shutter_prop.set_format("%6d");
 	shutter_prop.set_description("shutter time");
 	shutter->set_default_properties(shutter_prop);

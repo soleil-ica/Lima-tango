@@ -45,24 +45,28 @@ static const char *RcsId = "$Id:  $";
 //	The following table gives the correspondence
 //	between commands and method name.
 //
-//  Command name       |  Method name
+//  Command name        |  Method name
 //	----------------------------------------
-//  State              |  dev_state()
-//  Status             |  dev_status()
-//  LoadFlatConfig     |  load_flat_config()
-//  LoadAllConfigG     |  load_all_config_g()
-//  SaveConfigL        |  save_config_l()
-//  SaveConfigG        |  save_config_g()
-//  LoadConfig         |  load_config()
-//  LoadConfigG        |  load_config_g()
-//  Reset              |  reset()
-//  GetDacl            |  get_dacl()
-//  GetIthl            |  get_ithl()
-//  CalibrateOTNSlow   |  calibrate_otnslow()
-//  UploadCalibration  |  upload_calibration()
-//  UploadWaitTimes    |  upload_wait_times()
-//  IncrementITHL      |  increment_ithl()
-//  DecrementITHL      |  decrement_ithl()
+//  State               |  dev_state()
+//  Status              |  dev_status()
+//  LoadFlatConfig      |  load_flat_config()
+//  LoadAllConfigG      |  load_all_config_g()
+//  SaveConfigL         |  save_config_l()
+//  SaveConfigG         |  save_config_g()
+//  LoadConfig          |  load_config()
+//  LoadConfigG         |  load_config_g()
+//  Reset               |  reset()
+//  GetDacl             |  get_dacl()
+//  GetIthl             |  get_ithl()
+//  CalibrateOTNSlow    |  calibrate_otnslow()
+//  CalibrateOTNMedium  |  calibrate_otnmedium()
+//  CalibrateOTNFast    |  calibrate_otnfast()
+//  CalibrateBEAM       |  calibrate_beam()
+//  CalibrateOTN        |  calibrate_otn()
+//  UploadCalibration   |  upload_calibration()
+//  UploadWaitTimes     |  upload_wait_times()
+//  IncrementITHL       |  increment_ithl()
+//  DecrementITHL       |  decrement_ithl()
 //
 //===================================================================
 #include "tango.h"
@@ -113,6 +117,10 @@ void XpadPixelDetector::delete_device()
 	//	Delete device allocated objects
 	INFO_STREAM << "XpadPixelDetector::delete_device() " << device_name << endl;
 
+	DELETE_SCALAR_ATTRIBUTE(attr_enableGeometricalCorrection_read);
+	DELETE_SCALAR_ATTRIBUTE(attr_enableDoublePixelCorrection_read);
+	DELETE_SCALAR_ATTRIBUTE(attr_normalizationFactor_read);
+
 }
 
 //+----------------------------------------------------------------------------
@@ -130,10 +138,15 @@ void XpadPixelDetector::init_device()
 	//--------------------------------------------
 	get_device_property();
 
+	CREATE_SCALAR_ATTRIBUTE(attr_enableGeometricalCorrection_read);
+	CREATE_SCALAR_ATTRIBUTE(attr_enableDoublePixelCorrection_read);
+	CREATE_SCALAR_ATTRIBUTE(attr_normalizationFactor_read);
+
 	m_is_device_initialized = true;
     //By default INIT, need to ensure that all objets are OK before set the device to STANDBY
     set_state(Tango::INIT);
 	m_status_message.str("");
+	m_xpad_model = "";
 
 	attr_deadTime_write = 5000;
 	attr_init_write = 0;
@@ -146,6 +159,7 @@ void XpadPixelDetector::init_device()
 	attr_gp3_write = 0;
 	attr_gp4_write = 0;
     attr_enableGeometricalCorrection_write = 0;
+	attr_enableDoublePixelCorrection_write = 0;
 
     try
     {
@@ -177,6 +191,9 @@ void XpadPixelDetector::init_device()
 		//- Xpix Debug
 		m_camera->xpixDebug(xpixDebug);
 
+		//- get Xpad Model
+		m_camera->getDetectorModel(m_xpad_model);
+
 		//- init the wattributes
 		Tango::WAttribute &deadtime_attr = dev_attr->get_w_attr_by_name("deadTime");
 		string deadTime_mem_value = deadtime_attr.get_mem_value();
@@ -206,8 +223,24 @@ void XpadPixelDetector::init_device()
 		string enablegeomcorr_mem_value = enablegeomcorr_attr.get_mem_value();
 		if (enablegeomcorr_mem_value == "Not used yet")
 		{
-			enablegeomcorr_attr.set_write_value(attr_enableGeometricalCorrection_write);
+			enablegeomcorr_attr.set_write_value(false);
 			write_enableGeometricalCorrection(enablegeomcorr_attr);
+		}
+
+		Tango::WAttribute &enabledoublepixcorr_attr = dev_attr->get_w_attr_by_name("enableDoublePixelCorrection");
+		string enabledoublepixcorr_mem_value = enabledoublepixcorr_attr.get_mem_value();
+		if (enabledoublepixcorr_mem_value == "Not used yet")
+		{
+			enabledoublepixcorr_attr.set_write_value(false);
+			write_enableDoublePixelCorrection(enabledoublepixcorr_attr);
+		}
+
+		Tango::WAttribute &normalizationFactor_attr = dev_attr->get_w_attr_by_name("normalizationFactor");
+		string normalizationFactor_mem_value = normalizationFactor_attr.get_mem_value();
+		if (normalizationFactor_mem_value == "Not used yet")
+		{
+			normalizationFactor_attr.set_write_value(2.5);
+			write_normalizationFactor(normalizationFactor_attr);
 		}
     }
     catch(Exception& e)
@@ -369,6 +402,101 @@ void XpadPixelDetector::read_attr_hardware(vector<long> &attr_list)
 }
 //+----------------------------------------------------------------------------
 //
+// method : 		XpadPixelDetector::read_normalizationFactor
+// 
+// description : 	Extract real attribute values for normalizationFactor acquisition result.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::read_normalizationFactor(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "XpadPixelDetector::read_normalizationFactor(Tango::Attribute &attr) entering... "<< endl;
+
+	if(m_xpad_model != "IMXPAD_S140")
+		attr.set_quality(Tango::ATTR_INVALID);
+	else
+		attr.set_value(&attr_normalizationFactor_write);	
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		XpadPixelDetector::write_normalizationFactor
+// 
+// description : 	Write normalizationFactor attribute values to hardware.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::write_normalizationFactor(Tango::WAttribute &attr)
+{
+	INFO_STREAM << "XpadPixelDetector::write_normalizationFactor(Tango::WAttribute &attr) entering... "<< endl;
+
+	if(m_xpad_model != "IMXPAD_S140") 
+		attr.set_quality(Tango::ATTR_INVALID);
+	else
+	{
+		attr.get_write_value(attr_normalizationFactor_write);
+		m_camera->setNormalizationFactor(attr_normalizationFactor_write);
+	}
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		XpadPixelDetector::read_enableDoublePixelCorrection
+// 
+// description : 	Extract real attribute values for enableDoublePixelCorrection acquisition result.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::read_enableDoublePixelCorrection(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "XpadPixelDetector::read_enableDoublePixelCorrection(Tango::Attribute &attr) entering... "<< endl;
+
+	if(m_xpad_model != "IMXPAD_S140")
+		attr.set_quality(Tango::ATTR_INVALID);
+	else
+		attr.set_value(&attr_enableDoublePixelCorrection_write);	
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		XpadPixelDetector::write_enableDoublePixelCorrection
+// 
+// description : 	Write enableDoublePixelCorrection attribute values to hardware.
+//
+//-----------------------------------------------------------------------------
+void XpadPixelDetector::write_enableDoublePixelCorrection(Tango::WAttribute &attr)
+{
+	INFO_STREAM << "XpadPixelDetector::write_enableDoublePixelCorrection(Tango::WAttribute &attr) entering... "<< endl;
+
+	try
+	{
+		if(m_xpad_model != "IMXPAD_S140")
+			attr.set_quality(Tango::ATTR_INVALID);
+		else
+		{
+			attr.get_write_value(attr_enableDoublePixelCorrection_write);
+
+			//- enable the corr
+			m_camera->setDoublePixelCorrection(attr_enableDoublePixelCorrection_write);
+
+			//- Reapply the Max ROI
+			Size size;
+			m_ct->image()->getMaxImageSize(size);
+			Bin bin;
+			m_ct->image()->getBin(bin);
+			Roi roi(Point(0, 0), Size(size.getWidth() / bin.getX(), size.getHeight() / bin.getY()));
+			m_ct->image()->setRoi(roi);
+		}
+	}
+	catch(Exception& e)
+	{
+		ERROR_STREAM << e.getErrMsg() << endl;
+		Tango::Except::throw_exception(
+					static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+					static_cast<const char*> (e.getErrMsg().c_str()),
+					static_cast<const char*> ("XpadPixelDetector::write_enableDoublePixelCorrection"));
+	}
+}
+
+//+----------------------------------------------------------------------------
+//
 // method : 		XpadPixelDetector::read_acquisitionType
 // 
 // description : 	Extract real attribute values for acquisitionType acquisition result.
@@ -390,14 +518,14 @@ void XpadPixelDetector::read_acquisitionType(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_acquisitionType(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_acquisitionType(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_acquisitionType(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_acquisitionType_write);
-	std::string acquisitionType = attr_acquisitionType_write;
+	m_acquisitionType = attr_acquisitionType_write;
 
-	if (acquisitionType == "SYNC")
+	if (m_acquisitionType == "SYNC")
         m_camera->setAcquisitionType(lima::Xpad::Camera::SYNC);
-    else if (acquisitionType == "ASYNC")
+    else if (m_acquisitionType == "ASYNC")
         m_camera->setAcquisitionType(lima::Xpad::Camera::ASYNC);
 	else
 		Tango::Except::throw_exception(
@@ -417,7 +545,10 @@ void XpadPixelDetector::read_enableGeometricalCorrection(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_enableGeometricalCorrection(Tango::Attribute &attr) entering... "<< endl;
 
-    //- NOTHING: WRITE_ONLY Attribute !!
+    if((m_xpad_model != "IMXPAD_S540") || (m_acquisitionType != "ASYNC"))
+		attr.set_quality(Tango::ATTR_INVALID);
+	else
+		attr.set_value(&attr_enableGeometricalCorrection_write);	
 }
 
 //+----------------------------------------------------------------------------
@@ -429,14 +560,27 @@ void XpadPixelDetector::read_enableGeometricalCorrection(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_enableGeometricalCorrection(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_enableGeometricalCorrection(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_enableGeometricalCorrection(Tango::WAttribute &attr) entering... "<< endl;
 
-	attr.get_write_value(attr_enableGeometricalCorrection_write);
 	try
 	{
-		m_camera->setGeomCorrection(attr_enableGeometricalCorrection_write);
-		//- Test FL: call reset to set the good image size
-		//m_hw->reset(lima::HwInterface::HardReset);
+		if((m_xpad_model != "IMXPAD_S540") || (m_acquisitionType != "ASYNC"))
+			attr.set_quality(Tango::ATTR_INVALID);
+		else
+		{
+			attr.get_write_value(attr_enableGeometricalCorrection_write);
+			
+			//- enable the corr
+			m_camera->setGeomCorrection(attr_enableGeometricalCorrection_write);
+
+			//- Reapply the Max ROI
+			Size size;
+			m_ct->image()->getMaxImageSize(size);
+			Bin bin;
+			m_ct->image()->getBin(bin);
+			Roi roi(Point(0, 0), Size(size.getWidth() / bin.getX(), size.getHeight() / bin.getY()));
+			m_ct->image()->setRoi(roi);
+		}
 	}
 	catch(Exception& e)
 	{
@@ -471,7 +615,7 @@ void XpadPixelDetector::read_busyOut(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_busyOut(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_busyOut(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_busyOut(Tango::WAttribute &attr) entering... "<< endl;
 
     attr.get_write_value(attr_busyOut_write);
 	m_camera->setBusyOutSel(attr_busyOut_write);
@@ -528,7 +672,7 @@ void XpadPixelDetector::read_gp1(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_gp1(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_gp1(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_gp1(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_gp1_write);
 	set_general_purpose_params();
@@ -557,7 +701,7 @@ void XpadPixelDetector::read_gp2(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_gp2(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_gp2(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_gp2(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_gp2_write);
 	set_general_purpose_params();
@@ -586,7 +730,7 @@ void XpadPixelDetector::read_gp3(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_gp3(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_gp3(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_gp3(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_gp3_write);
 	set_general_purpose_params();
@@ -615,7 +759,7 @@ void XpadPixelDetector::read_gp4(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_gp4(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_gp4(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_gp4(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_gp4_write);
 	set_general_purpose_params();
@@ -644,7 +788,7 @@ void XpadPixelDetector::read_deadTime(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_deadTime(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_deadTime(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_deadTime(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_deadTime_write);
 	try
@@ -684,7 +828,7 @@ void XpadPixelDetector::read_init(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_init(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_init(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_init(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_init_write);
 	m_camera->setInitTime(attr_init_write);
@@ -713,7 +857,7 @@ void XpadPixelDetector::read_shutter(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_shutter(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_shutter(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_shutter(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_shutter_write);
 	m_camera->setShutterTime(attr_shutter_write);
@@ -742,7 +886,7 @@ void XpadPixelDetector::read_ovf(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_ovf(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_ovf(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_ovf(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_ovf_write);
 	try
@@ -782,7 +926,7 @@ void XpadPixelDetector::read_n(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_n(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_n(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_n(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_n_write);
 	m_camera->setNParameter(attr_n_write);
@@ -811,7 +955,7 @@ void XpadPixelDetector::read_p(Tango::Attribute &attr)
 //-----------------------------------------------------------------------------
 void XpadPixelDetector::write_p(Tango::WAttribute &attr)
 {
-	DEBUG_STREAM << "XpadPixelDetector::write_p(Tango::WAttribute &attr) entering... "<< endl;
+	INFO_STREAM << "XpadPixelDetector::write_p(Tango::WAttribute &attr) entering... "<< endl;
 
 	attr.get_write_value(attr_p_write);
 	m_camera->setPParameter(attr_p_write);
@@ -830,7 +974,7 @@ void XpadPixelDetector::write_p(Tango::WAttribute &attr)
 //+------------------------------------------------------------------
 void XpadPixelDetector::load_flat_config(Tango::DevULong argin)
 {
-	DEBUG_STREAM << "XpadPixelDetector::load_flat_config(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::load_flat_config(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
@@ -901,7 +1045,7 @@ Tango::DevState XpadPixelDetector::dev_state()
 //+------------------------------------------------------------------
 void XpadPixelDetector::save_config_l(const Tango::DevVarULongArray *argin)
 {
-	DEBUG_STREAM << "XpadPixelDetector::save_config_l(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::save_config_l(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
@@ -941,7 +1085,7 @@ void XpadPixelDetector::save_config_l(const Tango::DevVarULongArray *argin)
 //+------------------------------------------------------------------
 void XpadPixelDetector::save_config_g(const Tango::DevVarULongArray *argin)
 {
-	DEBUG_STREAM << "XpadPixelDetector::save_config_g(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::save_config_g(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
@@ -950,7 +1094,7 @@ void XpadPixelDetector::save_config_g(const Tango::DevVarULongArray *argin)
     {
         Tango::Except::throw_exception(
                     static_cast<const char*> ("PARAMETER_ERROR"),
-                    static_cast<const char*> ("The size of the argin paramater is not good: there should be 14 values (3+11)"),
+					static_cast<const char*> ("The size of the argin paramater is not good: there should be 14 values (3+11):\nmodNum(1..8), calibId(0..6), reg, values (7 values)"),
                     static_cast<const char*> ("XpadPixelDetector::save_config_g"));
     }
 
@@ -981,7 +1125,7 @@ void XpadPixelDetector::save_config_g(const Tango::DevVarULongArray *argin)
 //+------------------------------------------------------------------
 void XpadPixelDetector::load_config(const Tango::DevVarULongArray *argin)
 {
-	DEBUG_STREAM << "XpadPixelDetector::load_config(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::load_config(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
@@ -989,7 +1133,7 @@ void XpadPixelDetector::load_config(const Tango::DevVarULongArray *argin)
     {
         Tango::Except::throw_exception(
                     static_cast<const char*> ("PARAMETER_ERROR"),
-                    static_cast<const char*> ("The size of the argin paramater is not good: there should be 2 values"),
+					static_cast<const char*> ("The size of the argin paramater is not good: there should be 2 values:\nmodNum(1..8), calibId(0..6)"),
                     static_cast<const char*> ("XpadPixelDetector::load_config"));
     }
 
@@ -1032,7 +1176,7 @@ void XpadPixelDetector::load_config(const Tango::DevVarULongArray *argin)
 //+------------------------------------------------------------------
 void XpadPixelDetector::load_config_g(const Tango::DevVarULongArray *argin)
 {
-	DEBUG_STREAM << "XpadPixelDetector::load_config_g(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::load_config_g(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
@@ -1041,8 +1185,8 @@ void XpadPixelDetector::load_config_g(const Tango::DevVarULongArray *argin)
     {
         Tango::Except::throw_exception(
                     static_cast<const char*> ("PARAMETER_ERROR"),
-					static_cast<const char*> ("The size of the argin paramater is not good: there should be 4 values"),
-                    static_cast<const char*> ("XpadPixelDetector::load_config_g"));
+					static_cast<const char*> ("The size of the argin paramater is not good: there should be 4 values:\n module number, chip Id, register ID , register value"),
+					static_cast<const char*> ("XpadPixelDetector::load_config_g"));
     }
     try
     {
@@ -1070,7 +1214,7 @@ void XpadPixelDetector::load_config_g(const Tango::DevVarULongArray *argin)
 //+------------------------------------------------------------------
 void XpadPixelDetector::reset()
 {
-	DEBUG_STREAM << "XpadPixelDetector::reset(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::reset(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
@@ -1101,7 +1245,7 @@ void XpadPixelDetector::reset()
 //+------------------------------------------------------------------
 void XpadPixelDetector::load_all_config_g(const Tango::DevVarULongArray *argin)
 {
-	DEBUG_STREAM << "XpadPixelDetector::load_all_config_g(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::load_all_config_g(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
@@ -1110,7 +1254,7 @@ void XpadPixelDetector::load_all_config_g(const Tango::DevVarULongArray *argin)
     {
         Tango::Except::throw_exception(
                     static_cast<const char*> ("PARAMETER_ERROR"),
-                    static_cast<const char*> ("The size of the argin paramater is not good: there should be 3 values (2+11)"),
+                    static_cast<const char*> ("The size of the argin paramater is not good: there should be 13 values (2+11)"),
                     static_cast<const char*> ("XpadPixelDetector::load_all_config_g"));
     }
     try
@@ -1140,7 +1284,7 @@ void XpadPixelDetector::load_all_config_g(const Tango::DevVarULongArray *argin)
 //+------------------------------------------------------------------
 void XpadPixelDetector::calibrate_otnslow()
 {
-	DEBUG_STREAM << "XpadPixelDetector::calibrate_otnslow(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::calibrate_otnslow(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
@@ -1155,6 +1299,149 @@ void XpadPixelDetector::calibrate_otnslow()
                     static_cast<const char*> ("LIMA_ERROR"),
                     static_cast<const char*> (e.getErrMsg().c_str()),
                     static_cast<const char*> ("XpadPixelDetector::calibrate_otnslow"));
+    }
+}
+
+//+------------------------------------------------------------------
+/**
+ *	method:	XpadPixelDetector::calibrate_otnmedium
+ *
+ *	description:	method to execute "CalibrateOTNMedium"
+ *	Start the Over The Noise Medium calibration
+ *
+ *
+ */
+//+------------------------------------------------------------------
+void XpadPixelDetector::calibrate_otnmedium()
+{
+	INFO_STREAM << "XpadPixelDetector::calibrate_otnmedium(): entering... !" << endl;
+
+	//	Add your own code to control device here
+
+	try
+    {
+        m_camera->calibrateOTNMedium(calibrationPath);
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        Tango::Except::throw_exception(
+                    static_cast<const char*> ("LIMA_ERROR"),
+                    static_cast<const char*> (e.getErrMsg().c_str()),
+                    static_cast<const char*> ("XpadPixelDetector::calibrate_otnmedium"));
+    }
+
+}
+
+//+------------------------------------------------------------------
+/**
+ *	method:	XpadPixelDetector::calibrate_otnfast
+ *
+ *	description:	method to execute "CalibrateOTNFast"
+ *	Start the Over The Noise Fast calibration
+ *
+ *
+ */
+//+------------------------------------------------------------------
+void XpadPixelDetector::calibrate_otnfast()
+{
+	INFO_STREAM << "XpadPixelDetector::calibrate_otnfast(): entering... !" << endl;
+
+	//	Add your own code to control device here
+
+	try
+    {
+        m_camera->calibrateOTNFast(calibrationPath);
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        Tango::Except::throw_exception(
+                    static_cast<const char*> ("LIMA_ERROR"),
+                    static_cast<const char*> (e.getErrMsg().c_str()),
+                    static_cast<const char*> ("XpadPixelDetector::calibrate_otnfast"));
+    }
+
+}
+
+//+------------------------------------------------------------------
+/**
+ *	method:	XpadPixelDetector::calibrate_beam
+ *
+ *	description:	method to execute "CalibrateBEAM"
+ *	Start the BEAM calibration
+ *
+ * @param	argin	Texp, ithl_max, itune, imfp
+ *
+ */
+//+------------------------------------------------------------------
+void XpadPixelDetector::calibrate_beam(const Tango::DevVarULongArray *argin)
+{
+	INFO_STREAM << "XpadPixelDetector::calibrate_beam(): entering... !" << endl;
+
+	//	Add your own code to control device here
+
+	//- argin length doit etre de taille 4: texp, ithl_max, itune , imfp
+    if(argin->length()!= 4)
+    {
+        Tango::Except::throw_exception(
+                    static_cast<const char*> ("PARAMETER_ERROR"),
+					static_cast<const char*> ("Wrong number of parameters: should be 4: texp, ithl_max, itune , imfp"),
+                    static_cast<const char*> ("XpadPixelDetector::calibrate_beam"));
+    }
+    
+	try
+    {
+        m_camera->calibrateBeam(calibrationPath,(*argin)[0],(*argin)[1],(*argin)[2],(*argin)[3]);
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        Tango::Except::throw_exception(
+                    static_cast<const char*> ("LIMA_ERROR"),
+                    static_cast<const char*> (e.getErrMsg().c_str()),
+                    static_cast<const char*> ("XpadPixelDetector::calibrate_beam"));
+    }
+
+}
+
+//+------------------------------------------------------------------
+/**
+ *	method:	XpadPixelDetector::calibrate_otn
+ *
+ *	description:	method to execute "CalibrateOTN"
+ *	Start the OTN calibration
+ *
+ * @param	argin	itune, imfp
+ *
+ */
+//+------------------------------------------------------------------
+void XpadPixelDetector::calibrate_otn(const Tango::DevVarULongArray *argin)
+{
+	INFO_STREAM << "XpadPixelDetector::calibrate_otn(): entering... !" << endl;
+
+	//	Add your own code to control device here
+
+	//- argin length doit etre de taille 4: itune , imfp
+    if(argin->length()!= 2)
+    {
+        Tango::Except::throw_exception(
+                    static_cast<const char*> ("PARAMETER_ERROR"),
+					static_cast<const char*> ("Wrong number of parameters: should be 2: itune , imfp"),
+                    static_cast<const char*> ("XpadPixelDetector::calibrate_otn"));
+    }
+    
+	try
+    {
+        m_camera->calibrateOTN(calibrationPath,(*argin)[0],(*argin)[1]);
+    }
+    catch(Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        Tango::Except::throw_exception(
+                    static_cast<const char*> ("LIMA_ERROR"),
+                    static_cast<const char*> (e.getErrMsg().c_str()),
+                    static_cast<const char*> ("XpadPixelDetector::calibrate_otn"));
     }
 
 }
@@ -1171,7 +1458,7 @@ void XpadPixelDetector::calibrate_otnslow()
 //+------------------------------------------------------------------
 void XpadPixelDetector::upload_calibration()
 {
-	DEBUG_STREAM << "XpadPixelDetector::upload_calibration(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::upload_calibration(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
@@ -1202,15 +1489,21 @@ void XpadPixelDetector::upload_calibration()
 //+------------------------------------------------------------------
 void XpadPixelDetector::upload_wait_times(const Tango::DevVarULongArray *argin)
 {
-	DEBUG_STREAM << "XpadPixelDetector::upload_wait_times(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::upload_wait_times(): entering... !" << endl;
 
 	//	Add your own code to control device here
+
+	Tango::Except::throw_exception(
+                    static_cast<const char*> ("NOT_SUPPORTED_FEATURE"),
+                    static_cast<const char*> ("The UploadWaitTimes command is not yet supported"),
+                    static_cast<const char*> ("XpadPixelDetector::upload_wait_times"));
 
     //- TODO: recuperer le nbre d'image de la sequence et le comparer avec argin
     try
     {
         //- If we use this command (upload_wait_times), we have to disable the normal deadtime
         //- value by putting a 0 (needed by xpix)
+		//- FL: not true: this is forbidden by xpad!!!! wait for det group
         Tango::WAttribute &deadTime = dev_attr->get_w_attr_by_name("deadTime");
         deadTime.set_write_value((Tango::DevULong)0);
 		write_deadTime(deadTime);
@@ -1240,7 +1533,7 @@ void XpadPixelDetector::upload_wait_times(const Tango::DevVarULongArray *argin)
 //+------------------------------------------------------------------
 void XpadPixelDetector::increment_ithl()
 {
-	DEBUG_STREAM << "XpadPixelDetector::increment_ithl(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::increment_ithl(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
@@ -1271,7 +1564,7 @@ void XpadPixelDetector::increment_ithl()
 //+------------------------------------------------------------------
 void XpadPixelDetector::decrement_ithl()
 {
-	DEBUG_STREAM << "XpadPixelDetector::decrement_ithl(): entering... !" << endl;
+	INFO_STREAM << "XpadPixelDetector::decrement_ithl(): entering... !" << endl;
 
 	//	Add your own code to control device here
 
@@ -1401,6 +1694,9 @@ void XpadPixelDetector::set_general_purpose_params()
 	m_camera->setGeneralPurposeParams(attr_gp1_write,attr_gp2_write,attr_gp3_write,attr_gp4_write);
 
 }
+
+
+
 
 
 

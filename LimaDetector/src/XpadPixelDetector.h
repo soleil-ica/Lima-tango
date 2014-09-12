@@ -89,7 +89,12 @@ namespace XpadPixelDetector_ns
          */
         //@{
 		Tango::DevString	attr_acquisitionType_write;
+		Tango::DevBoolean	*attr_enableGeometricalCorrection_read;
 		Tango::DevBoolean	attr_enableGeometricalCorrection_write;
+		Tango::DevBoolean	*attr_enableDoublePixelCorrection_read;
+		Tango::DevBoolean	attr_enableDoublePixelCorrection_write;
+		Tango::DevDouble	*attr_normalizationFactor_read;
+		Tango::DevDouble	attr_normalizationFactor_write;
 		Tango::DevULong	attr_deadTime_write;
 		Tango::DevULong	attr_init_write;
 		Tango::DevULong	attr_shutter_write;
@@ -225,6 +230,22 @@ namespace XpadPixelDetector_ns
  */
 	virtual void write_enableGeometricalCorrection(Tango::WAttribute &attr);
 /**
+ *	Extract real attribute values for enableDoublePixelCorrection acquisition result.
+ */
+	virtual void read_enableDoublePixelCorrection(Tango::Attribute &attr);
+/**
+ *	Write enableDoublePixelCorrection attribute values to hardware.
+ */
+	virtual void write_enableDoublePixelCorrection(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for normalizationFactor acquisition result.
+ */
+	virtual void read_normalizationFactor(Tango::Attribute &attr);
+/**
+ *	Write normalizationFactor attribute values to hardware.
+ */
+	virtual void write_normalizationFactor(Tango::WAttribute &attr);
+/**
  *	Extract real attribute values for deadTime acquisition result.
  */
 	virtual void read_deadTime(Tango::Attribute &attr);
@@ -329,6 +350,14 @@ namespace XpadPixelDetector_ns
  */
 	virtual bool is_enableGeometricalCorrection_allowed(Tango::AttReqType type);
 /**
+ *	Read/Write allowed for enableDoublePixelCorrection attribute.
+ */
+	virtual bool is_enableDoublePixelCorrection_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for normalizationFactor attribute.
+ */
+	virtual bool is_normalizationFactor_allowed(Tango::AttReqType type);
+/**
  *	Read/Write allowed for deadTime attribute.
  */
 	virtual bool is_deadTime_allowed(Tango::AttReqType type);
@@ -420,6 +449,22 @@ namespace XpadPixelDetector_ns
  *	Execution allowed for CalibrateOTNSlow command.
  */
 	virtual bool is_CalibrateOTNSlow_allowed(const CORBA::Any &any);
+/**
+ *	Execution allowed for CalibrateOTNMedium command.
+ */
+	virtual bool is_CalibrateOTNMedium_allowed(const CORBA::Any &any);
+/**
+ *	Execution allowed for CalibrateOTNFast command.
+ */
+	virtual bool is_CalibrateOTNFast_allowed(const CORBA::Any &any);
+/**
+ *	Execution allowed for CalibrateBEAM command.
+ */
+	virtual bool is_CalibrateBEAM_allowed(const CORBA::Any &any);
+/**
+ *	Execution allowed for CalibrateOTN command.
+ */
+	virtual bool is_CalibrateOTN_allowed(const CORBA::Any &any);
 /**
  *	Execution allowed for UploadCalibration command.
  */
@@ -513,6 +558,28 @@ namespace XpadPixelDetector_ns
  */
 	void	calibrate_otnslow();
 /**
+ * Start the Over The Noise Medium calibration
+ *	@exception DevFailed
+ */
+	void	calibrate_otnmedium();
+/**
+ * Start the Over The Noise Fast calibration
+ *	@exception DevFailed
+ */
+	void	calibrate_otnfast();
+/**
+ * Start the BEAM calibration
+ *	@param	argin	Texp, ithl_max, itune, imfp
+ *	@exception DevFailed
+ */
+	void	calibrate_beam(const Tango::DevVarULongArray *);
+/**
+ * Start the OTN calibration
+ *	@param	argin	itune, imfp
+ *	@exception DevFailed
+ */
+	void	calibrate_otn(const Tango::DevVarULongArray *);
+/**
  * Upload a calibration from a file defined in the property CalibrationPath
  *	@exception DevFailed
  */
@@ -552,6 +619,8 @@ namespace XpadPixelDetector_ns
         bool m_is_device_initialized;
         stringstream m_status_message;
         void set_general_purpose_params();
+		std::string m_xpad_model;
+		std::string m_acquisitionType;
 
         //lima OBJECTS
         Xpad::Interface* m_hw;
