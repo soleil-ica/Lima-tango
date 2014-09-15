@@ -126,6 +126,14 @@
 #include <HamamatsuInterface.h>
 #endif
 
+#ifdef UVIEW_ENABLED
+#include <UviewBinCtrlObj.h>
+#include <UviewCamera.h>
+#include <UviewDetInfoCtrlObj.h>
+#include <UviewInterface.h>
+#include <UviewRoiCtrlObj.h>  
+#endif
+
 using namespace lima;
 
 class ControlFactory : public Singleton<ControlFactory>
