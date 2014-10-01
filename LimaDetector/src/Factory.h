@@ -131,6 +131,13 @@
 #include <EigerDetInfoCtrlObj.h>
 #include <EigerSyncCtrlObj.h>
 #include <EigerInterface.h>
+
+#ifdef UVIEW_ENABLED
+#include <UviewBinCtrlObj.h>
+#include <UviewCamera.h>
+#include <UviewDetInfoCtrlObj.h>
+#include <UviewInterface.h>
+#include <UviewRoiCtrlObj.h>
 #endif
 
 using namespace lima;

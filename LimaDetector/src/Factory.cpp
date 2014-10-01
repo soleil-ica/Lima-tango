@@ -457,6 +457,18 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
                 m_control = new CtControl(static_cast<Eiger::Interface*> (m_interface));
                 ControlFactory::m_is_created = true;
                 return m_control;
+                
+#ifdef UVIEW_ENABLED
+        if (detector_type == "UviewCCD")
+        {
+            if (!ControlFactory::m_is_created)
+            {
+                m_camera = static_cast<void*> (new Uview::Camera());
+                m_interface = static_cast<void*> (new Uview::Interface(*static_cast<Uview::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Uview::Interface*> (m_interface));
+
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
@@ -627,6 +639,14 @@ void ControlFactory::reset(const std::string& detector_type)
 					delete (static_cast<Eiger::Camera*> (m_camera));
 				}		
 #endif
+
+#ifdef UVIEW_ENABLED        
+                if (detector_type == "UviewCCD")
+                {
+					delete (static_cast<UviewCCD::Camera*> (m_camera));
+                }
+#endif     
+
                 m_camera = 0;
             }
 

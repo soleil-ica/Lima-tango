@@ -229,10 +229,38 @@ public:
 	{return (static_cast<XpadPixelDetector *>(dev))->is_deadTime_allowed(ty);}
 };
 
+class normalizationFactorAttrib: public Tango::Attr
+{
+public:
+	normalizationFactorAttrib():Attr("normalizationFactor", Tango::DEV_DOUBLE, Tango::READ_WRITE) {};
+	~normalizationFactorAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<XpadPixelDetector *>(dev))->read_normalizationFactor(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<XpadPixelDetector *>(dev))->write_normalizationFactor(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<XpadPixelDetector *>(dev))->is_normalizationFactor_allowed(ty);}
+};
+
+class enableDoublePixelCorrectionAttrib: public Tango::Attr
+{
+public:
+	enableDoublePixelCorrectionAttrib():Attr("enableDoublePixelCorrection", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
+	~enableDoublePixelCorrectionAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<XpadPixelDetector *>(dev))->read_enableDoublePixelCorrection(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<XpadPixelDetector *>(dev))->write_enableDoublePixelCorrection(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<XpadPixelDetector *>(dev))->is_enableDoublePixelCorrection_allowed(ty);}
+};
+
 class enableGeometricalCorrectionAttrib: public Tango::Attr
 {
 public:
-	enableGeometricalCorrectionAttrib():Attr("enableGeometricalCorrection", Tango::DEV_BOOLEAN, Tango::WRITE) {};
+	enableGeometricalCorrectionAttrib():Attr("enableGeometricalCorrection", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
 	~enableGeometricalCorrectionAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
@@ -352,6 +380,102 @@ public:
 	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
 	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
 	{return (static_cast<XpadPixelDetector *>(dev))->is_UploadCalibration_allowed(any);}
+};
+
+
+
+class CalibrateOTNCmd : public Tango::Command
+{
+public:
+	CalibrateOTNCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	CalibrateOTNCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~CalibrateOTNCmd() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<XpadPixelDetector *>(dev))->is_CalibrateOTN_allowed(any);}
+};
+
+
+
+class CalibrateBEAMCmd : public Tango::Command
+{
+public:
+	CalibrateBEAMCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	CalibrateBEAMCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~CalibrateBEAMCmd() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<XpadPixelDetector *>(dev))->is_CalibrateBEAM_allowed(any);}
+};
+
+
+
+class CalibrateOTNFastCmd : public Tango::Command
+{
+public:
+	CalibrateOTNFastCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	CalibrateOTNFastCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~CalibrateOTNFastCmd() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<XpadPixelDetector *>(dev))->is_CalibrateOTNFast_allowed(any);}
+};
+
+
+
+class CalibrateOTNMediumCmd : public Tango::Command
+{
+public:
+	CalibrateOTNMediumCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	CalibrateOTNMediumCmd(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~CalibrateOTNMediumCmd() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<XpadPixelDetector *>(dev))->is_CalibrateOTNMedium_allowed(any);}
 };
 
 
