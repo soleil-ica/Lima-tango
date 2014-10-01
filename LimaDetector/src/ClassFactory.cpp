@@ -39,8 +39,12 @@ static const char *RcsId = "$Id:  $";
 #include <LimaDetectorClass.h>
 
 
-#ifdef SHIFTING_ENABLED
-#include <ShiftingClass.h>
+#ifdef LAYOUT_ENABLED
+#include <LayoutClass.h>
+#endif
+
+#ifdef ROICOUNTERS_ENABLED
+#include <RoiCountersClass.h>
 #endif
 
 #ifdef SIMULATOR_ENABLED
@@ -101,6 +105,10 @@ static const char *RcsId = "$Id:  $";
 
 #ifdef HAMAMATSU_ENABLED
 #include <HamamatsuClass.h>
+#endif
+
+#ifdef EIGER_ENABLED
+#include <EigerClass.h>
 #endif
 
 #ifndef WIN32
@@ -175,8 +183,16 @@ void Tango::DServer::class_factory()
     add_class(Hamamatsu_ns::HamamatsuClass::init("Hamamatsu"));
 #endif
 
-#ifdef SHIFTING_ENABLED    
-    add_class(Shifting_ns::ShiftingClass::init("Shifting"));
+#ifdef EIGER_ENABLED
+    add_class(Eiger_ns::EigerClass::init("Eiger"));
 #endif
+
+#ifdef LAYOUT_ENABLED    
+    add_class(Layout_ns::LayoutClass::init("Layout"));
+#endif
+	
+#ifdef ROICOUNTERS_ENABLED    
+    add_class(RoiCounters_ns::RoiCountersClass::init("RoiCounters"));
+#endif	
 }
 

@@ -49,6 +49,20 @@ namespace LimaDetector_ns
 {//=====================================
 //	Define classes for attributes
 //=====================================
+class fileNbFramesAttrib: public Tango::Attr
+{
+public:
+	fileNbFramesAttrib():Attr("fileNbFrames", Tango::DEV_LONG, Tango::READ_WRITE) {};
+	~fileNbFramesAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<LimaDetector *>(dev))->read_fileNbFrames(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<LimaDetector *>(dev))->write_fileNbFrames(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<LimaDetector *>(dev))->is_fileNbFrames_allowed(ty);}
+};
+
 class fileGenerationAttrib: public Tango::Attr
 {
 public:
@@ -336,54 +350,6 @@ public:
 	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
 	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
 	{return (static_cast<LimaDetector *>(dev))->is_ResetFileIndex_allowed(any);}
-};
-
-
-
-class CloseShutterCmd : public Tango::Command
-{
-public:
-	CloseShutterCmd(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out,
-				   const char        *in_desc,
-				   const char        *out_desc,
-				   Tango::DispLevel  level)
-	:Command(name,in,out,in_desc,out_desc, level)	{};
-
-	CloseShutterCmd(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out)
-	:Command(name,in,out)	{};
-	~CloseShutterCmd() {};
-	
-	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
-	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
-	{return (static_cast<LimaDetector *>(dev))->is_CloseShutter_allowed(any);}
-};
-
-
-
-class OpenShutterCmd : public Tango::Command
-{
-public:
-	OpenShutterCmd(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out,
-				   const char        *in_desc,
-				   const char        *out_desc,
-				   Tango::DispLevel  level)
-	:Command(name,in,out,in_desc,out_desc, level)	{};
-
-	OpenShutterCmd(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out)
-	:Command(name,in,out)	{};
-	~OpenShutterCmd() {};
-	
-	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
-	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
-	{return (static_cast<LimaDetector *>(dev))->is_OpenShutter_allowed(any);}
 };
 
 

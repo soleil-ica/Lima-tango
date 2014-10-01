@@ -27,9 +27,15 @@ void ControlFactory::initialize()
 
     m_server_name = "none";
     m_device_name_specific = "none";
-#ifdef SHIFTING_ENABLED    
-    m_device_name_shifting = "none";
+	
+#ifdef LAYOUT_ENABLED    
+    m_device_name_layout = "none";
 #endif
+	
+#ifdef ROICOUNTERS_ENABLED    	
+	m_device_name_roicounters = "none";	
+#endif	 
+	
     m_status.str("");
     m_state = Tango::INIT;
 }
@@ -59,15 +65,25 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
                 db_datum >> m_device_name_specific;
             }
 
-#ifdef SHIFTING_ENABLED
+#ifdef LAYOUT_ENABLED
             {
-                std::string shifting = "Shifting";
+                std::string layout = "Layout";
                 Tango::DbDatum db_datum;
                 m_server_name = Tango::Util::instance()->get_ds_name();
-                db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, shifting);
-                db_datum >> m_device_name_shifting;
+                db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, layout);
+                db_datum >> m_device_name_layout;
             }     
-#endif            
+#endif         
+			
+#ifdef ROICOUNTERS_ENABLED
+            {
+                std::string roicounters = "RoiCounters";
+                Tango::DbDatum db_datum;
+                m_server_name = Tango::Util::instance()->get_ds_name();
+                db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, roicounters);
+                db_datum >> m_device_name_roicounters;
+            }     
+#endif  			
         }
 
 #ifdef SIMULATOR_ENABLED
@@ -423,6 +439,28 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
         }
 #endif
 
+#ifdef EIGER_ENABLED
+        if (detector_type == "Eiger")
+        {
+            if (!ControlFactory::m_is_created)
+            {
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("DetectorIP"));
+				db_data.push_back(Tango::DbDatum("TargetPath"));
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
+                std::string camera_ip;
+                db_data[0] >> camera_ip;
+                std::string target_path;
+                db_data[1] >> target_path;
+                m_camera = static_cast<void*> (new Eiger::Camera(camera_ip, target_path));
+                m_interface = static_cast<void*> (new Eiger::Interface(*(static_cast<Eiger::Camera*> (m_camera))));
+                m_control = new CtControl(static_cast<Eiger::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
+            }
+        }
+#endif
+
         if (!ControlFactory::m_is_created)
         {
             string strMsg = "Unable to create the lima control object : Unknown Detector Type : ";
@@ -583,6 +621,12 @@ void ControlFactory::reset(const std::string& detector_type)
                 }
 #endif    
 
+#ifdef EIGER_ENABLED
+				if (detector_type == "Eiger")
+				{
+					delete (static_cast<Eiger::Camera*> (m_camera));
+				}		
+#endif
                 m_camera = 0;
             }
 
@@ -634,28 +678,49 @@ void ControlFactory::init_specific_device(const std::string& detector_type)
         throw LIMA_HW_EXC(Error, std::string(df.errors[0].desc).c_str());
     }
 	
-#ifdef SHIFTING_ENABLED        
+#ifdef LAYOUT_ENABLED        
 	try
 	{
-        //@@@TODO and if not exist ?? get the tango device/instance for shifting
+        //@@@TODO and if not exist ?? get the tango device/instance for layout
         if (!ControlFactory::m_is_created)
         {
-            std::string detector = "Shifting";
+            std::string detector = "Layout";		
             Tango::DbDatum db_datum;
             m_server_name = Tango::Util::instance()->get_ds_name();
             db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, detector);
-            db_datum >> m_device_name_shifting;
+            db_datum >> m_device_name_layout;	
         }
-        (Tango::Util::instance()->get_device_by_name(m_device_name_shifting))->delete_device();
-        (Tango::Util::instance()->get_device_by_name(m_device_name_shifting))->init_device();
+        (Tango::Util::instance()->get_device_by_name(m_device_name_layout))->delete_device();
+        (Tango::Util::instance()->get_device_by_name(m_device_name_layout))->init_device();
     }
     catch (Tango::DevFailed& df)
     {
         //- rethrow exception
         ////throw LIMA_HW_EXC(Error, std::string(df.errors[0].desc).c_str());
     }		
-#endif        
-
+#endif
+	
+#ifdef ROICOUNTERS_ENABLED        
+	try
+	{
+        //@@@TODO and if not exist ?? get the tango device/instance for layout
+        if (!ControlFactory::m_is_created)
+        {
+            std::string detector = "RoiCounters";			
+            Tango::DbDatum db_datum;
+            m_server_name = Tango::Util::instance()->get_ds_name();
+            db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, detector);
+            db_datum >> m_device_name_roicounters;					
+        }
+        (Tango::Util::instance()->get_device_by_name(m_device_name_roicounters))->delete_device();
+        (Tango::Util::instance()->get_device_by_name(m_device_name_roicounters))->init_device();
+    }
+    catch (Tango::DevFailed& df)
+    {
+        //- rethrow exception
+        ////throw LIMA_HW_EXC(Error, std::string(df.errors[0].desc).c_str());
+    }		
+#endif	
 }
 
 //-----------------------------------------------------------------------------------------

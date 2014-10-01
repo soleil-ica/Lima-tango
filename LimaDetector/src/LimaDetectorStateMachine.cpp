@@ -643,6 +643,35 @@ bool LimaDetector::is_detectorHeightMax_allowed(Tango::AttReqType type)
 	}
 	return true;
 }
+//+----------------------------------------------------------------------------
+//
+// method : 		LimaDetector::is_fileNbFrames_allowed
+// 
+// description : 	Read/Write allowed for fileNbFrames attribute.
+//
+//-----------------------------------------------------------------------------
+bool LimaDetector::is_fileNbFrames_allowed(Tango::AttReqType type)
+{
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
+		get_state() == Tango::RUNNING)
+	{
+		//	End of Generated Code
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
+		
+		if ( get_state()==Tango::FAULT && is_device_initialized() )
+		{
+           return true;
+		}	
+		//	Re-Start of Generated Code
+		return false;
+	}
+	return true;
+}
+
 
 //=================================================
 //		Commands Allowed Methods
@@ -806,52 +835,7 @@ bool LimaDetector::is_GetAttributeAvailableValues_allowed(const CORBA::Any &any)
 	}
 	return true;
 }
-//+----------------------------------------------------------------------------
-//
-// method : 		LimaDetector::is_OpenShutter_allowed
-// 
-// description : 	Execution allowed for OpenShutter command.
-//
-//-----------------------------------------------------------------------------
-bool LimaDetector::is_OpenShutter_allowed(const CORBA::Any &any)
-{
-	if (get_state() == Tango::INIT	||
-		get_state() == Tango::FAULT	||
-		get_state() == Tango::RUNNING)
-	{
-		//	End of Generated Code
-		if ( get_state()==Tango::FAULT && is_device_initialized() )
-		{
-           return true;
-		}
-		//	Re-Start of Generated Code
-		return false;
-	}
-	return true;
-}
-//+----------------------------------------------------------------------------
-//
-// method : 		LimaDetector::is_CloseShutter_allowed
-// 
-// description : 	Execution allowed for CloseShutter command.
-//
-//-----------------------------------------------------------------------------
-bool LimaDetector::is_CloseShutter_allowed(const CORBA::Any &any)
-{
-	if (get_state() == Tango::INIT	||
-		get_state() == Tango::FAULT	||
-		get_state() == Tango::RUNNING)
-	{
-		//	End of Generated Code
-		if ( get_state()==Tango::FAULT && is_device_initialized() )
-		{
-           return true;
-		}
-		//	Re-Start of Generated Code
-		return false;
-	}
-	return true;
-}
+
 //+----------------------------------------------------------------------------
 //
 // method : 		LimaDetector::is_ResetBinning_allowed

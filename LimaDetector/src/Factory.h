@@ -126,6 +126,13 @@
 #include <HamamatsuInterface.h>
 #endif
 
+#ifdef EIGER_ENABLED
+#include <EigerCamera.h>
+#include <EigerDetInfoCtrlObj.h>
+#include <EigerSyncCtrlObj.h>
+#include <EigerInterface.h>
+#endif
+
 using namespace lima;
 
 class ControlFactory : public Singleton<ControlFactory>
@@ -136,26 +143,26 @@ public:
     CtControl* create_control(const std::string& detector_type);
 
     //get the main object of Lima CtConttrol
-    CtControl* get_control(const std::string& type="");
-    
+    CtControl* get_control(const std::string& type = "");
+
     //initialize all pointers
     void reset(const std::string& detector_type);
-    
+
     //init the specific device, necessary when user call Init on generic device
     void init_specific_device(const std::string& detector_type);
-    
+
     //get the state in a AutoMutex lock
     Tango::DevState get_state(void);
-    
+
     //get the status in a AutoMutex lock
     std::string get_status(void);
-    
+
     //fix the state in a AutoMutex lock
     void set_state(Tango::DevState state);
-    
+
     //fix the status in a AutoMutex lock
     void set_status(const std::string& status);
-    
+
     //return to the client the global mutex, in order to use ctControl in a scoped lock
     yat::Mutex& get_global_mutex();
 
@@ -166,13 +173,16 @@ private:
     void*                           m_camera;      //generic pointer, must be casted to real XXX::Camera when using it !
     void*                           m_interface;   //generic pointer, must be casted to real XXX::Interface when using it !
     CtControl*                      m_control;     //the main object of Lima
-    
+
     static bool                     m_is_created;
     std::string                     m_server_name;
     std::string                     m_device_name_specific;
-#ifdef SHIFTING_ENABLED    
-    std::string                     m_device_name_shifting;
+#ifdef LAYOUT_ENABLED    
+    std::string                     m_device_name_layout;
 #endif    
+#ifdef ROICOUNTERS_ENABLED    
+    std::string                     m_device_name_roicounters;
+#endif        
     Tango::DevState                 m_state;
     stringstream                    m_status;
 

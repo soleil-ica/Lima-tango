@@ -112,50 +112,6 @@ CORBA::Any *ResetBinningCmd::execute(Tango::DeviceImpl *device,const CORBA::Any 
 
 //+----------------------------------------------------------------------------
 //
-// method : 		CloseShutterCmd::execute()
-// 
-// description : 	method to trigger the execution of the command.
-//                PLEASE DO NOT MODIFY this method core without pogo   
-//
-// in : - device : The device on which the command must be executed
-//		- in_any : The command input data
-//
-// returns : The command output data (packed in the Any object)
-//
-//-----------------------------------------------------------------------------
-CORBA::Any *CloseShutterCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
-{
-
-	cout2 << "CloseShutterCmd::execute(): arrived" << endl;
-
-	((static_cast<LimaDetector *>(device))->close_shutter());
-	return new CORBA::Any();
-}
-
-//+----------------------------------------------------------------------------
-//
-// method : 		OpenShutterCmd::execute()
-// 
-// description : 	method to trigger the execution of the command.
-//                PLEASE DO NOT MODIFY this method core without pogo   
-//
-// in : - device : The device on which the command must be executed
-//		- in_any : The command input data
-//
-// returns : The command output data (packed in the Any object)
-//
-//-----------------------------------------------------------------------------
-CORBA::Any *OpenShutterCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
-{
-
-	cout2 << "OpenShutterCmd::execute(): arrived" << endl;
-
-	((static_cast<LimaDetector *>(device))->open_shutter());
-	return new CORBA::Any();
-}
-
-//+----------------------------------------------------------------------------
-//
 // method : 		GetAttributeAvailableValuesCmd::execute()
 // 
 // description : 	method to trigger the execution of the command.
@@ -449,16 +405,6 @@ void LimaDetectorClass::command_factory()
 		Tango::DEV_STRING, Tango::DEVVAR_STRINGARRAY,
 		"Attribute name",
 		"List of strings containing the available values",
-		Tango::EXPERT));
-	command_list.push_back(new OpenShutterCmd("OpenShutter",
-		Tango::DEV_VOID, Tango::DEV_VOID,
-		"",
-		"",
-		Tango::EXPERT));
-	command_list.push_back(new CloseShutterCmd("CloseShutter",
-		Tango::DEV_VOID, Tango::DEV_VOID,
-		"",
-		"",
 		Tango::EXPERT));
 	command_list.push_back(new ResetFileIndexClass("ResetFileIndex",
 		Tango::DEV_VOID, Tango::DEV_VOID,
@@ -764,6 +710,16 @@ void LimaDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	file_generation->set_memorized_init(false);
 	att_list.push_back(file_generation);
 
+	//	Attribute : fileNbFrames
+	fileNbFramesAttrib	*file_nb_frames = new fileNbFramesAttrib();
+	Tango::UserDefaultAttrProp	file_nb_frames_prop;
+	file_nb_frames_prop.set_unit(" ");
+	file_nb_frames->set_default_properties(file_nb_frames_prop);
+	file_nb_frames->set_disp_level(Tango::EXPERT);
+	file_nb_frames->set_memorized();
+	file_nb_frames->set_memorized_init(false);
+	att_list.push_back(file_nb_frames);
+
 	//	End of Automatic code generation
 	//-------------------------------------------------------------
 }
@@ -935,11 +891,11 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
-	prop_name = "FileNbFrames";
-	prop_desc = "Define the amount of frames stored in the target file.<br>\nIf Nexus file, this is the NbAcqPerFile.";
-	prop_def  = "1";
+	prop_name = "FileTargetPath";
+	prop_desc = "Define the Path where Files will be generated, only when savingFile is checked.\n\n";
+	prop_def  = "./data";
 	vect_data.clear();
-	vect_data.push_back("1");
+	vect_data.push_back("./data");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -950,11 +906,11 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
-	prop_name = "FileTargetPath";
-	prop_desc = "Define the Path where Files will be generated, only when savingFile is checked.\n\n";
-	prop_def  = "./data";
+	prop_name = "FileNbFrames";
+	prop_desc = "";
+	prop_def  = "1";
 	vect_data.clear();
-	vect_data.push_back("./data");
+	vect_data.push_back("1");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -1204,6 +1160,20 @@ void LimaDetectorClass::set_default_property()
 	prop_def  = "false";
 	vect_data.clear();
 	vect_data.push_back("false");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedFileNbFrames";
+	prop_desc = "";
+	prop_def  = "";
+	vect_data.clear();
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);

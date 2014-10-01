@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fr.soleil</groupId>
+        <artifactId>super-pom-C-CPP-device</artifactId>
+        <version>RELEASE</version>
+    </parent>
+
+    <groupId>fr.soleil.device</groupId>
+    <artifactId>LimaDetector-${aol}-${mode}</artifactId>
+    <version>1.4.2-SNAPSHOT</version>
+	
+    <packaging>nar</packaging>
+    <name>LimaDetector</name>
+    <description>LimaDetector device</description>
+	
+    <scm>
+        <connection>scm:git:git://github.com/soleil-ica/Lima-tango.git</connection>
+        <developerConnection>scm:git:git://github.com/soleil-ica/Lima-tango.git</developerConnection>
+        <url>https://github.com/soleil-ica/Lima-tango</url>
+    </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>fr.soleil.lib</groupId>
+            <artifactId>YAT4Tango-${aol}-static-${mode}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib</groupId>
+            <artifactId>YAT-${aol}-static-${mode}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib</groupId>
+            <artifactId>LimaCore-${aol}-shared-${mode}</artifactId>
+            <version>1.3.1</version>
+        </dependency>
+        <!-- Lima Camera Plugins -->
+         <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaSimulator-${aol}-shared-${mode}</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+<!--        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaBasler-${aol}-shared-${mode}</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaMarccd-${aol}-shared-${mode}</artifactId>
+            <version>1.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaPilatus-${aol}-shared-${mode}</artifactId>
+            <version>1.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaXpad-${aol}-shared-${mode}</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaAdsc-${aol}-shared-${mode}</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaProsilica-${aol}-shared-${mode}</artifactId>
+            <version>1.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaAviex-${aol}-shared-${mode}</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaEiger-${aol}-shared-${mode}</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>-->
+    </dependencies>
+        
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.freehep</groupId>
+                <artifactId>freehep-nar-plugin</artifactId>
+                <configuration>
+                   
+                    <cpp>
+                        <sourceDirectory>${project.basedir}</sourceDirectory>                        
+                        <includes>
+                            <include>*.cpp</include>
+<!--                            <include>specifics/AdscCCD/*.cpp</include>
+                            <include>specifics/AviexCCD/*.cpp</include>
+                            <include>specifics/BaslerCCD/*.cpp</include>
+                            <include>specifics/Eiger/*.cpp</include> 
+                            <include>specifics/Layout/*.cpp</include>                            
+                            <include>specifics/MarCCD/*.cpp</include>
+                            <include>specifics/PilatusPixelDetector/*.cpp</include>
+                            <include>specifics/ProsilicaCCD/*.cpp</include>
+                            <include>specifics/RoiCounters/*.cpp</include>-->
+                            <include>specifics/SimulatorCCD/*.cpp</include>                            
+                            <!--<include>specifics/XpadPixelDetector/*.cpp</include>-->
+                        </includes>
+                        <includePaths>                          
+                            <includePath>src</includePath>                            
+<!--                            <includePath>specifics/AdscCCD</includePath>
+                            <includePath>specifics/AviexCCD</includePath>
+                            <includePath>specifics/BaslerCCD</includePath>                            
+                            <includePath>specifics/Eiger</includePath>                             
+                            <includePath>specifics/Layout</includePath>                                                        
+                            <includePath>specifics/MarCCD</includePath>                            
+                            <includePath>specifics/PilatusPixelDetector</includePath>                            
+                            <includePath>specifics/ProsilicaCCD</includePath>                            
+                            <includePath>specifics/RoiCounters</includePath>                            -->
+                            <includePath>specifics/SimulatorCCD</includePath>                                                        
+                            <!--<includePath>specifics/XpadPixelDetector</includePath>-->
+                        </includePaths>
+                                
+                        <defines>
+                            <define>USE_GIGE</define>	<!-- Needed By Basler -->
+                            <define>OS_UNIX</define>	<!-- Needed By Aviex -->
+                            <!-- define wich detector you need to ENABLE -->                            
+<!--                            <define>ADSC_ENABLED</define>                                                           
+                            <define>AVIEX_ENABLED</define>	
+                            <define>BASLER_ENABLED</define>                               
+                            <define>EIGER_ENABLED</define>                  
+                            <define>LAYOUT_ENABLED</define>		                                                                                                       								 
+                            <define>MARCCD_ENABLED</define>
+                            <define>PILATUS_ENABLED</define>
+                            <define>PROSILICA_ENABLED</define>				
+                            <define>ROICOUNTERS_ENABLED</define>										                                                                                              -->
+                            <define>SIMULATOR_ENABLED</define>                            		
+                            <!--<define>XPAD_ENABLED</define>-->
+                        </defines>                        
+                    </cpp>        
+
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <developers>
+        <developer>
+            <id>noureddine</id>
+            <name>noureddine</name>
+            <url>http://controle/</url>
+            <organization>Synchrotron Soleil</organization>
+            <organizationUrl>http://www.synchrotron-soleil.fr</organizationUrl>
+            <roles>
+                <role>developper</role>
+            </roles>
+            <timezone>1</timezone>
+        </developer>
+
+        <developer>
+            <id>langlois</id>
+            <name>langlois</name>
+            <url>http://controle/</url>
+            <organization>Synchrotron Soleil</organization>
+            <organizationUrl>http://www.synchrotron-soleil.fr</organizationUrl>
+            <roles>
+                <role>manager</role>
+            </roles>
+            <timezone>1</timezone>
+        </developer>
+    </developers>
+</project>
