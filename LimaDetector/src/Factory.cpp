@@ -457,7 +457,10 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
                 m_control = new CtControl(static_cast<Eiger::Interface*> (m_interface));
                 ControlFactory::m_is_created = true;
                 return m_control;
-                
+            }
+        }
+#endif           
+        
 #ifdef UVIEW_ENABLED
         if (detector_type == "UviewCCD")
         {
