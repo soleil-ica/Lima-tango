@@ -693,7 +693,7 @@ void LimaDetector::init_device()
 
 			INFO_STREAM << "Write tango hardware at Init - fileGeneration." << endl;
 			Tango::WAttribute &fileGeneration = dev_attr->get_w_attr_by_name("fileGeneration");
-			*attr_fileGeneration_read = memorizedFileGeneration;
+			*attr_fileGeneration_read = attr_fileGeneration_write = memorizedFileGeneration;
 			fileGeneration.set_write_value(*attr_fileGeneration_read);
 			write_fileGeneration(fileGeneration);
 
