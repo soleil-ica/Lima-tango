@@ -103,9 +103,18 @@ class RayonixHs(PyTango.Device_4Impl):
         self.__ElectronicShutterEnabled = {'TRUE': True,
                                            'FALSE': False}
 
+        self.__NewBackgroundNeeded = {'YES': True,
+                                      'NO': False}
+
         self.__FrameTriggerSignalType = self.__SignalType
         self.__SequenceGateSignalType = self.__SignalType
         self.__OutputSignalType = self.__SignalType
+        self.__ReadoutMode = {'READOUT_MODE_STANDARD': RayonixHsAcq.READOUT_MODE_STANDARD,
+                              'READOUT_MODE_HIGH_GAIN': RayonixHsAcq.READOUT_MODE_HIGH_GAIN,
+                              'READOUT_MODE_LOW_NOISE': RayonixHsAcq.READOUT_MODE_LOW_NOISE,
+                              'READOUT_MODE_HDR': RayonixHsAcq.READOUT_MODE_HDR,
+                              'READOUT_MODE_TURBO': RayonixHsAcq.READOUT_MODE_TURBO,
+                              }
         self.__Attribute2FunctionBase = {'frame_mode': 'FrameMode',
                                          'frame_trigger_signal_type': 'FrameTriggerSignalType',
                                          'sequence_gate_signal_type': 'SequenceGateSignalType',
@@ -115,6 +124,8 @@ class RayonixHs(PyTango.Device_4Impl):
                                          'sensor_temperature': 'SensorTemperature',
                                          'cooler': 'Cooler',
                                          'vacuum_valve': 'VacuumValve',
+                                         'new_background_needed': 'NewBackgroundNeeded',
+                                         'readout_mode': 'ReadoutMode',
                                          }
         self.__OtherAttribute2FunctionBase = {'output1_signal_type': 'OutputSignalType',
                                               'output2_signal_type': 'OutputSignalType',
@@ -296,6 +307,9 @@ class RayonixHs(PyTango.Device_4Impl):
         else:
             return get_attr_string_value_list(self, attr_name)
     
+    @Core.DEB_MEMBER_FUNCT
+    def acquireNewBackground(self, params):
+        _RayonixHsInterface.acquireNewBackground(params[0], params[1])
 
 #==================================================================
 #
@@ -346,7 +360,10 @@ class RayonixHsClass(PyTango.DeviceClass):
     cmd_list = {
         'getAttrStringValueList':
         [[PyTango.DevString, "Attribute name"],
-         [PyTango.DevVarStringArray, "Authorized String value list"]]
+         [PyTango.DevVarStringArray, "Authorized String value list"]],
+	'acquireNewBackground':
+	[[PyTango.DevVarLongArray, "[0]:0/1 blocking, [1]: nb_background"],
+	 [PyTango.DevVoid]],
         }
 
 
@@ -458,6 +475,22 @@ class RayonixHsClass(PyTango.DeviceClass):
              'label':'Output channel #2 ID',
              'unit': 'SHUTTER/INTEGRATE/FRAME/LINE/SHUTTER_OPENING/SHUTTER_CLOSING/SHUTTER_ACTIVE/TRIGGER_RISE_WAIT/TRIGGER_RISE_ACK/TRIGGER_FALL_WAIT/TRIGGER_FALL_ACK/TRIGGER_2_RISE_WAIT/TRIGGER_2_RISE_ACK/INPUT_FRAME/INPUT_GATE',
              }],
+	'new_background_needed':
+	[[PyTango.DevString,
+	  PyTango.SCALAR,
+	  PyTango.READ],
+     	 {
+	     'label':'background is needed',
+	     'unit': 'True or False', 
+         }],
+        'readout_mode':
+         [[PyTango.DevString,
+           PyTango.SCALAR,
+           PyTango.READ_WRITE],
+          {
+                'label': 'Readout mode',
+                'unit': 'READOUT_MODE_STANDARD/READOUT_MODE_HIGH_GAIN/READOUT_MODE_LOW_NOISE/READOUT_MODE_HDR/READOUT_MODE_TURBO',
+           }],
         }
 
 #------------------------------------------------------------------
