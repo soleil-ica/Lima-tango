@@ -267,6 +267,8 @@ void LimaDetector::init_device()
 				break;
 			case 32: dai.tai.data_type = Tango::DEV_ULONG;
 				break;
+			case 33: dai.tai.data_type = Tango::DEV_FLOAT;
+				break;
 			default: //ERROR
 				INFO_STREAM << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
 				m_status_message << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
@@ -327,6 +329,9 @@ void LimaDetector::init_device()
 				break;
 			case 32:
 				hw_det_info->setCurrImageType(Bpp32);
+				break;
+			case 33:
+				hw_det_info->setCurrImageType(Bpp32F);
 				break;
 			default: //ERROR
 				INFO_STREAM << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
@@ -2908,6 +2913,14 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
 											last_image.dimensions[DIMENSIONS_HEIGHT_INDEX] //- height
 											);
 							break;
+							//FLOAT
+						case TangoTraits<Tango::DevFloat>::type_id:
+							DEBUG_STREAM << "image->set_value() : DevFloat" << endl;
+							cbd.tga->set_value((Tango::DevFloat*)last_image.data(),
+											last_image.dimensions[DIMENSIONS_WIDTH_INDEX], //- width
+											last_image.dimensions[DIMENSIONS_HEIGHT_INDEX] //- height
+											);
+							break;
 
 							//ERROR : resolution not supported
 						default:
@@ -2954,6 +2967,14 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
 						case TangoTraits<Tango::DevULong>::type_id:
 							DEBUG_STREAM << "image->set_value() : DevULong" << endl;
 							cbd.tga->set_value((Tango::DevULong*)last_image.buffer(),
+											last_image.width(), //- width
+											last_image.height()//- height
+											);
+							break;
+							//FLOAT
+						case TangoTraits<Tango::DevFloat>::type_id:
+							DEBUG_STREAM << "image->set_value() : DevFloat" << endl;
+							cbd.tga->set_value((Tango::DevFloat*)last_image.buffer(),
 											last_image.width(), //- width
 											last_image.height()//- height
 											);
