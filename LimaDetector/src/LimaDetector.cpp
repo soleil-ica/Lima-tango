@@ -2435,7 +2435,7 @@ void LimaDetector::read_currentFrame(Tango::Attribute &attr)
 	DEBUG_STREAM << "LimaDetector::read_currentFrame(Tango::Attribute &attr) entering... " << endl;
 	try
 	{
-		*attr_currentFrame_read = get_last_image_counter();
+		*attr_currentFrame_read = get_last_image_counter();        
 		attr.set_value(attr_currentFrame_read);
 	}
 	catch (Tango::DevFailed& df)
@@ -2510,7 +2510,7 @@ long long LimaDetector::get_last_image_counter(void)
 	{
 		if (m_acquisition_mode == "SINGLE")
 		{
-			last_image_counter = m_hw->getNbHwAcquiredFrames();
+            last_image_counter = m_hw->getNbHwAcquiredFrames();
 		}
 		else
 		{
@@ -2923,7 +2923,7 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
 		}
 		else if (imageSource == "VIDEO")
 		{
-			if (counter >= 0)
+			if (counter > 0)
 			{
 				DEBUG_STREAM << "last_image_counter -> " << counter << endl;
 				CtVideo::Image last_image; //never put this variable in the class data member, refrence is locked in ctVideo (mantis 0021083)
