@@ -696,17 +696,17 @@ void LimaDetector::init_device()
 			nbFrames.set_write_value(*attr_nbFrames_read);
 			write_nbFrames(nbFrames);
 
-			INFO_STREAM << "Write tango hardware at Init - fileGeneration." << endl;
-			Tango::WAttribute &fileGeneration = dev_attr->get_w_attr_by_name("fileGeneration");
-			*attr_fileGeneration_read = memorizedFileGeneration;
-			fileGeneration.set_write_value(*attr_fileGeneration_read);
-			write_fileGeneration(fileGeneration);
-
 			INFO_STREAM << "Write tango hardware at Init - fileNbFrames." << endl;
 			Tango::WAttribute &attrfileNbFrames = dev_attr->get_w_attr_by_name("fileNbFrames");
 			*attr_fileNbFrames_read = attr_fileNbFrames_write = fileNbFrames;
 			attrfileNbFrames.set_write_value(*attr_fileNbFrames_read);
 			write_fileNbFrames(attrfileNbFrames);
+            
+			INFO_STREAM << "Write tango hardware at Init - fileGeneration." << endl;
+			Tango::WAttribute &fileGeneration = dev_attr->get_w_attr_by_name("fileGeneration");
+			*attr_fileGeneration_read = attr_fileGeneration_write = memorizedFileGeneration;
+			fileGeneration.set_write_value(*attr_fileGeneration_read);
+			write_fileGeneration(fileGeneration);
 		}
 		catch (Exception& e)
 		{
@@ -2440,7 +2440,7 @@ void LimaDetector::read_currentFrame(Tango::Attribute &attr)
 	DEBUG_STREAM << "LimaDetector::read_currentFrame(Tango::Attribute &attr) entering... " << endl;
 	try
 	{
-		*attr_currentFrame_read = get_last_image_counter();
+		*attr_currentFrame_read = get_last_image_counter();        
 		attr.set_value(attr_currentFrame_read);
 	}
 	catch (Tango::DevFailed& df)
@@ -2515,7 +2515,7 @@ long long LimaDetector::get_last_image_counter(void)
 	{
 		if (m_acquisition_mode == "SINGLE")
 		{
-			last_image_counter = m_hw->getNbHwAcquiredFrames();
+            last_image_counter = m_hw->getNbHwAcquiredFrames();
 		}
 		else
 		{
@@ -2936,7 +2936,7 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
 		}
 		else if (imageSource == "VIDEO")
 		{
-			if (counter >= 0)
+			if (counter > 0)
 			{
 				DEBUG_STREAM << "last_image_counter -> " << counter << endl;
 				CtVideo::Image last_image; //never put this variable in the class data member, refrence is locked in ctVideo (mantis 0021083)
@@ -3075,7 +3075,6 @@ void LimaDetector::write_fileGeneration(Tango::WAttribute &attr)
 	}
 }
 
-
 //+------------------------------------------------------------------
 /**
  *	method:	LimaDetector::snap
@@ -3105,20 +3104,22 @@ void LimaDetector::snap()
 										(const char*) ("LimaDetector::snap"));
 		}
 
-		m_saving_par.nbframes = attr_nbFrames_write;
+        ////////////////////////////////////////////////////////
+        //because start() force nbFrames = 0 & CtSaving::Manual
+		m_saving_par.nbframes = attr_nbFrames_write;            
+        
 		if (attr_fileGeneration_write)
-		{
 			m_saving_par.savingMode = CtSaving::AutoFrame;
-		}
 		else
-		{
 			m_saving_par.savingMode = CtSaving::Manual;
-		}
+        
 		m_ct->saving()->setParameters(m_saving_par);
-
+        
 		//- in SNAP mode, we request attr_nbFrames_write frames
 		m_ct->acquisition()->setAcqNbFrames(attr_nbFrames_write);
-
+        
+        ////////////////////////////////////////////////////////
+        
 		//- print some infos
 		print_acq_conf();
 
