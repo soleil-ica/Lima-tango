@@ -50,6 +50,30 @@ namespace BaslerCCD_ns
 {//=====================================
 //	Define classes for attributes
 //=====================================
+class statisticsFailedBufferCountAttrib: public Tango::Attr
+{
+public:
+	statisticsFailedBufferCountAttrib():Attr("statisticsFailedBufferCount", Tango::DEV_LONG, Tango::READ) {};
+	~statisticsFailedBufferCountAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<BaslerCCD *>(dev))->read_statisticsFailedBufferCount(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<BaslerCCD *>(dev))->is_statisticsFailedBufferCount_allowed(ty);}
+};
+
+class statisticsTotalBufferCountAttrib: public Tango::Attr
+{
+public:
+	statisticsTotalBufferCountAttrib():Attr("statisticsTotalBufferCount", Tango::DEV_LONG, Tango::READ) {};
+	~statisticsTotalBufferCountAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<BaslerCCD *>(dev))->read_statisticsTotalBufferCount(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<BaslerCCD *>(dev))->is_statisticsTotalBufferCount_allowed(ty);}
+};
+
 class autoGainAttrib: public Tango::Attr
 {
 public:

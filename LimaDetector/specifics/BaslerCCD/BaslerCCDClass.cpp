@@ -285,6 +285,26 @@ void BaslerCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	auto_gain->set_memorized_init(false);
 	att_list.push_back(auto_gain);
 
+	//	Attribute : statisticsTotalBufferCount
+	statisticsTotalBufferCountAttrib	*statistics_total_buffer_count = new statisticsTotalBufferCountAttrib();
+	Tango::UserDefaultAttrProp	statistics_total_buffer_count_prop;
+	statistics_total_buffer_count_prop.set_unit(" ");
+	statistics_total_buffer_count_prop.set_standard_unit(" ");
+	statistics_total_buffer_count_prop.set_display_unit(" ");
+	statistics_total_buffer_count_prop.set_format("%d");
+	statistics_total_buffer_count->set_default_properties(statistics_total_buffer_count_prop);
+	att_list.push_back(statistics_total_buffer_count);
+
+	//	Attribute : statisticsFailedBufferCount
+	statisticsFailedBufferCountAttrib	*statistics_failed_buffer_count = new statisticsFailedBufferCountAttrib();
+	Tango::UserDefaultAttrProp	statistics_failed_buffer_count_prop;
+	statistics_failed_buffer_count_prop.set_unit(" ");
+	statistics_failed_buffer_count_prop.set_standard_unit(" ");
+	statistics_failed_buffer_count_prop.set_display_unit(" ");
+	statistics_failed_buffer_count_prop.set_format("%d");
+	statistics_failed_buffer_count->set_default_properties(statistics_failed_buffer_count_prop);
+	att_list.push_back(statistics_failed_buffer_count);
+
 	//	End of Automatic code generation
 	//-------------------------------------------------------------
 }

@@ -99,6 +99,8 @@ public :
 		Tango::DevDouble	attr_gain_write;
 		Tango::DevBoolean	*attr_autoGain_read;
 		Tango::DevBoolean	attr_autoGain_write;
+		Tango::DevLong	*attr_statisticsTotalBufferCount_read;
+		Tango::DevLong	*attr_statisticsFailedBufferCount_read;
 //@}
 
 /**
@@ -223,6 +225,14 @@ public :
  */
 	virtual void write_autoGain(Tango::WAttribute &attr);
 /**
+ *	Extract real attribute values for statisticsTotalBufferCount acquisition result.
+ */
+	virtual void read_statisticsTotalBufferCount(Tango::Attribute &attr);
+/**
+ *	Extract real attribute values for statisticsFailedBufferCount acquisition result.
+ */
+	virtual void read_statisticsFailedBufferCount(Tango::Attribute &attr);
+/**
  *	Read/Write allowed for frameRate attribute.
  */
 	virtual bool is_frameRate_allowed(Tango::AttReqType type);
@@ -238,6 +248,14 @@ public :
  *	Read/Write allowed for autoGain attribute.
  */
 	virtual bool is_autoGain_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for statisticsTotalBufferCount attribute.
+ */
+	virtual bool is_statisticsTotalBufferCount_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for statisticsFailedBufferCount attribute.
+ */
+	virtual bool is_statisticsFailedBufferCount_allowed(Tango::AttReqType type);
 /**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code

@@ -255,7 +255,12 @@ void RoiCountersClass::attribute_factory(vector<Tango::Attr *> &att_list)
 {
 	//	Attribute : version
 	versionAttrib	*version = new versionAttrib();
-	version->set_disp_level(Tango::EXPERT);
+	Tango::UserDefaultAttrProp	version_prop;
+	version_prop.set_unit(" ");
+	version_prop.set_standard_unit(" ");
+	version_prop.set_display_unit(" ");
+	version_prop.set_description("Display the Version of RoiCounters Device");
+	version->set_default_properties(version_prop);
 	att_list.push_back(version);
 
 	//	End of Automatic code generation
@@ -314,10 +319,10 @@ void RoiCountersClass::set_default_property()
 	//	Set Default Class Properties
 	//	Set Default Device Properties
 	prop_name = "NbRoiCounters";
-	prop_desc = "";
-	prop_def  = "1";
+	prop_desc = "Fix the number of Region Of Interest.<br>\nStatistical calculations  (sum, average, std, min, max) will be made for these regions of interest.";
+	prop_def  = "2";
 	vect_data.clear();
-	vect_data.push_back("1");
+	vect_data.push_back("2");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -329,7 +334,7 @@ void RoiCountersClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "__x";
-	prop_desc = "";
+	prop_desc = "For each Region of Interest . (Origin X)";
 	prop_def  = "0\n0";
 	vect_data.clear();
 	vect_data.push_back("0");
@@ -345,7 +350,7 @@ void RoiCountersClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "__y";
-	prop_desc = "";
+	prop_desc = "For each Region of Interest . (Origin Y)";
 	prop_def  = "0\n0";
 	vect_data.clear();
 	vect_data.push_back("0");
@@ -361,11 +366,11 @@ void RoiCountersClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "__width";
-	prop_desc = "";
-	prop_def  = "0\n0";
+	prop_desc = "For each Region of Interest . (Width)";
+	prop_def  = "10\n10";
 	vect_data.clear();
-	vect_data.push_back("0");
-	vect_data.push_back("0");
+	vect_data.push_back("10");
+	vect_data.push_back("10");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -377,11 +382,11 @@ void RoiCountersClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "__height";
-	prop_desc = "";
-	prop_def  = "0\n0";
+	prop_desc = "For each Region of Interest . (Height)";
+	prop_def  = "10\n10";
 	vect_data.clear();
-	vect_data.push_back("0");
-	vect_data.push_back("0");
+	vect_data.push_back("10");
+	vect_data.push_back("10");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);

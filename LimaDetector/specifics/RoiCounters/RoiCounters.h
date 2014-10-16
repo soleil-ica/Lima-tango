@@ -107,23 +107,24 @@ public:
      */
     //@{
 /**
- *	
+ *	Fix the number of Region Of Interest.<br>
+ *	Statistical calculations  (sum, average, std, min, max) will be made for these regions of interest.
  */
 	Tango::DevULong	nbRoiCounters;
 /**
- *	
+ *	For each Region of Interest . (Origin X)
  */
 	vector<long>	__x;
 /**
- *	
+ *	For each Region of Interest . (Origin Y)
  */
 	vector<long>	__y;
 /**
- *	
+ *	For each Region of Interest . (Width)
  */
 	vector<long>	__width;
 /**
- *	
+ *	For each Region of Interest . (Height)
  */
 	vector<long>	__height;
 //@}
