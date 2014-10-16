@@ -249,11 +249,22 @@ void BaslerCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : frameRate
 	frameRateAttrib	*frame_rate = new frameRateAttrib();
 	Tango::UserDefaultAttrProp	frame_rate_prop;
-	frame_rate_prop.set_unit(" ");
+	frame_rate_prop.set_unit("Frames/s");
+	frame_rate_prop.set_standard_unit("Frames/s");
 	frame_rate_prop.set_display_unit("Frames/s");
 	frame_rate_prop.set_description("Display the current frame rate (nb frames/s)<br>");
 	frame_rate->set_default_properties(frame_rate_prop);
 	att_list.push_back(frame_rate);
+
+	//	Attribute : dataRate
+	dataRateAttrib	*data_rate = new dataRateAttrib();
+	Tango::UserDefaultAttrProp	data_rate_prop;
+	data_rate_prop.set_unit("MB/s");
+	data_rate_prop.set_standard_unit("MB/s");
+	data_rate_prop.set_display_unit("MB/s");
+	data_rate_prop.set_description("Display the current data rate (MB/s)<br>");
+	data_rate->set_default_properties(data_rate_prop);
+	att_list.push_back(data_rate);
 
 	//	Attribute : temperature
 	temperatureAttrib	*temperature = new temperatureAttrib();
@@ -284,16 +295,6 @@ void BaslerCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	auto_gain->set_memorized();
 	auto_gain->set_memorized_init(false);
 	att_list.push_back(auto_gain);
-
-	//	Attribute : statisticsTotalBufferCount
-	statisticsTotalBufferCountAttrib	*statistics_total_buffer_count = new statisticsTotalBufferCountAttrib();
-	Tango::UserDefaultAttrProp	statistics_total_buffer_count_prop;
-	statistics_total_buffer_count_prop.set_unit(" ");
-	statistics_total_buffer_count_prop.set_standard_unit(" ");
-	statistics_total_buffer_count_prop.set_display_unit(" ");
-	statistics_total_buffer_count_prop.set_format("%d");
-	statistics_total_buffer_count->set_default_properties(statistics_total_buffer_count_prop);
-	att_list.push_back(statistics_total_buffer_count);
 
 	//	Attribute : statisticsFailedBufferCount
 	statisticsFailedBufferCountAttrib	*statistics_failed_buffer_count = new statisticsFailedBufferCountAttrib();

@@ -365,8 +365,8 @@ void RoiCounters::get_device_property()
 	PropertyHelper::create_property_if_empty(this, dev_prop, vecXY, "__x");
 	PropertyHelper::create_property_if_empty(this, dev_prop, vecXY, "__y");
     vector<string> vecWidthHeight(2, "10");
-	PropertyHelper::create_property_if_empty(this, dev_prop, myVector, "__width");
-	PropertyHelper::create_property_if_empty(this, dev_prop, myVector, "__height");
+	PropertyHelper::create_property_if_empty(this, dev_prop, vecWidthHeight, "__width");
+	PropertyHelper::create_property_if_empty(this, dev_prop, vecWidthHeight, "__height");
 }
 
 //+----------------------------------------------------------------------------

@@ -98,10 +98,10 @@ void BaslerCCD::delete_device()
     INFO_STREAM << "BaslerCCD::BaslerCCD() delete device " << device_name << endl;
     //    Delete device allocated objects
     DELETE_SCALAR_ATTRIBUTE(attr_frameRate_read);
+    DELETE_SCALAR_ATTRIBUTE(attr_dataRate_read);
     DELETE_SCALAR_ATTRIBUTE(attr_temperature_read);
     DELETE_SCALAR_ATTRIBUTE(attr_gain_read);
     DELETE_SCALAR_ATTRIBUTE(attr_autoGain_read);
-    DELETE_SCALAR_ATTRIBUTE(attr_statisticsTotalBufferCount_read);
     DELETE_SCALAR_ATTRIBUTE(attr_statisticsFailedBufferCount_read);
 
     //!!!! ONLY LimaDetector device can do this !!!!
@@ -127,10 +127,10 @@ void BaslerCCD::init_device()
     //--------------------------------------------
     get_device_property();
     CREATE_SCALAR_ATTRIBUTE(attr_frameRate_read, 0.0);
+    CREATE_SCALAR_ATTRIBUTE(attr_dataRate_read, 0.0);    
     CREATE_SCALAR_ATTRIBUTE(attr_temperature_read, 0.0);
     CREATE_SCALAR_ATTRIBUTE(attr_gain_read, 0.0);
-    CREATE_SCALAR_ATTRIBUTE(attr_autoGain_read);
-    CREATE_SCALAR_ATTRIBUTE(attr_statisticsTotalBufferCount_read);
+    CREATE_SCALAR_ATTRIBUTE(attr_autoGain_read);    
     CREATE_SCALAR_ATTRIBUTE(attr_statisticsFailedBufferCount_read);    
     
     m_is_device_initialized = false;
@@ -347,6 +347,70 @@ void BaslerCCD::read_attr_hardware(vector<long> &attr_list)
 }
 //+----------------------------------------------------------------------------
 //
+// method : 		BaslerCCD::read_dataRate
+// 
+// description : 	Extract real attribute values for dataRate acquisition result.
+//
+//-----------------------------------------------------------------------------
+void BaslerCCD::read_dataRate(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "BaslerCCD::read_dataRate(Tango::Attribute &attr) entering... "<< endl;
+    yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
+    if (m_ct != 0)
+    {
+        try
+        {
+            if (m_hw != 0)
+            {
+                double dataRate =0.0;//in MB/s
+                
+                //get the frame rate
+                double frameRate = 0.0;                
+                (m_hw->getCamera()).getFrameRate((double&) frameRate);
+                
+                //get the detector pixel depth
+                int pixelDepth = 8;//default
+                HwDetInfoCtrlObj *hw_det_info;
+                m_hw->getHwCtrlObj(hw_det_info);
+                ImageType image_type;
+                hw_det_info->getCurrImageType(image_type);
+                FrameDim frame_dim;
+                pixelDepth = frame_dim.getImageTypeBpp(image_type);
+                
+                //get the detector ROI
+                Roi roi;
+                m_ct->image()->getRoi(roi);
+                
+                //compute data rate in MB/s
+                dataRate = frameRate*(pixelDepth/8.0)*(roi.getSize().getWidth()*roi.getSize().getHeight())/(1024.0*1024.0); 
+                *attr_dataRate_read = dataRate;
+                
+                attr.set_value(attr_dataRate_read);
+            }
+        }
+        catch (Tango::DevFailed& df)
+        {
+            ERROR_STREAM << df << endl;
+            //- rethrow exception
+            Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("BaslerCCD::read_frameRate"));
+        }
+        catch (Exception& e)
+        {
+            ERROR_STREAM << e.getErrMsg() << endl;
+            //- throw exception
+            Tango::Except::throw_exception(
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("BaslerCCD::read_frameRate"));
+        }
+    }    
+}
+
+//+----------------------------------------------------------------------------
+//
 // method : 		BaslerCCD::read_statisticsFailedBufferCount
 // 
 // description : 	Extract real attribute values for statisticsFailedBufferCount acquisition result.
@@ -388,51 +452,6 @@ void BaslerCCD::read_statisticsFailedBufferCount(Tango::Attribute &attr)
             static_cast<const char*> ("BaslerCCD::read_statisticsFailedBufferCount"));
         }
     }           
-}
-
-//+----------------------------------------------------------------------------
-//
-// method : 		BaslerCCD::read_statisticsTotalBufferCount
-// 
-// description : 	Extract real attribute values for statisticsTotalBufferCount acquisition result.
-//
-//-----------------------------------------------------------------------------
-void BaslerCCD::read_statisticsTotalBufferCount(Tango::Attribute &attr)
-{
-	DEBUG_STREAM << "BaslerCCD::read_statisticsTotalBufferCount(Tango::Attribute &attr) entering... "<< endl;
-    yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
-    if (m_ct != 0)
-    {
-        try
-        {
-            long count;
-            if (m_hw != 0)
-            {
-                (m_hw->getCamera()).getStatisticsTotalBufferCount(count);
-                if(count!=-1)
-                    *attr_statisticsTotalBufferCount_read = (Tango::DevLong)(count);
-                attr.set_value(attr_statisticsTotalBufferCount_read);
-            }
-        }
-        catch (Tango::DevFailed& df)
-        {
-            ERROR_STREAM << df << endl;
-            //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_statisticsTotalBufferCount"));
-        }
-        catch (Exception& e)
-        {
-            ERROR_STREAM << e.getErrMsg() << endl;
-            //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_statisticsTotalBufferCount"));
-        }
-    }    
 }
 
 //+----------------------------------------------------------------------------
@@ -731,6 +750,8 @@ Tango::DevState BaslerCCD::dev_state()
     argout = DeviceState;
     return argout;
 }
+
+
 
 
 

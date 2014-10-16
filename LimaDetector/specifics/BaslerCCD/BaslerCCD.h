@@ -94,12 +94,12 @@ public :
  */
 //@{
 		Tango::DevDouble	*attr_frameRate_read;
+		Tango::DevDouble	*attr_dataRate_read;
 		Tango::DevDouble	*attr_temperature_read;
 		Tango::DevDouble	*attr_gain_read;
 		Tango::DevDouble	attr_gain_write;
 		Tango::DevBoolean	*attr_autoGain_read;
 		Tango::DevBoolean	attr_autoGain_write;
-		Tango::DevLong	*attr_statisticsTotalBufferCount_read;
 		Tango::DevLong	*attr_statisticsFailedBufferCount_read;
 //@}
 
@@ -205,6 +205,10 @@ public :
  */
 	virtual void read_frameRate(Tango::Attribute &attr);
 /**
+ *	Extract real attribute values for dataRate acquisition result.
+ */
+	virtual void read_dataRate(Tango::Attribute &attr);
+/**
  *	Extract real attribute values for temperature acquisition result.
  */
 	virtual void read_temperature(Tango::Attribute &attr);
@@ -225,10 +229,6 @@ public :
  */
 	virtual void write_autoGain(Tango::WAttribute &attr);
 /**
- *	Extract real attribute values for statisticsTotalBufferCount acquisition result.
- */
-	virtual void read_statisticsTotalBufferCount(Tango::Attribute &attr);
-/**
  *	Extract real attribute values for statisticsFailedBufferCount acquisition result.
  */
 	virtual void read_statisticsFailedBufferCount(Tango::Attribute &attr);
@@ -236,6 +236,10 @@ public :
  *	Read/Write allowed for frameRate attribute.
  */
 	virtual bool is_frameRate_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for dataRate attribute.
+ */
+	virtual bool is_dataRate_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for temperature attribute.
  */
@@ -248,10 +252,6 @@ public :
  *	Read/Write allowed for autoGain attribute.
  */
 	virtual bool is_autoGain_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for statisticsTotalBufferCount attribute.
- */
-	virtual bool is_statisticsTotalBufferCount_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for statisticsFailedBufferCount attribute.
  */

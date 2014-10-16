@@ -176,12 +176,12 @@ bool BaslerCCD::is_autoGain_allowed(Tango::AttReqType type)
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		BaslerCCD::is_statisticsTotalBufferCount_allowed
+// method : 		BaslerCCD::is_statisticsFailedBufferCount_allowed
 // 
-// description : 	Read/Write allowed for statisticsTotalBufferCount attribute.
+// description : 	Read/Write allowed for statisticsFailedBufferCount attribute.
 //
 //-----------------------------------------------------------------------------
-bool BaslerCCD::is_statisticsTotalBufferCount_allowed(Tango::AttReqType type)
+bool BaslerCCD::is_statisticsFailedBufferCount_allowed(Tango::AttReqType type)
 {
 	if (get_state() == Tango::INIT	||
 		get_state() == Tango::FAULT	||
@@ -204,12 +204,12 @@ bool BaslerCCD::is_statisticsTotalBufferCount_allowed(Tango::AttReqType type)
 }
 //+----------------------------------------------------------------------------
 //
-// method : 		BaslerCCD::is_statisticsFailedBufferCount_allowed
+// method : 		BaslerCCD::is_dataRate_allowed
 // 
-// description : 	Read/Write allowed for statisticsFailedBufferCount attribute.
+// description : 	Read/Write allowed for dataRate attribute.
 //
 //-----------------------------------------------------------------------------
-bool BaslerCCD::is_statisticsFailedBufferCount_allowed(Tango::AttReqType type)
+bool BaslerCCD::is_dataRate_allowed(Tango::AttReqType type)
 {
 	if (get_state() == Tango::INIT	||
 		get_state() == Tango::FAULT	||
