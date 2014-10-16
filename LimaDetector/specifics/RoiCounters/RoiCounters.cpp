@@ -285,7 +285,7 @@ void RoiCounters::get_device_property()
 
 	//	Read device properties from database.(Automatic code generation)
 	//------------------------------------------------------------------
-	Tango::DbData dev_prop;
+	Tango::DbData	dev_prop;
 	dev_prop.push_back(Tango::DbDatum("NbRoiCounters"));
 	dev_prop.push_back(Tango::DbDatum("__x"));
 	dev_prop.push_back(Tango::DbDatum("__y"));
@@ -294,84 +294,79 @@ void RoiCounters::get_device_property()
 
 	//	Call database and extract values
 	//--------------------------------------------
-	if (Tango::Util::instance()->_UseDb == true)
+	if (Tango::Util::instance()->_UseDb==true)
 		get_db_device()->get_property(dev_prop);
-	Tango::DbDatum def_prop, cl_prop;
-	RoiCountersClass *ds_class =
-	 (static_cast<RoiCountersClass *> (get_device_class()));
-	int i = -1;
+	Tango::DbDatum	def_prop, cl_prop;
+	RoiCountersClass	*ds_class =
+		(static_cast<RoiCountersClass *>(get_device_class()));
+	int	i = -1;
 
 	//	Try to initialize NbRoiCounters from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty() == false) cl_prop >> nbRoiCounters;
-	else
-	{
+	if (cl_prop.is_empty()==false)	cl_prop  >>  nbRoiCounters;
+	else {
 		//	Try to initialize NbRoiCounters from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty() == false) def_prop >> nbRoiCounters;
+		if (def_prop.is_empty()==false)	def_prop  >>  nbRoiCounters;
 	}
 	//	And try to extract NbRoiCounters value from database
-	if (dev_prop[i].is_empty() == false) dev_prop[i] >> nbRoiCounters;
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  nbRoiCounters;
 
 	//	Try to initialize __x from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty() == false) cl_prop >> __x;
-	else
-	{
+	if (cl_prop.is_empty()==false)	cl_prop  >>  __x;
+	else {
 		//	Try to initialize __x from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty() == false) def_prop >> __x;
+		if (def_prop.is_empty()==false)	def_prop  >>  __x;
 	}
 	//	And try to extract __x value from database
-	if (dev_prop[i].is_empty() == false) dev_prop[i] >> __x;
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  __x;
 
 	//	Try to initialize __y from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty() == false) cl_prop >> __y;
-	else
-	{
+	if (cl_prop.is_empty()==false)	cl_prop  >>  __y;
+	else {
 		//	Try to initialize __y from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty() == false) def_prop >> __y;
+		if (def_prop.is_empty()==false)	def_prop  >>  __y;
 	}
 	//	And try to extract __y value from database
-	if (dev_prop[i].is_empty() == false) dev_prop[i] >> __y;
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  __y;
 
 	//	Try to initialize __width from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty() == false) cl_prop >> __width;
-	else
-	{
+	if (cl_prop.is_empty()==false)	cl_prop  >>  __width;
+	else {
 		//	Try to initialize __width from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty() == false) def_prop >> __width;
+		if (def_prop.is_empty()==false)	def_prop  >>  __width;
 	}
 	//	And try to extract __width value from database
-	if (dev_prop[i].is_empty() == false) dev_prop[i] >> __width;
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  __width;
 
 	//	Try to initialize __height from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-	if (cl_prop.is_empty() == false) cl_prop >> __height;
-	else
-	{
+	if (cl_prop.is_empty()==false)	cl_prop  >>  __height;
+	else {
 		//	Try to initialize __height from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-		if (def_prop.is_empty() == false) def_prop >> __height;
+		if (def_prop.is_empty()==false)	def_prop  >>  __height;
 	}
 	//	And try to extract __height value from database
-	if (dev_prop[i].is_empty() == false) dev_prop[i] >> __height;
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  __height;
 
 
 
 	//	End of Automatic code generation
 	//------------------------------------------------------------------
-	PropertyHelper::create_property_if_empty(this, dev_prop, "2", "NbRoiCounters");
-
-	vector<string> myVector(nbRoiCounters, "0");
-	PropertyHelper::create_property_if_empty(this, dev_prop, myVector, "__x");
-	PropertyHelper::create_property_if_empty(this, dev_prop, myVector, "__y");
-	PropertyHelper::create_property_if_empty(this, dev_prop, myVector, "__width");
-	PropertyHelper::create_property_if_empty(this, dev_prop, myVector, "__height");
+	PropertyHelper::create_property_if_empty(this, dev_prop, "2", "NbRoiCounters");    
+	vector<string> vecXY(2, "0");
+	PropertyHelper::create_property_if_empty(this, dev_prop, vecXY, "__x");
+	PropertyHelper::create_property_if_empty(this, dev_prop, vecXY, "__y");
+    vector<string> vecWidthHeight(2, "10");
+	PropertyHelper::create_property_if_empty(this, dev_prop, vecWidthHeight, "__width");
+	PropertyHelper::create_property_if_empty(this, dev_prop, vecWidthHeight, "__height");
 }
 
 //+----------------------------------------------------------------------------
@@ -961,4 +956,8 @@ Tango::DevState RoiCounters::dev_state()
 }
 
 
-} //	namespace
+
+
+
+
+}	//	namespace

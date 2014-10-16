@@ -50,6 +50,18 @@ namespace BaslerCCD_ns
 {//=====================================
 //	Define classes for attributes
 //=====================================
+class statisticsFailedBufferCountAttrib: public Tango::Attr
+{
+public:
+	statisticsFailedBufferCountAttrib():Attr("statisticsFailedBufferCount", Tango::DEV_LONG, Tango::READ) {};
+	~statisticsFailedBufferCountAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<BaslerCCD *>(dev))->read_statisticsFailedBufferCount(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<BaslerCCD *>(dev))->is_statisticsFailedBufferCount_allowed(ty);}
+};
+
 class autoGainAttrib: public Tango::Attr
 {
 public:
@@ -88,6 +100,18 @@ public:
 	{(static_cast<BaslerCCD *>(dev))->read_temperature(att);}
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
 	{return (static_cast<BaslerCCD *>(dev))->is_temperature_allowed(ty);}
+};
+
+class dataRateAttrib: public Tango::Attr
+{
+public:
+	dataRateAttrib():Attr("dataRate", Tango::DEV_DOUBLE, Tango::READ) {};
+	~dataRateAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<BaslerCCD *>(dev))->read_dataRate(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<BaslerCCD *>(dev))->is_dataRate_allowed(ty);}
 };
 
 class frameRateAttrib: public Tango::Attr

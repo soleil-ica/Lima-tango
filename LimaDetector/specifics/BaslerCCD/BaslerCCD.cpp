@@ -98,9 +98,11 @@ void BaslerCCD::delete_device()
     INFO_STREAM << "BaslerCCD::BaslerCCD() delete device " << device_name << endl;
     //    Delete device allocated objects
     DELETE_SCALAR_ATTRIBUTE(attr_frameRate_read);
+    DELETE_SCALAR_ATTRIBUTE(attr_dataRate_read);
     DELETE_SCALAR_ATTRIBUTE(attr_temperature_read);
     DELETE_SCALAR_ATTRIBUTE(attr_gain_read);
     DELETE_SCALAR_ATTRIBUTE(attr_autoGain_read);
+    DELETE_SCALAR_ATTRIBUTE(attr_statisticsFailedBufferCount_read);
 
     //!!!! ONLY LimaDetector device can do this !!!!
     //if(m_ct!=0)
@@ -125,9 +127,12 @@ void BaslerCCD::init_device()
     //--------------------------------------------
     get_device_property();
     CREATE_SCALAR_ATTRIBUTE(attr_frameRate_read, 0.0);
+    CREATE_SCALAR_ATTRIBUTE(attr_dataRate_read, 0.0);    
     CREATE_SCALAR_ATTRIBUTE(attr_temperature_read, 0.0);
     CREATE_SCALAR_ATTRIBUTE(attr_gain_read, 0.0);
-    CREATE_SCALAR_ATTRIBUTE(attr_autoGain_read);
+    CREATE_SCALAR_ATTRIBUTE(attr_autoGain_read);    
+    CREATE_SCALAR_ATTRIBUTE(attr_statisticsFailedBufferCount_read);    
+    
     m_is_device_initialized = false;
     set_state(Tango::INIT);
     m_status_message.str("");
@@ -200,81 +205,76 @@ void BaslerCCD::get_device_property()
 
     //    Read device properties from database.(Automatic code generation)
     //------------------------------------------------------------------
-    Tango::DbData dev_prop;
-    dev_prop.push_back(Tango::DbDatum("DetectorIP"));
-    dev_prop.push_back(Tango::DbDatum("DetectorTimeout"));
-    dev_prop.push_back(Tango::DbDatum("DetectorPacketSize"));
-    dev_prop.push_back(Tango::DbDatum("MemorizedGain"));
-    dev_prop.push_back(Tango::DbDatum("MemorizedAutoGain"));
+	Tango::DbData	dev_prop;
+	dev_prop.push_back(Tango::DbDatum("DetectorIP"));
+	dev_prop.push_back(Tango::DbDatum("DetectorTimeout"));
+	dev_prop.push_back(Tango::DbDatum("DetectorPacketSize"));
+	dev_prop.push_back(Tango::DbDatum("MemorizedGain"));
+	dev_prop.push_back(Tango::DbDatum("MemorizedAutoGain"));
 
-    //	Call database and extract values
-    //--------------------------------------------
-    if (Tango::Util::instance()->_UseDb == true)
-        get_db_device()->get_property(dev_prop);
-    Tango::DbDatum def_prop, cl_prop;
-    BaslerCCDClass *ds_class =
-    (static_cast<BaslerCCDClass *> (get_device_class()));
-    int i = -1;
+	//	Call database and extract values
+	//--------------------------------------------
+	if (Tango::Util::instance()->_UseDb==true)
+		get_db_device()->get_property(dev_prop);
+	Tango::DbDatum	def_prop, cl_prop;
+	BaslerCCDClass	*ds_class =
+		(static_cast<BaslerCCDClass *>(get_device_class()));
+	int	i = -1;
 
-    //	Try to initialize DetectorIP from class property
-    cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-    if (cl_prop.is_empty() == false) cl_prop >> detectorIP;
-    else
-    {
-        //	Try to initialize DetectorIP from default device value
-        def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-        if (def_prop.is_empty() == false) def_prop >> detectorIP;
-    }
-    //	And try to extract DetectorIP value from database
-    if (dev_prop[i].is_empty() == false) dev_prop[i] >> detectorIP;
+	//	Try to initialize DetectorIP from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorIP;
+	else {
+		//	Try to initialize DetectorIP from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  detectorIP;
+	}
+	//	And try to extract DetectorIP value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorIP;
 
-    //	Try to initialize DetectorTimeout from class property
-    cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-    if (cl_prop.is_empty() == false) cl_prop >> detectorTimeout;
-    else
-    {
-        //	Try to initialize DetectorTimeout from default device value
-        def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-        if (def_prop.is_empty() == false) def_prop >> detectorTimeout;
-    }
-    //	And try to extract DetectorTimeout value from database
-    if (dev_prop[i].is_empty() == false) dev_prop[i] >> detectorTimeout;
+	//	Try to initialize DetectorTimeout from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorTimeout;
+	else {
+		//	Try to initialize DetectorTimeout from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  detectorTimeout;
+	}
+	//	And try to extract DetectorTimeout value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorTimeout;
 
-    //	Try to initialize DetectorPacketSize from class property
-    cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-    if (cl_prop.is_empty() == false) cl_prop >> detectorPacketSize;
-    else
-    {
-        //	Try to initialize DetectorPacketSize from default device value
-        def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-        if (def_prop.is_empty() == false) def_prop >> detectorPacketSize;
-    }
-    //	And try to extract DetectorPacketSize value from database
-    if (dev_prop[i].is_empty() == false) dev_prop[i] >> detectorPacketSize;
+	//	Try to initialize DetectorPacketSize from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  detectorPacketSize;
+	else {
+		//	Try to initialize DetectorPacketSize from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  detectorPacketSize;
+	}
+	//	And try to extract DetectorPacketSize value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorPacketSize;
 
-    //	Try to initialize MemorizedGain from class property
-    cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-    if (cl_prop.is_empty() == false) cl_prop >> memorizedGain;
-    else
-    {
-        //	Try to initialize MemorizedGain from default device value
-        def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-        if (def_prop.is_empty() == false) def_prop >> memorizedGain;
-    }
-    //	And try to extract MemorizedGain value from database
-    if (dev_prop[i].is_empty() == false) dev_prop[i] >> memorizedGain;
+	//	Try to initialize MemorizedGain from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedGain;
+	else {
+		//	Try to initialize MemorizedGain from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedGain;
+	}
+	//	And try to extract MemorizedGain value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedGain;
 
-    //	Try to initialize MemorizedAutoGain from class property
-    cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-    if (cl_prop.is_empty() == false) cl_prop >> memorizedAutoGain;
-    else
-    {
-        //	Try to initialize MemorizedAutoGain from default device value
-        def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-        if (def_prop.is_empty() == false) def_prop >> memorizedAutoGain;
-    }
-    //	And try to extract MemorizedAutoGain value from database
-    if (dev_prop[i].is_empty() == false) dev_prop[i] >> memorizedAutoGain;
+	//	Try to initialize MemorizedAutoGain from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedAutoGain;
+	else {
+		//	Try to initialize MemorizedAutoGain from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedAutoGain;
+	}
+	//	And try to extract MemorizedAutoGain value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedAutoGain;
 
 
 
@@ -344,6 +344,114 @@ void BaslerCCD::read_attr_hardware(vector<long> &attr_list)
 {
     DEBUG_STREAM << "BaslerCCD::read_attr_hardware(vector<long> &attr_list) entering... " << endl;
     //    Add your own code here
+}
+//+----------------------------------------------------------------------------
+//
+// method : 		BaslerCCD::read_dataRate
+// 
+// description : 	Extract real attribute values for dataRate acquisition result.
+//
+//-----------------------------------------------------------------------------
+void BaslerCCD::read_dataRate(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "BaslerCCD::read_dataRate(Tango::Attribute &attr) entering... "<< endl;
+    yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
+    if (m_ct != 0)
+    {
+        try
+        {
+            if (m_hw != 0)
+            {
+                double dataRate =0.0;//in MB/s
+                
+                //get the frame rate
+                double frameRate = 0.0;                
+                (m_hw->getCamera()).getFrameRate((double&) frameRate);
+                
+                //get the detector pixel depth
+                int pixelDepth = 8;//default
+                HwDetInfoCtrlObj *hw_det_info;
+                m_hw->getHwCtrlObj(hw_det_info);
+                ImageType image_type;
+                hw_det_info->getCurrImageType(image_type);
+                FrameDim frame_dim;
+                pixelDepth = frame_dim.getImageTypeBpp(image_type);
+                
+                //get the detector ROI
+                Roi roi;
+                m_ct->image()->getRoi(roi);
+                
+                //compute data rate in MB/s
+                dataRate = frameRate*(pixelDepth/8.0)*(roi.getSize().getWidth()*roi.getSize().getHeight())/(1024.0*1024.0); 
+                *attr_dataRate_read = dataRate;
+                
+                attr.set_value(attr_dataRate_read);
+            }
+        }
+        catch (Tango::DevFailed& df)
+        {
+            ERROR_STREAM << df << endl;
+            //- rethrow exception
+            Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("BaslerCCD::read_frameRate"));
+        }
+        catch (Exception& e)
+        {
+            ERROR_STREAM << e.getErrMsg() << endl;
+            //- throw exception
+            Tango::Except::throw_exception(
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("BaslerCCD::read_frameRate"));
+        }
+    }    
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		BaslerCCD::read_statisticsFailedBufferCount
+// 
+// description : 	Extract real attribute values for statisticsFailedBufferCount acquisition result.
+//
+//-----------------------------------------------------------------------------
+void BaslerCCD::read_statisticsFailedBufferCount(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "BaslerCCD::read_statisticsFailedBufferCount(Tango::Attribute &attr) entering... "<< endl;
+    yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
+    if (m_ct != 0)
+    {
+        try
+        {
+            long count;
+            if (m_hw != 0)
+            {
+                (m_hw->getCamera()).getStatisticsFailedBufferCount(count);
+                if(count!=-1)
+                    *attr_statisticsFailedBufferCount_read = (Tango::DevLong)(count);
+                attr.set_value(attr_statisticsFailedBufferCount_read);
+            }
+        }
+        catch (Tango::DevFailed& df)
+        {
+            ERROR_STREAM << df << endl;
+            //- rethrow exception
+            Tango::Except::re_throw_exception(df,
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (string(df.errors[0].desc).c_str()),
+            static_cast<const char*> ("BaslerCCD::read_statisticsFailedBufferCount"));
+        }
+        catch (Exception& e)
+        {
+            ERROR_STREAM << e.getErrMsg() << endl;
+            //- throw exception
+            Tango::Except::throw_exception(
+            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+            static_cast<const char*> (e.getErrMsg().c_str()),
+            static_cast<const char*> ("BaslerCCD::read_statisticsFailedBufferCount"));
+        }
+    }           
 }
 
 //+----------------------------------------------------------------------------
@@ -460,7 +568,7 @@ void BaslerCCD::read_gain(Tango::Attribute &attr)
             Tango::Except::re_throw_exception(df,
             static_cast<const char*> ("TANGO_DEVICE_ERROR"),
             static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("LimaDetector::read_gain"));
+            static_cast<const char*> ("BaslerCCD::read_gain"));
         }
         catch (Exception& e)
         {
@@ -469,7 +577,7 @@ void BaslerCCD::read_gain(Tango::Attribute &attr)
             Tango::Except::throw_exception(
             static_cast<const char*> ("TANGO_DEVICE_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("LimaDetector::read_gain"));
+            static_cast<const char*> ("BaslerCCD::read_gain"));
         }
     }
 }
@@ -503,7 +611,7 @@ void BaslerCCD::write_gain(Tango::WAttribute &attr)
             Tango::Except::re_throw_exception(df,
             static_cast<const char*> ("TANGO_DEVICE_ERROR"),
             static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("LimaDetector::write_gain"));
+            static_cast<const char*> ("BaslerCCD::write_gain"));
         }
         catch (Exception& e)
         {
@@ -512,7 +620,7 @@ void BaslerCCD::write_gain(Tango::WAttribute &attr)
             Tango::Except::throw_exception(
             static_cast<const char*> ("TANGO_DEVICE_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("LimaDetector::write_gain"));
+            static_cast<const char*> ("BaslerCCD::write_gain"));
         }
     }
 }
@@ -547,7 +655,7 @@ void BaslerCCD::read_autoGain(Tango::Attribute &attr)
             Tango::Except::re_throw_exception(df,
             static_cast<const char*> ("TANGO_DEVICE_ERROR"),
             static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("LimaDetector::read_autoGain"));
+            static_cast<const char*> ("BaslerCCD::read_autoGain"));
         }
         catch (Exception& e)
         {
@@ -556,7 +664,7 @@ void BaslerCCD::read_autoGain(Tango::Attribute &attr)
             Tango::Except::throw_exception(
             static_cast<const char*> ("TANGO_DEVICE_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("LimaDetector::read_autoGain"));
+            static_cast<const char*> ("BaslerCCD::read_autoGain"));
         }
     }
 }
@@ -590,7 +698,7 @@ void BaslerCCD::write_autoGain(Tango::WAttribute &attr)
             Tango::Except::re_throw_exception(df,
             static_cast<const char*> ("TANGO_DEVICE_ERROR"),
             static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("LimaDetector::write_autoGain"));
+            static_cast<const char*> ("BaslerCCD::write_autoGain"));
         }
         catch (Exception& e)
         {
@@ -599,7 +707,7 @@ void BaslerCCD::write_autoGain(Tango::WAttribute &attr)
             Tango::Except::throw_exception(
             static_cast<const char*> ("TANGO_DEVICE_ERROR"),
             static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("LimaDetector::write_autoGain"));
+            static_cast<const char*> ("BaslerCCD::write_autoGain"));
         }
     }
 }
@@ -643,4 +751,10 @@ Tango::DevState BaslerCCD::dev_state()
     return argout;
 }
 
-} //	namespace
+
+
+
+
+
+
+}	//	namespace
