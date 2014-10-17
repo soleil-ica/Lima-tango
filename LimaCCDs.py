@@ -49,6 +49,7 @@ import itertools
 import numpy
 import struct
 import time
+import re
 
 
 # Before loading Lima.Core, must find out the version the plug-in
@@ -58,7 +59,7 @@ if 'linux' in sys.platform:
     from EnvHelper import setup_lima_env
     LimaCameraType = setup_lima_env(sys.argv)
 
-from AttrHelper import CallableReadEnum,CallableWriteEnum
+from AttrHelper import get_attr_4u
 
 from Lima import Core
 
@@ -79,6 +80,47 @@ VerboseLevel2TypeFlags = {
     3: ['Trace'],
     4: ['Funct', 'Param', 'Return']
     }
+
+SystemFeatures = {}
+
+def SystemHasFeature(feature):
+    global SystemFeatures
+
+    if feature in SystemFeatures:
+        return SystemFeatures[feature]
+
+    ok = True
+    for i, name in enumerate(feature.split('.')):
+        try:
+            if i == 0:
+                obj = globals()[name]
+            else:
+                obj = getattr(obj, name)
+        except AttributeError:
+            ok = False
+            break
+
+    SystemFeatures[feature] = ok
+    return ok
+
+def RequiresSystemFeature(feature):
+    def method_decorator(f):
+        def unsupported_method(*args, **kws):
+            if SystemHasFeature(feature):
+                return f(*args, **kws)
+            re_obj = re.compile('(?P<op>(read|write))_(?P<attr>.+)')
+            m = re_obj.match(f.__name__)
+            if m:
+                head = 'attr. %s [%s]' % (m.group('attr'), m.group('op'))
+            else:
+                head = 'method %s' % f.__name__
+            op = re.compile
+            msg = ('Error: %s cannot be called because %s is not supported ' \
+                   'in this (detector-required) version of LIMA' % 
+                    (head, feature))
+            raise RuntimeError(msg)
+        return unsupported_method
+    return method_decorator
 
 class LimaCCDs(PyTango.Device_4Impl) :
 
@@ -105,6 +147,186 @@ class LimaCCDs(PyTango.Device_4Impl) :
                       "Return",
                       "Always"]
     
+    ImageType2NbBytes = {
+        Core.Bpp8 : (1,0) ,
+        Core.Bpp8S : (1,1) ,
+        Core.Bpp10 : (2,0) ,
+        Core.Bpp10S : (2,1) ,
+        Core.Bpp12 : (2,0) ,
+        Core.Bpp12S : (2,1) ,
+        Core.Bpp14 : (2,0) ,
+        Core.Bpp14S : (2,1) , 
+        Core.Bpp16 : (2,0),
+        Core.Bpp16S : (2,1),
+        Core.Bpp32 : (4,0) ,
+        Core.Bpp32S : (4,1)
+        }        
+
+    ImageType2String = {
+        Core.Bpp8 : "Bpp8" ,
+        Core.Bpp8S : "Bpp8S" ,
+        Core.Bpp10 : "Bpp10" ,
+        Core.Bpp10S : "Bpp10S" ,
+        Core.Bpp12 : "Bpp12" ,
+        Core.Bpp12S : "Bpp12S" ,
+        Core.Bpp14 : "Bpp14" ,
+        Core.Bpp14S : "Bpp14S" , 
+        Core.Bpp16 : "Bpp16" ,
+        Core.Bpp16S : "Bpp16S" ,
+        Core.Bpp32 : "Bpp32" ,
+        Core.Bpp32S : "Bpp32S"
+        }
+
+    # DATA_ARRAY DevEncoded 
+    #enum DataArrayCategory {
+        #ScalarStack = 0;
+        #Spectrum;
+        #Image;
+        #SpectrumStack;
+        #ImageStack;
+    #};
+
+    class DataArrayCategory:
+        ScalarStack, Spectrum, Image, SpectrumStack, ImageStack = range(5)
+
+    #enum DataArrayType{
+      #DARRAY_UINT8 = 0;
+      #DARRAY_UINT16;
+      #DARRAY_UINT32;
+      #DARRAY_UINT64;
+      #DARRAY_INT8;
+      #DARRAY_INT16;
+      #DARRAY_INT32;
+      #DARRAY_INT64;
+      #DARRAY_FLOAT32;
+      #DARRAY_FLOAT64;
+    #};
+
+    ImageType2DataArrayType = {
+        Core.Bpp8 : 0 ,
+        Core.Bpp10 : 1 ,
+        Core.Bpp12 : 1 ,
+        Core.Bpp14 : 1 ,
+        Core.Bpp16 : 1,
+        Core.Bpp32 : 2 ,
+        Core.Bpp8S : 4 ,
+        Core.Bpp10S : 5 ,
+        Core.Bpp12S : 5 ,
+        Core.Bpp14S : 5 ,
+        Core.Bpp16S : 5,
+        Core.Bpp32S : 6 ,
+        }        
+
+    # The DATA_ARRAY definition
+    #struct {
+      #unsigned int Magic= 0x44544159;
+      #unsigned short Version;
+      #unsigned  short HeaderLength;
+      #DataArrayCategory Category;
+      #DataArrayType DataType;
+      #unsigned short DataEndianness;
+      #unsigned short NbDim;
+      #unsigned short Dim[8]
+      #unsigned int DimStep[8]
+    #} DataArrayHeaderStruct;
+
+    DataArrayVersion = 2
+    DataArrayPackStr = '<IHHIIHHHHHHHHIIIIIIII'
+    DataArrayMagic = struct.unpack('>I', 'DTAY')[0]	# 0x44544159
+    DataArrayHeaderLen = 64
+    DataArrayMaxNbDim = 6
+
+    def DataArrayUser(klass, DataArrayCategory=DataArrayCategory):
+        klass.DataArrayCategory = DataArrayCategory
+        return klass
+
+    # INIT events on video_last_image
+    class VideoImageCallback(Core.CtVideo.ImageCallback):
+        def __init__(self, device):
+            Core.CtVideo.ImageCallback.__init__(self)
+            self.__device = weakref.ref(device)
+            self.__video_last_image_timestamp = 0
+        
+        def newImage(self, image):
+            ts = time.time()
+            device = self.__device()
+            dt = ts - self.__video_last_image_timestamp
+            if device.MaxVideoFPS <= 0 or dt >= 1.0 / device.MaxVideoFPS:
+                self.__video_last_image_timestamp = ts
+                device.push_change_event("video_last_image_counter",
+                                         image.frameNumber())
+                device.push_change_event("video_last_image", "VIDEO_IMAGE",
+                                         _video_image_2_struct(image))          
+
+    @DataArrayUser
+    class ImageStatusCallback(Core.CtControl.ImageStatusCallback):
+
+        DefaultMaxEventRate = 25
+
+        def __init__(self, device, control):
+            Core.CtControl.ImageStatusCallback.__init__(self)
+            self.__device = weakref.ref(device)
+            self.__control = weakref.ref(control)
+            self.__last_base_image_ready = None
+            self.__last_counter_ready = None
+            self.__last_image_acquired = None
+            self.__last_image_ready = None
+            self.__last_image_saved = None
+            self.__image_events_push_data = False
+            self.__last_event_time = 0
+            self.__image_events_max_rate = self.DefaultMaxEventRate
+
+        def imageStatusChanged(self, image_status):
+            last_base_image_ready = image_status.LastBaseImageReady
+            last_counter_ready = image_status.LastCounterReady
+            last_image_acquired = image_status.LastImageAcquired
+            last_image_ready = image_status.LastImageReady
+            last_image_saved = image_status.LastImageSaved
+
+            device = self.__device()
+            if self.__last_base_image_ready != last_base_image_ready:
+                device.push_change_event("last_base_image_ready",
+                                         last_base_image_ready)
+                self.__last_base_image_ready = last_base_image_ready
+            if self.__last_counter_ready != last_counter_ready:
+                device.push_change_event("last_counter_ready",
+                                         last_counter_ready)
+            if self.__last_image_acquired != last_image_acquired:
+                device.push_change_event("last_image_acquired",
+                                         last_image_acquired)
+                self.__last_image_acquired = last_image_acquired
+            if self.__last_image_ready != last_image_ready:
+                device.push_change_event("last_image_ready", last_image_ready)
+                self.__last_image_ready = last_image_ready
+                if (last_image_ready >= 0) and self.__image_events_push_data:
+                    control = self.__control()
+                    image = control.ReadImage(last_image_ready)
+                    category = self.DataArrayCategory.Image
+                    data = device._image_2_data_array(image, category)
+                    device.push_change_event("last_image", 'DATA_ARRAY', data)
+            if self.__last_image_saved != last_image_saved:
+                device.push_change_event("last_image_saved",
+                                         last_image_saved)
+                self.__last_image_saved = last_image_saved                
+
+            tn = time.time()
+            te = self.__last_event_time + 1.0 / self.__image_events_max_rate
+            if tn < te:
+                time.sleep(te - tn)
+            self.__last_event_time = tn
+
+        def getImageEventsPushData(self):
+            return self.__image_events_push_data
+
+        def setImageEventsPushData(self, events):
+            self.__image_events_push_data = events
+
+        def getImageEventsMaxRate(self):
+            return self.__image_events_max_rate
+
+        def setImageEventsMaxRate(self, max_rate):
+            self.__image_events_max_rate = max_rate
+
 #------------------------------------------------------------------
 #    Device constructor
 #------------------------------------------------------------------
@@ -183,6 +405,9 @@ class LimaCCDs(PyTango.Device_4Impl) :
         else:
             Core.Processlib.PoolThreadMgr.get().setNumberOfThread(nb_thread)
 
+        interface = self.__control.hwInterface()
+        self.__detinfo = interface.getHwCtrlObj(Core.HwCap.DetInfo)
+
         self.__accThresholdCallback = None
 
         accThresholdCallbackModule = self.AccThresholdCallbackModule
@@ -210,14 +435,16 @@ class LimaCCDs(PyTango.Device_4Impl) :
                                   'shutter' : self.__control.shutter,
                                   'saving' : self.__control.saving,
                                   'image' : self.__control.image,
-                                  'video' : self.__control.video}
+                                  'video' : self.__control.video,
+                                  'buffer' : self.__control.buffer}
 
         self.__Attribute2FunctionBase = {'acq_trigger_mode':'TriggerMode',
                                          'saving_overwrite_policy' : 'OverwritePolicy',
                                          'saving_format' : 'Format',
                                          'shutter_mode' : 'Mode',
 					 'image_rotation':'Rotation',
-                                         'video_mode':'Mode'}
+                                         'video_mode':'Mode',
+                                         'buffer_max_memory': 'MaxMemory'}
             
         self.__ShutterMode = {'MANUAL': Core.ShutterManual,
                               'AUTO_FRAME': Core.ShutterAutoFrame,
@@ -227,36 +454,29 @@ class LimaCCDs(PyTango.Device_4Impl) :
                           'CONCATENATION': Core.Concatenation,
                           'ACCUMULATION': Core.Accumulation}
 
-        try:
+        if SystemHasFeature('Core.CtAcquisition.Live'):
             self.__AccTimeMode = {'LIVE' : Core.CtAcquisition.Live,
                                   'REAL' : Core.CtAcquisition.Real}
-        except AttributeError:          # Core too Old
+        else:                           # Core too Old
             self.__AccTimeMode = {}
         
         self.__SavingFormat = {'RAW' : Core.CtSaving.RAW,
                                'EDF' : Core.CtSaving.EDF,
-                               'HDF5' : Core.CtSaving.HDF5,
                                'CBF' : Core.CtSaving.CBFFormat}
-        try:
-            self.__SavingFormat['TIFF'] = Core.CtSaving.TIFFFormat
-        except AttributeError:
-            pass
-
-        try:
-            self.__SavingFormat['EDFGZ'] = Core.CtSaving.EDFGZ
-            self.__SavingFormatDefaultSuffix[Core.CtSaving.EDFGZ] = '.edfgz'
-        except AttributeError:
-            pass
 
         self.__SavingFormatDefaultSuffix = {Core.CtSaving.RAW : '.raw',
                                             Core.CtSaving.EDF : '.edf',
-                                            Core.CtSaving.HDF5 : '.h5',
                                             Core.CtSaving.CBFFormat : '.cbf'}
 
-        try:
+        if SystemHasFeature('Core.CtSaving.TIFFFormat'):
+            self.__SavingFormat['TIFF'] = Core.CtSaving.TIFFFormat
             self.__SavingFormatDefaultSuffix[Core.CtSaving.TIFFFormat] = '.tiff'
-        except AttributeError:
-            pass
+        if SystemHasFeature('Core.CtSaving.EDFGZ'):
+            self.__SavingFormat['EDFGZ'] = Core.CtSaving.EDFGZ
+            self.__SavingFormatDefaultSuffix[Core.CtSaving.EDFGZ] = '.edfgz'
+        if SystemHasFeature('Core.CtSaving.HDF5'):
+            self.__SavingFormat['HDF5'] = Core.CtSaving.HDF5
+            self.__SavingFormatDefaultSuffix[Core.CtSaving.HDF5] = '.h5'
 
         self.__SavingMode = {'MANUAL' : Core.CtSaving.Manual,
                              'AUTO_FRAME' : Core.CtSaving.AutoFrame,
@@ -264,8 +484,10 @@ class LimaCCDs(PyTango.Device_4Impl) :
 
         self.__SavingOverwritePolicy = {'ABORT' : Core.CtSaving.Abort,
                                         'OVERWRITE' : Core.CtSaving.Overwrite,
-                                        'APPEND' : Core.CtSaving.Append,
-                                        'MULTISET' : Core.CtSaving.MultiSet}
+                                        'APPEND' : Core.CtSaving.Append}
+
+        if SystemHasFeature('Core.CtSaving.Multiset'):
+            self.__SavingOverwritePolicy['MULTISET'] = Core.CtSaving.MultiSet
 
         self.__AcqTriggerMode = {'INTERNAL_TRIGGER' : Core.IntTrig,
                                  'EXTERNAL_TRIGGER' : Core.ExtTrigSingle,
@@ -273,23 +495,17 @@ class LimaCCDs(PyTango.Device_4Impl) :
                                  'EXTERNAL_GATE' : Core.ExtGate,
                                  'EXTERNAL_START_STOP' : Core.ExtStartStop}
 
-        try:
+        if SystemHasFeature('Core.IntTrigMult'):
             self.__AcqTriggerMode['INTERNAL_TRIGGER_MULTI'] = Core.IntTrigMult
-        except AttributeError:
-            pass
 
-        try:
+        if SystemHasFeature('Core.ExtTrigReadout'):
             self.__AcqTriggerMode['EXTERNAL_TRIGGER_READOUT'] = Core.ExtTrigReadout
-        except AttributeError:
-            pass
 
-        try:
+        if SystemHasFeature('Core.Rotation_0'):
             self.__ImageRotation = {'NONE' : Core.Rotation_0,
                                     '90' : Core.Rotation_90,
                                     '180' : Core.Rotation_180,
                                     '270' : Core.Rotation_270}
-        except AttributeError:
-            pass
 
         try:
             self.__VideoMode = {'Y8'         : Core.Y8,
@@ -312,11 +528,9 @@ class LimaCCDs(PyTango.Device_4Impl) :
             import traceback
             traceback.print_exc()
 
-	try:
+	if SystemHasFeature('Core.BAYER_BG8'):
 	    self.__VideoMode['BAYER_BG8'] = Core.BAYER_BG8
 	    self.__VideoMode['BAYER_BG16'] = Core.BAYER_BG16
-	except AttributeError:
-	    pass
 
 
         #INIT display shared memory
@@ -327,37 +541,47 @@ class LimaCCDs(PyTango.Device_4Impl) :
         except AttributeError:
             pass
 
-        # INIT events on video_last_image
-        attrs = self.get_device_attr()
-        video_last_image_attr = attrs.get_attr_by_name("video_last_image")
-        video_last_image_attr.set_change_event(True, False)
-        video_last_image_counter_attr = attrs.get_attr_by_name("video_last_image_counter")
-        video_last_image_counter_attr.set_change_event(True, False)
-        class VideoImageCallback(Core.CtVideo.ImageCallback):
-            def newImage(cb, image):
-                self._onVideoImageChanged(image)
-        self.__video_image_cbk = VideoImageCallback()
-        self.__video_last_image_timestamp = 0
+        # INIT events on attributes
+        attr_list = self.get_device_attr()
+        for attr_name in ["last_image", "last_base_image_ready",
+                          "last_counter_ready", "last_image_acquired",
+                          "last_image_ready", "last_image_saved",
+                          "video_last_image", "video_last_image_counter"]:
+            attr = attr_list.get_attr_by_name(attr_name)
+            attr.set_change_event(True, False)
+                        
+        self.__video_image_cbk = self.VideoImageCallback(self)
         self.__control.video().registerImageCallback(self.__video_image_cbk)
+
+        # INIT events on last_image_ready
+        self.__image_status_cbk = self.ImageStatusCallback(self, self.__control)
+        self.__control.registerImageStatusCallback(self.__image_status_cbk)
 
         # Setup a user-defined detector name if it exists
         if self.InstrumentName:
-            try:
-                interface = self.__control.hwInterface()
-                det_info = interface.getHwCtrlObj(Core.HwCap.DetInfo)
-                det_info.setInstrumentName(self.InstrumentName)
-            except AttributeError:
-                pass
-        
+            if SystemHasFeature('Core.HwDetInfoCtrlObj.setInstrumentName'):
+                self.__detinfo.setInstrumentName(self.InstrumentName)
+            else:
+                deb.Warning('InstrumentName not supported in this version')
+
         # Setup a user-defined detector name if it exists
         if self.UserDetectorName:
-            try:
-                interface = self.__control.hwInterface()
-                det_info = interface.getHwCtrlObj(Core.HwCap.DetInfo)
-                det_info.setUserDetectorName(self.UserDetectorName)
-            except AttributeError:
-                pass
-               
+            if SystemHasFeature('Core.HwDetInfoCtrlObj.setUserDetectorName'):
+                self.__detinfo.setUserDetectorName(self.UserDetectorName)
+            else:
+                deb.Warning('UserDetectorName not supported in this version')
+
+        # Setup the max memory usage (%)
+        if self.BufferMaxMemory:
+            self.__control.buffer().setMaxMemory(int(self.BufferMaxMemory))
+
+        unsupported_feature = 'Core.Never.Unsupported.Feature'
+        if SystemHasFeature(unsupported_feature):
+            deb.Error('System reports having %s' % unsupported_feature)
+
+        for feature in SystemFeatures:
+            is_not = (SystemHasFeature(feature) and 'is') or 'is not'
+            deb.Trace('Feature %s %s present' % (feature, is_not))
                 
     def __getattr__(self,name) :
         if name.startswith('is_') and name.endswith('_allowed') :
@@ -371,28 +595,18 @@ class LimaCCDs(PyTango.Device_4Impl) :
                     func = _not_allowed
             self.__dict__[name] = func
             return func
-        elif name.startswith('read_') or name.startswith('write_') :
-            split_name = name.split('_')[1:]
-            attr_name = ''.join([x.title() for x in split_name])
-            dict_name = '_' + self.__class__.__name__ + '__' + attr_name
-            d = getattr(self,dict_name,None)
-            getObjectFunc = self.__Prefix2SubClass.get(split_name[0],None)
-            attr_name = self.__Attribute2FunctionBase.get('_'.join(split_name),attr_name)
-            if d and getObjectFunc:
-                obj = getObjectFunc()
-                if name.startswith('read_') :
-                    functionName = 'get' + attr_name
-                    function2Call = getattr(obj,functionName)
-                    callable_obj = CallableReadEnum(d,function2Call)
-                else:
-                    functionName = 'set' + attr_name
-                    function2Call = getattr(obj,functionName)
-                    callable_obj = CallableWriteEnum('_'.join(split_name),
-                                                     d,function2Call)
-                self.__dict__[name] = callable_obj
-                return callable_obj
+        else :
+             split_name = name.split('_')[1:]
+             subClass = self.__Prefix2SubClass.get(split_name[0],None)
+             if subClass:
+                 obj = subClass()
+                 return get_attr_4u(self,name, obj)
         
         raise AttributeError('LimaCCDs has no attribute %s' % name)
+
+    def gc(self):
+    	import gc
+	gc.collect()
 
     def always_executed_hook(self) :
         if not self.__configInit:
@@ -402,11 +616,8 @@ class LimaCCDs(PyTango.Device_4Impl) :
             config_default_name = self.ConfigurationDefaultName
 
             self.__configDefaultActiveFlag = False
-            try:
+            if SystemHasFeature('Core.CtConfig'):
                 config = self.__control.config()
-            except AttributeError:
-                pass
-            else:
                 config.setFilename(config_file_path)
                 if os.access(config_file_path,os.R_OK):
                     try:
@@ -416,16 +627,6 @@ class LimaCCDs(PyTango.Device_4Impl) :
                             self.__configDefaultActiveFlag = True
                     except Core.Exception:
                         pass
-
-    def _onVideoImageChanged(self, image):
-        ts = time.time()
-        dt = ts - self.__video_last_image_timestamp
-        if self.MaxVideoFPS <= 0 or dt >= 1.0 / self.MaxVideoFPS:
-            self.__video_last_image_timestamp = ts
-            self.push_change_event("video_last_image_counter",
-                                   image.frameNumber())
-            self.push_change_event("video_last_image", "VIDEO_IMAGE",
-                                   _image_2_struct(image))
 
 #==================================================================
 #
@@ -444,63 +645,53 @@ class LimaCCDs(PyTango.Device_4Impl) :
     #
     @Core.DEB_MEMBER_FUNCT
     def read_camera_type(self,attr) :        
-        interface = self.__control.hwInterface()
-        det_info = interface.getHwCtrlObj(Core.HwCap.DetInfo)
-        value = det_info.getDetectorType()
+        value = self.__detinfo.getDetectorType()
         attr.set_value(value)
 
     ## @brief Read the Camera Model
     #
     @Core.DEB_MEMBER_FUNCT
     def read_camera_model(self,attr) :        
-        interface = self.__control.hwInterface()
-        det_info = interface.getHwCtrlObj(Core.HwCap.DetInfo)
-        value = det_info.getDetectorModel()
+        value = self.__detinfo.getDetectorModel()
         attr.set_value(value)
         
     ## @brief Read the User-defined Camera name
     #
+    @RequiresSystemFeature('Core.HwDetInfoCtrlObj.getUserDetectorName')
     @Core.DEB_MEMBER_FUNCT
     def read_user_detector_name(self,attr) :        
-	interface = self.__control.hwInterface()
-	det_info = interface.getHwCtrlObj(Core.HwCap.DetInfo)
-	value = det_info.getUserDetectorName() 
+	value = self.__detinfo.getUserDetectorName() 
 	attr.set_value(value)
 
     ## @brief Write the User-defined Camera name
     #
+    @RequiresSystemFeature('Core.HwDetInfoCtrlObj.setUserDetectorName')
     @Core.DEB_MEMBER_FUNCT
     def write_user_detector_name(self,attr) :
         data = attr.get_write_value()
-	interface = self.__control.hwInterface()
-	det_info = interface.getHwCtrlObj(Core.HwCap.DetInfo)
-        det_info.setUserDetectorName(data)
+        self.__detinfo.setUserDetectorName(data)
         
     ## @brief Read the instrument name
     #
+    @RequiresSystemFeature('Core.HwDetInfoCtrlObj.getInstrumentName')
     @Core.DEB_MEMBER_FUNCT
     def read_instrument_name(self,attr) :        
-	interface = self.__control.hwInterface()
-	det_info = interface.getHwCtrlObj(Core.HwCap.DetInfo)
-	value = det_info.getInstrumentName() 
+	value = self.__detinfo.getInstrumentName() 
 	attr.set_value(value)
 
     ## @brief Write the instrument name
     #
+    @RequiresSystemFeature('Core.HwDetInfoCtrlObj.setInstrumentName')
     @Core.DEB_MEMBER_FUNCT
     def write_instrument_name(self,attr) :
         data = attr.get_write_value()
-	interface = self.__control.hwInterface()
-	det_info = interface.getHwCtrlObj(Core.HwCap.DetInfo)
-        det_info.setInstrumentName(data)
+        self.__detinfo.setInstrumentName(data)
 
     ## @brief Read the Camera pixelsize
     #
     @Core.DEB_MEMBER_FUNCT
     def read_camera_pixelsize(self,attr) :        
-        interface = self.__control.hwInterface()
-        det_info = interface.getHwCtrlObj(Core.HwCap.DetInfo)
-        value = det_info.getPixelSize()
+        value = self.__detinfo.getPixelSize()
         attr.set_value(value)
         
     ## @brief get the status of the acquisition
@@ -511,10 +702,8 @@ class LimaCCDs(PyTango.Device_4Impl) :
         state2string = {Core.AcqReady : "Ready",
                         Core.AcqRunning : "Running",
                         Core.AcqFault : "Fault"}
-        try:
+        if SystemHasFeature('Core.AcqConfig'):
             state2string[Core.AcqConfig] = "Configuration"
-        except AttributeError:
-            pass
 
         attr.set_value(state2string.get(status.AcquisitionStatus,"?"))
     ## @brief get the errir message when acq_status is in Fault stat
@@ -754,24 +943,10 @@ class LimaCCDs(PyTango.Device_4Impl) :
     #
     @Core.DEB_MEMBER_FUNCT
     def read_image_sizes(self,attr) :
-        imageType2NbBytes = {
-            Core.Bpp8 : (1,0) ,
-            Core.Bpp8S : (1,1) ,
-            Core.Bpp10 : (2,0) ,
-            Core.Bpp10S : (2,1) ,
-            Core.Bpp12 : (2,0) ,
-            Core.Bpp12S : (2,1) ,
-            Core.Bpp14 : (2,0) ,
-            Core.Bpp14S : (2,1) , 
-            Core.Bpp16 : (2,0),
-            Core.Bpp16S : (2,1),
-            Core.Bpp32 : (4,0) ,
-            Core.Bpp32S : (4,1)
-            }        
         image = self.__control.image()
         imageType = image.getImageType()
         dim = image.getImageDim()
-        depth, signed = imageType2NbBytes.get(imageType,(0,0))
+        depth, signed = self.ImageType2NbBytes.get(imageType,(0,0))
         sizes = [signed, depth, dim.getSize().getWidth(), dim.getSize().getHeight()]
         
         attr.set_value(sizes)
@@ -780,23 +955,9 @@ class LimaCCDs(PyTango.Device_4Impl) :
     #
     @Core.DEB_MEMBER_FUNCT
     def read_image_type(self,attr) :
-        imageType2String = {
-            Core.Bpp8 : "Bpp8" ,
-            Core.Bpp8S : "Bpp8S" ,
-            Core.Bpp10 : "Bpp10" ,
-            Core.Bpp10S : "Bpp10S" ,
-            Core.Bpp12 : "Bpp12" ,
-            Core.Bpp12S : "Bpp12S" ,
-            Core.Bpp14 : "Bpp14" ,
-            Core.Bpp14S : "Bpp14S" , 
-            Core.Bpp16 : "Bpp16" ,
-            Core.Bpp16S : "Bpp16S" ,
-            Core.Bpp32 : "Bpp32" ,
-            Core.Bpp32S : "Bpp32S"
-            }
         image = self.__control.image()
         imageType = image.getImageType()
-        stringType = imageType2String.get(imageType,"?")
+        stringType = self.ImageType2String.get(imageType,"?")
                 
         attr.set_value(stringType)
 
@@ -837,7 +998,6 @@ class LimaCCDs(PyTango.Device_4Impl) :
         image = self.__control.image()
         binValue = Core.Bin(*data)
         image.setBin(binValue)
-    
 
     ## @brief Read image flip
     #
@@ -902,6 +1062,16 @@ class LimaCCDs(PyTango.Device_4Impl) :
         params.indexFormat = data
         saving.setParameters(params)
 
+    ## @brief last image
+    #
+    @Core.DEB_MEMBER_FUNCT
+    def read_last_image(self,attr) :
+        status = self.__control.getStatus()
+        last_img_ready = status.ImageCounters.LastImageReady
+        image = self.__control.ReadImage(last_img_ready)
+        data = self._image_2_data_array(image, self.DataArrayCategory.Image)
+        attr.set_value('DATA_ARRAY', data)
+
     ## @brief last image acquired
     #
     @Core.DEB_MEMBER_FUNCT
@@ -956,6 +1126,34 @@ class LimaCCDs(PyTango.Device_4Impl) :
         if value is None: value = -1
 
         attr.set_value(value)
+
+    ## @brief get if last_image attr pushes events
+    #
+    @Core.DEB_MEMBER_FUNCT
+    def read_image_events_push_data(self,attr) :
+        image_events = self.__image_status_cbk.getImageEventsPushData()
+        attr.set_value(image_events)
+
+    ## @brief set if last_image attr pushes events
+    #
+    @Core.DEB_MEMBER_FUNCT
+    def write_image_events_push_data(self,attr) :
+        image_events = attr.get_write_value()
+        self.__image_status_cbk.setImageEventsPushData(image_events)
+
+    ## @brief get the max event generation rate
+    #
+    @Core.DEB_MEMBER_FUNCT
+    def read_image_events_max_rate(self,attr) :
+        event_rate = self.__image_status_cbk.getImageEventsMaxRate()
+        attr.set_value(event_rate)
+
+    ## @brief set the max event generation rate
+    #
+    @Core.DEB_MEMBER_FUNCT
+    def write_image_events_max_rate(self,attr) :
+        event_rate = attr.get_write_value()
+        self.__image_status_cbk.setImageEventsMaxRate(event_rate)
 
     ## @brief this flag is true just after
     #  the detector readout.
@@ -1284,7 +1482,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
 
     def read_video_last_image(self,attr) :
         video = self.__control.video()
-        self._videoStr = _image_2_struct(video.getLastImage())
+        self._videoStr = _video_image_2_struct(video.getLastImage())
         attr.set_value("VIDEO_IMAGE", self._videoStr)
 
     def read_video_last_image_counter(self,attr) :
@@ -1440,89 +1638,92 @@ class LimaCCDs(PyTango.Device_4Impl) :
             release()
         return self.__dataflat_cache
 
+    ##@brief get a DATA_ARRAY from a Data object
+    #
+    @Core.DEB_MEMBER_FUNCT
+    def _image_2_data_array(self, data, category):
+        d = data.buffer
+        s = [d.shape[i] for i in xrange(len(d.shape) - 1, -1, -1)]
+        if (category == self.DataArrayCategory.ImageStack) and (len(s) == 2):
+            s += [1]
+        nbDim = len(s)
+        maxNbDim = self.DataArrayMaxNbDim
+        if nbDim > maxNbDim:
+            raise ValueError, 'Invalid nb of dimensions: max is %d' % maxNbDim
+
+        image = self.__control.image()
+        imageType = image.getImageType()
+        dataType = self.ImageType2DataArrayType.get(imageType, -1)
+        bigEndian = numpy.dtype(d.dtype.byteorder + 'i4') == numpy.dtype('>i4')
+
+        def steps_gen(s):
+            size = self.ImageType2NbBytes.get(imageType, (1, 0))[0]
+            for x in s:
+                yield size
+                size *= x
+        t = [i for i in steps_gen(s)]
+
+        s += [0] * (maxNbDim - nbDim)
+        t += [0] * (maxNbDim - nbDim)
+
+        #prepare the structure
+        dataheader = struct.pack(
+          self.DataArrayPackStr,
+          self.DataArrayMagic,			# 4 bytes I - magic number
+          self.DataArrayVersion,		# 2 bytes H - version
+          self.DataArrayHeaderLen,		# 2 bytes H - this header length
+          category,				# 4 bytes I - category (enum)
+          dataType,   				# 4 bytes I - data type (enum)
+          bigEndian,   				# 2 bytes H - endianness
+          nbDim, 				# 2 bytes H - nb of dims
+          s[0],s[1],s[2],s[3],s[4],s[5],        # 12 bytes H x 6 - dims
+          t[0],t[1],t[2],t[3],t[4],t[5],        # 24 bytes I x 6 - stepsbytes
+          0, 0)    				# padding 2 x 4 bytes
+        if len(dataheader) != self.DataArrayHeaderLen:
+            raise RuntimeError, 'Invalid header len: %d (expected %d)' % \
+                  (len(dataheader), self.DataArrayHeaderLen)
+
+        flatData = d.ravel()
+        flatData.dtype = numpy.uint8
+        
+        dataStr = dataheader + flatData.tostring()        
+        release = getattr(data, 'releaseBuffer', None)
+        if release:
+            release()
+        
+        return dataStr
+  
+
     ##@brief get image data
     #
     @Core.DEB_MEMBER_FUNCT
     def readImage(self,frame_number):
-
-        imageType2DataArrayType = {
-            Core.Bpp8 : 0 ,
-            Core.Bpp10 : 1 ,
-            Core.Bpp12 : 1 ,
-            Core.Bpp14 : 1 ,
-            Core.Bpp16 : 1,
-            Core.Bpp32 : 2 ,
-            Core.Bpp8S : 4 ,
-            Core.Bpp10S : 5 ,
-            Core.Bpp12S : 5 ,
-            Core.Bpp14S : 5 ,
-            Core.Bpp16S : 5,
-            Core.Bpp32S : 6 ,
-            }        
-        image = self.__control.image()
-        imageType = image.getImageType()
-        dim = image.getImageDim()    
-        sizes = [imageType2DataArrayType.get(imageType,"?"), dim.getSize().getWidth(), dim.getSize().getHeight()]
-    
-        # The DATA_ARRAY definition
-        #struct {
-          #unsigned int Magic= 0x44544159;
-          #unsigned short Version;
-          #unsigned  short HeaderLength;
-          #DataArrayCategory Category;
-          #DataArrayType DataType;
-          #unsigned short DataEndianness;
-          #unsigned short NbDim;
-          #unsigned short Dim[8]
-          #unsigned int DimStep[8]
-        #} DataArrayHeaderStruct;
-
-        #enum DataArrayCategory {
-            #ScalarStack = 0;
-            #Spectrum;
-            #Image;
-            #SpectrumStack;
-            #ImageStack;
-        #};
-
-        #enum DataArrayType{
-          #DARRAY_UINT8 = 0;
-          #DARRAY_UINT16;
-          #DARRAY_UINT32;
-          #DARRAY_UINT64;
-          #DARRAY_INT8;
-          #DARRAY_INT16;
-          #DARRAY_INT32;
-          #DARRAY_INT64;
-          #DARRAY_FLOAT32;
-          #DARRAY_FLOAT64;
-        #};
-
-        #prepare the structure
-        #  '>IHHHHHHHHHHHHHHIIIIIIII',
-        dataheader = struct.pack(
-          '<IHHIIHHHHHHHHHHHHHHHHHHIII',
-          0x44544159,  				# 4bytes I  - magic number
-          1,           				# 2bytes H  - version
-          64,          				# 2 bytes H - header length, this header
-          2,           				# 4 bytes I - category (enum)
-          sizes[0],    				# 4 bytes I - data type (enum)
-          0,           				# 2 bytes H - endianness
-          2,           				# 2 bytes H - nb of dims
-          sizes[1],sizes[2],0,0,0,0,0,0,	# 16 bytes Hx8 - dims
-          1,sizes[2],0,0,0,0,0,0,    		# 16 bytes H x 8 - dimsteps
-          0,0,0)    				# padding 3 x 4 bytes
-        print 'readImage: frame_number = ', frame_number
+        deb.Param('readImage: frame_number=%d' % frame_number)
         image = self.__control.ReadImage(frame_number)
-        flatimage = image.buffer.ravel()
-        flatimage.dtype = numpy.uint8
-        
-        self._datacache = dataheader+flatimage.tostring()        
-        release = getattr(image, 'releaseBuffer', None)
-        if release:
-            release()
-        
+        category = self.DataArrayCategory.Image
+        self._datacache = self._image_2_data_array(image, category)
         return ('DATA_ARRAY',  self._datacache)  
+  
+    ##@brief get the data for an image sequence 
+    #
+    @Core.DEB_MEMBER_FUNCT
+    def readImageSeq(self, frame_seq):
+        deb.Param('frame_seq=%s' % frame_seq)
+        frame_seq = map(int, frame_seq)
+        start, end = frame_seq[:2]
+        step = 1
+        if len(frame_seq) > 2:
+            step = frame_seq[2]
+            if step != 1:
+                raise ValueError, 'Discontiguous sequences not supported yet'
+        nbFrames = end - start
+        deb.Param('readImageSeq:start,end,step = %d,%d,%d (%d frames)' % \
+
+                  (start, end, step, nbFrames))
+        imageStack = self.__control.ReadImage(start, nbFrames)
+        category = self.DataArrayCategory.ImageStack
+        self._dataseqcache = self._image_2_data_array(imageStack, category)
+        return ('DATA_ARRAY',  self._dataseqcache)  
   
 
     ##@brief get base image data
@@ -1689,10 +1890,16 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         'InstrumentName' :
         [PyTango.DevString,
          "The instrument name, ESRF-ID02",[]],
+        'BufferMaxMemory' :
+         [PyTango.DevString,
+          "The maximum among of memory (RAM) Lima should use to allocate the frame buffers, e.g 50 %, default is 70%",[]],
         }
 
     #    Command definitions
     cmd_list = {
+        'gc':
+        [[PyTango.DevVoid, ""],
+         [PyTango.DevVoid, ""]],
         'openShutterManual':
         [[PyTango.DevVoid, ""],
          [PyTango.DevVoid, ""]],
@@ -1737,7 +1944,10 @@ class LimaCCDsClass(PyTango.DeviceClass) :
          [PyTango.DevVoid,""]],
         'readImage':
         [[PyTango.DevLong,"Image id"],
-         [PyTango.DevEncoded, ""]],
+         [PyTango.DevEncoded, "DATA_ARRAY with requested image"]],
+        'readImageSeq':
+        [[PyTango.DevVarLongArray,"Image id seq: start,end[,step]"],
+         [PyTango.DevEncoded, "DATA_ARRAY with requested images"]],
         'getPluginDeviceNameFromType':
         [[PyTango.DevString,"plugin type"],
          [PyTango.DevString,"device name"]],
@@ -1935,6 +2145,10 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         [[PyTango.DevLong,
           PyTango.SCALAR,
           PyTango.READ]],
+        'last_image':
+        [[PyTango.DevEncoded,
+          PyTango.SCALAR,
+          PyTango.READ]],
         'last_image_saved':
         [[PyTango.DevLong,
           PyTango.SCALAR,
@@ -1943,6 +2157,14 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         [[PyTango.DevLong,
           PyTango.SCALAR,
           PyTango.READ]],
+        'image_events_push_data':
+        [[PyTango.DevBoolean,
+          PyTango.SCALAR,
+          PyTango.READ_WRITE]],
+        'image_events_max_rate':
+        [[PyTango.DevFloat,
+          PyTango.SCALAR,
+          PyTango.READ_WRITE]],
         'ready_for_next_image':
         [[PyTango.DevBoolean,
           PyTango.SCALAR,
@@ -2099,6 +2321,10 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         [[PyTango.DevString,
           PyTango.SPECTRUM,
           PyTango.READ,1024]],
+        'buffer_max_memory':
+        [[PyTango.DevShort,
+          PyTango.SCALAR,
+          PyTango.READ_WRITE]],
         }
 
 
@@ -2237,7 +2463,7 @@ def _allowed(*args) :
 def _not_allowed(*args) :
     return False
 
-def _image_2_struct(image):
+def _video_image_2_struct(image):
     VIDEO_HEADER_FORMAT = '!IHHqiiHHHH'
     videoheader = struct.pack(
             VIDEO_HEADER_FORMAT,
@@ -2251,6 +2477,7 @@ def _image_2_struct(image):
             struct.calcsize(VIDEO_HEADER_FORMAT), # header size
             0,0)                                  # padding
     return videoheader + image.buffer()
+
  
 def get_sub_devices() :
     className2deviceName = {}
@@ -2267,7 +2494,6 @@ def get_sub_devices() :
         className2deviceName[deviceName] = class_name
     return className2deviceName
 
-     
 #==================================================================
 #
 #    LimaCCDs class main method
