@@ -646,7 +646,7 @@ void ControlFactory::reset(const std::string& detector_type)
 #ifdef UVIEW_ENABLED        
                 if (detector_type == "UviewCCD")
                 {
-					delete (static_cast<UviewCCD::Camera*> (m_camera));
+					delete (static_cast<Uview::Camera*> (m_camera));
                 }
 #endif     
 
