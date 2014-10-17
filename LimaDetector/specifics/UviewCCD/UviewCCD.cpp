@@ -165,8 +165,8 @@ void UviewCCD::init_device()
         m_hw = dynamic_cast<Uview::Interface*>(m_ct->hwInterface());
         if(m_hw==0)
         {
-            INFO_STREAM<<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"UviewCCD"<<") !"<< endl;
-            m_status_message <<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"UviewCCD"<<") !"<< endl;
+            INFO_STREAM<<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"Uview"<<") !"<< endl;
+            m_status_message <<"Initialization Failed : Unable to get the interface of camera plugin "<<"("<<"Uview"<<") !"<< endl;
             m_is_device_initialized = false;
             set_state(Tango::FAULT);
             set_status(m_status_message.str());
