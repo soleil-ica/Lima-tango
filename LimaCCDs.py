@@ -486,7 +486,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
                                         'OVERWRITE' : Core.CtSaving.Overwrite,
                                         'APPEND' : Core.CtSaving.Append}
 
-        if SystemHasFeature('Core.CtSaving.Multiset'):
+        if SystemHasFeature('Core.CtSaving.MultiSet'):
             self.__SavingOverwritePolicy['MULTISET'] = Core.CtSaving.MultiSet
 
         self.__AcqTriggerMode = {'INTERNAL_TRIGGER' : Core.IntTrig,
