@@ -341,6 +341,9 @@ void LimaDetector::init_device()
 				return;
 		}
 
+		//fix percent of memory to allocate for the lima buffer
+		m_ct->buffer()->setMaxMemory((short)bufferMaxMemoryPercent);		
+		
 		//- reset image, allow to redefine type image according to  CurrentImageType of the HwDetInfoCtrlObj
 		m_ct->image()->reset();
 
@@ -768,6 +771,7 @@ void LimaDetector::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("FileIndexPattern"));
 	dev_prop.push_back(Tango::DbDatum("FileTargetPath"));
 	dev_prop.push_back(Tango::DbDatum("FileNbFrames"));
+	dev_prop.push_back(Tango::DbDatum("BufferMaxMemoryPercent"));
 	dev_prop.push_back(Tango::DbDatum("DebugModules"));
 	dev_prop.push_back(Tango::DbDatum("DebugLevels"));
 	dev_prop.push_back(Tango::DbDatum("DebugFormats"));
@@ -904,6 +908,17 @@ void LimaDetector::get_device_property()
 	}
 	//	And try to extract FileNbFrames value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  fileNbFrames;
+
+	//	Try to initialize BufferMaxMemoryPercent from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  bufferMaxMemoryPercent;
+	else {
+		//	Try to initialize BufferMaxMemoryPercent from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  bufferMaxMemoryPercent;
+	}
+	//	And try to extract BufferMaxMemoryPercent value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  bufferMaxMemoryPercent;
 
 	//	Try to initialize DebugModules from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
@@ -1128,6 +1143,8 @@ void LimaDetector::get_device_property()
 	myVector.push_back("Type");
 	PropertyHelper::create_property_if_empty(this, dev_prop, myVector, "DebugFormats");
 
+//	PropertyHelper::create_property_if_empty(this, dev_prop, "70", "BufferMaxMemoryPercent");
+	
 	myVector.clear();
 	myVector.push_back("-1");
 	myVector.push_back("-1");
@@ -3895,6 +3912,9 @@ void LimaDetector::execute_close_shutter_callback (yat4tango::DynamicCommandExec
 									static_cast<const char*> ("LimaDetector::execute_close_shutter_callback"));
 	}
 }
+
+
+
 
 
 

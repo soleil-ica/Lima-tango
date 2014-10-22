@@ -921,6 +921,21 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
+	prop_name = "BufferMaxMemoryPercent";
+	prop_desc = "Define the Percent of Memory reserved by buffer control (from 0 to 100 %).";
+	prop_def  = "70";
+	vect_data.clear();
+	vect_data.push_back("70");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
 	prop_name = "DebugModules";
 	prop_desc = "Define modules that we need to have some debug traces.<BR>\nAvailables values :<BR>\n- None<BR>\n- Hardware<BR>\n- Control<BR>\n- Common<BR>\n- Camera<BR>";
 	prop_def  = "Hardware\nControl\nCommon\nCamera";
