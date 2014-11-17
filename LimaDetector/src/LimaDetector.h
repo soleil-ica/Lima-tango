@@ -53,6 +53,7 @@
 #include "CtAcquisition.h"
 #include "CtAccumulation.h"
 #include "CtSaving.h"
+#include "CtBuffer.h"
 #include "CtImage.h"
 #include "Data.h"
 #include "CtVideo.h"
@@ -276,6 +277,10 @@ public:
  *	
  */
 	Tango::DevLong	fileNbFrames;
+/**
+ *	Define the Percent of Memory reserved by buffer control (from 0 to 100 %).
+ */
+	Tango::DevUShort	bufferMaxMemoryPercent;
 /**
  *	Define modules that we need to have some debug traces.<BR>
  *	Availables values :<BR>
