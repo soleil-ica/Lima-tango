@@ -258,23 +258,29 @@ void LimaDetector::init_device()
 		dai.tai.name = "image";
 		dai.tai.data_format = Tango::IMAGE;
 
-		switch (detectorPixelDepth)
-		{
-			case 8: dai.tai.data_type = Tango::DEV_UCHAR;
-				break;
-			case 12:
-			case 16: dai.tai.data_type = Tango::DEV_USHORT;
-				break;
-			case 32: dai.tai.data_type = Tango::DEV_ULONG;
-				break;
-			case 33: dai.tai.data_type = Tango::DEV_FLOAT;
-				break;
-			default: //ERROR
-				INFO_STREAM << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
-				m_status_message << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
-				m_is_device_initialized = false;
-				set_state(Tango::FAULT);
-				return;
+			switch (detectorPixelDepth)
+			{
+				case 8: dai.tai.data_type = Tango::DEV_UCHAR;
+					break;
+				case 12:
+				case 16: dai.tai.data_type = Tango::DEV_USHORT;
+					break;
+				case 32: dai.tai.data_type = Tango::DEV_ULONG;
+					break;
+				default: //ERROR
+					INFO_STREAM << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
+					m_status_message << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
+					m_is_device_initialized = false;
+					set_state(Tango::FAULT);
+					return;
+			}	
+
+			transform(specialDisplayType.begin(), specialDisplayType.end(), specialDisplayType.begin(), ::toupper);
+			if(specialDisplayType == "FLOAT") //- could be used by xpad for example
+			{
+				dai.tai.data_type = Tango::DEV_FLOAT;
+			}
+
 		}
 
 		if (memorizedAcquisitionMode == "ACCUMULATION")
@@ -316,30 +322,29 @@ void LimaDetector::init_device()
 		INFO_STREAM << "Define ImageType of detector (16 bits, 32 bits, ...) according to DetectorPixelDepth (" << detectorPixelDepth << ") property." << endl;
 		HwDetInfoCtrlObj *hw_det_info;
 		m_hw->getHwCtrlObj(hw_det_info);
-		switch (detectorPixelDepth)
-		{
-			case 8:
-				hw_det_info->setCurrImageType(Bpp8);
-				break;
-			case 12:
-				hw_det_info->setCurrImageType(Bpp12);
-				break;
-			case 16:
-				hw_det_info->setCurrImageType(Bpp16);
-				break;
-			case 32:
-				hw_det_info->setCurrImageType(Bpp32);
-				break;
-			case 33:
-				hw_det_info->setCurrImageType(Bpp32F);
-				break;
-			default: //ERROR
-				INFO_STREAM << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
-				m_status_message << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
-				m_is_device_initialized = false;
-				set_state(Tango::FAULT);
-				return;
-		}
+		
+			switch (detectorPixelDepth)
+			{
+				case 8:
+					hw_det_info->setCurrImageType(Bpp8);
+					break;
+				case 12:
+					hw_det_info->setCurrImageType(Bpp12);
+					break;
+				case 16:
+					hw_det_info->setCurrImageType(Bpp16);
+					break;
+				case 32:
+					hw_det_info->setCurrImageType(Bpp32);
+					break;
+				default: //ERROR
+					INFO_STREAM << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
+					m_status_message << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
+					m_is_device_initialized = false;
+					set_state(Tango::FAULT);
+					return;
+			}
+		
 
 		//- reset image, allow to redefine type image according to  CurrentImageType of the HwDetInfoCtrlObj
 		m_ct->image()->reset();
@@ -483,6 +488,8 @@ void LimaDetector::init_device()
 		m_saving_par.directory = fileTargetPath;
 		m_saving_par.prefix = filePrefix;
 		m_saving_par.imageType = image_type;
+		if (specialDisplayType == "FLOAT")
+			m_saving_par.imageType = Bpp32F;
 		m_saving_par.indexFormat = fileIndexPattern;
 		m_saving_par.nextNumber = 1;
 		m_saving_par.savingMode = CtSaving::Manual;
@@ -761,6 +768,7 @@ void LimaDetector::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("DetectorDescription"));
 	dev_prop.push_back(Tango::DbDatum("DetectorType"));
 	dev_prop.push_back(Tango::DbDatum("DetectorPixelDepth"));
+	dev_prop.push_back(Tango::DbDatum("SpecialDisplayType"));
 	dev_prop.push_back(Tango::DbDatum("DetectorVideoMode"));
 	dev_prop.push_back(Tango::DbDatum("ImageSource"));
 	dev_prop.push_back(Tango::DbDatum("FileFormat"));
@@ -827,6 +835,17 @@ void LimaDetector::get_device_property()
 	}
 	//	And try to extract DetectorPixelDepth value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorPixelDepth;
+
+	//	Try to initialize SpecialDisplayType from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  specialDisplayType;
+	else {
+		//	Try to initialize SpecialDisplayType from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  specialDisplayType;
+	}
+	//	And try to extract SpecialDisplayType value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  specialDisplayType;
 
 	//	Try to initialize DetectorVideoMode from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
@@ -1839,7 +1858,8 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 		string previous = m_acquisition_mode;
 		attr.get_write_value(attr_acquisitionMode_write);
 		string current = attr_acquisitionMode_write;
-		if (current.compare("SINGLE") != 0 && current.compare("ACCUMULATION") != 0)
+		transform(current.begin(), current.end(), current.begin(), ::toupper);
+		if ((current != "SINGLE") && (current != "ACCUMULATION"))
 		{
 			m_acquisition_mode = previous;
 			attr_acquisitionMode_write = new char [m_acquisition_mode.size() + 1];
@@ -1851,8 +1871,8 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 		}
 
 		//- THIS IS AN AVAILABLE ACQUISITION MODE
-		m_acquisition_mode = attr_acquisitionMode_write;
-		if (m_acquisition_mode.compare("SINGLE") == 0)
+		m_acquisition_mode = current;
+		if (m_acquisition_mode == "SINGLE")
 		{
 				m_ct->acquisition()->setAcqMode(Single);			
 			try
@@ -1875,7 +1895,7 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 				
 		}
 
-		if (m_acquisition_mode.compare("ACCUMULATION") == 0)
+		if (m_acquisition_mode == "ACCUMULATION")
 		{
 			m_ct->acquisition()->setAcqMode(Accumulation);
 			//- Create dynamic attribute exposureAccTime
@@ -1915,7 +1935,7 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 
 		PropertyHelper::set_property(this, "MemorizedAcquisitionMode", m_acquisition_mode);
 
-		if (previous.compare(m_acquisition_mode) == 0)//if acquisition mode is the same than the previous one -> no need to recreate again image dynmaic attribute
+		if (previous == m_acquisition_mode)//if acquisition mode is the same than the previous one -> no need to recreate again image dynmaic attribute
 			return;//Nothing to do .
 
 		//////*** Everytime we change acquisition mode, we have to adapt dynamic image attribute type ***//////
@@ -1936,21 +1956,26 @@ void LimaDetector::write_acquisitionMode(Tango::WAttribute &attr)
 		dai.tai.name = "image";
 		dai.tai.data_format = Tango::IMAGE;
 
-		if (m_acquisition_mode.compare("SINGLE") == 0)
-		{
-			switch (detectorPixelDepth)
+			if (m_acquisition_mode == "SINGLE")
 			{
-				case 8:     dai.tai.data_type = Tango::DEV_UCHAR;
-					break;
-				case 16:    dai.tai.data_type = Tango::DEV_USHORT;
-					break;
-
-				case 32:    dai.tai.data_type = Tango::DEV_ULONG;
-					break;
+				switch (detectorPixelDepth)
+				{
+					case 8: dai.tai.data_type = Tango::DEV_UCHAR;
+						break;
+					case 12:
+					case 16: dai.tai.data_type = Tango::DEV_USHORT;
+						break;
+					case 32: dai.tai.data_type = Tango::DEV_ULONG;
+						break;
+				}
 			}
-		}
 
-		if (m_acquisition_mode.compare("ACCUMULATION") == 0)
+			if(specialDisplayType == "FLOAT") //- could be used by xpad for example
+			{
+				dai.tai.data_type = Tango::DEV_FLOAT;
+			}
+			
+		if (m_acquisition_mode == "ACCUMULATION")
 		{
 			dai.tai.data_type = Tango::DEV_ULONG;//force to 32 bits if ACCUMULATION MODE, this is due to Lima core.
 		}
@@ -3895,6 +3920,7 @@ void LimaDetector::execute_close_shutter_callback (yat4tango::DynamicCommandExec
 									static_cast<const char*> ("LimaDetector::execute_close_shutter_callback"));
 	}
 }
+
 
 
 

@@ -791,18 +791,6 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	enable_double_pixel_correction->set_memorized_init(true);
 	att_list.push_back(enable_double_pixel_correction);
 
-	//	Attribute : normalizationFactor
-	normalizationFactorAttrib	*normalization_factor = new normalizationFactorAttrib();
-	Tango::UserDefaultAttrProp	normalization_factor_prop;
-	normalization_factor_prop.set_label("Normalization Factor");
-	normalization_factor_prop.set_unit(" ");
-	normalization_factor_prop.set_description("Normalization Factor of the intensities, used for the doubel pixel correction algorithm");
-	normalization_factor->set_default_properties(normalization_factor_prop);
-	normalization_factor->set_disp_level(Tango::EXPERT);
-	normalization_factor->set_memorized();
-	normalization_factor->set_memorized_init(true);
-	att_list.push_back(normalization_factor);
-
 	//	Attribute : deadTime
 	deadTimeAttrib	*dead_time = new deadTimeAttrib();
 	Tango::UserDefaultAttrProp	dead_time_prop;
@@ -810,10 +798,21 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	dead_time_prop.set_format("%6d");
 	dead_time_prop.set_description("time between images");
 	dead_time->set_default_properties(dead_time_prop);
-	dead_time->set_disp_level(Tango::EXPERT);
 	dead_time->set_memorized();
 	dead_time->set_memorized_init(true);
 	att_list.push_back(dead_time);
+
+	//	Attribute : normalizationFactor
+	normalizationFactorAttrib	*normalization_factor = new normalizationFactorAttrib();
+	Tango::UserDefaultAttrProp	normalization_factor_prop;
+	normalization_factor_prop.set_label("Normalization Factor");
+	normalization_factor_prop.set_unit(" ");
+	normalization_factor_prop.set_description("Normalization Factor of the intensities, used for the double pixel correction algorithm");
+	normalization_factor->set_default_properties(normalization_factor_prop);
+	normalization_factor->set_disp_level(Tango::EXPERT);
+	normalization_factor->set_memorized();
+	normalization_factor->set_memorized_init(true);
+	att_list.push_back(normalization_factor);
 
 	//	Attribute : init
 	initAttrib	*init = new initAttrib();

@@ -93,9 +93,9 @@ namespace XpadPixelDetector_ns
 		Tango::DevBoolean	attr_enableGeometricalCorrection_write;
 		Tango::DevBoolean	*attr_enableDoublePixelCorrection_read;
 		Tango::DevBoolean	attr_enableDoublePixelCorrection_write;
+		Tango::DevULong	attr_deadTime_write;
 		Tango::DevDouble	*attr_normalizationFactor_read;
 		Tango::DevDouble	attr_normalizationFactor_write;
-		Tango::DevULong	attr_deadTime_write;
 		Tango::DevULong	attr_init_write;
 		Tango::DevULong	attr_shutter_write;
 		Tango::DevULong	attr_ovf_write;
@@ -238,14 +238,6 @@ namespace XpadPixelDetector_ns
  */
 	virtual void write_enableDoublePixelCorrection(Tango::WAttribute &attr);
 /**
- *	Extract real attribute values for normalizationFactor acquisition result.
- */
-	virtual void read_normalizationFactor(Tango::Attribute &attr);
-/**
- *	Write normalizationFactor attribute values to hardware.
- */
-	virtual void write_normalizationFactor(Tango::WAttribute &attr);
-/**
  *	Extract real attribute values for deadTime acquisition result.
  */
 	virtual void read_deadTime(Tango::Attribute &attr);
@@ -253,6 +245,14 @@ namespace XpadPixelDetector_ns
  *	Write deadTime attribute values to hardware.
  */
 	virtual void write_deadTime(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for normalizationFactor acquisition result.
+ */
+	virtual void read_normalizationFactor(Tango::Attribute &attr);
+/**
+ *	Write normalizationFactor attribute values to hardware.
+ */
+	virtual void write_normalizationFactor(Tango::WAttribute &attr);
 /**
  *	Extract real attribute values for init acquisition result.
  */
@@ -354,13 +354,13 @@ namespace XpadPixelDetector_ns
  */
 	virtual bool is_enableDoublePixelCorrection_allowed(Tango::AttReqType type);
 /**
- *	Read/Write allowed for normalizationFactor attribute.
- */
-	virtual bool is_normalizationFactor_allowed(Tango::AttReqType type);
-/**
  *	Read/Write allowed for deadTime attribute.
  */
 	virtual bool is_deadTime_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for normalizationFactor attribute.
+ */
+	virtual bool is_normalizationFactor_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for init attribute.
  */
@@ -574,13 +574,13 @@ namespace XpadPixelDetector_ns
  */
 	void	calibrate_beam(const Tango::DevVarULongArray *);
 /**
- * Start the OTN calibration
+ * Start the Over The Noise calibration
  *	@param	argin	itune, imfp
  *	@exception DevFailed
  */
 	void	calibrate_otn(const Tango::DevVarULongArray *);
 /**
- * Upload a calibration from a file defined in the property CalibrationPath
+ * Upload a calibration from a directory defined in the property CalibrationPath
  *	@exception DevFailed
  */
 	void	upload_calibration();
@@ -616,7 +616,7 @@ namespace XpadPixelDetector_ns
         //	Add your own data members here
         //-----------------------------------------
 
-        bool m_is_device_initialized;
+        bool m_is_device_initialized,m_from_init_device;
         stringstream m_status_message;
         void set_general_purpose_params();
 		std::string m_xpad_model;

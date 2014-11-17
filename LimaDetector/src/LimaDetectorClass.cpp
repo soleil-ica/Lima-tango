@@ -816,6 +816,21 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
+	prop_name = "SpecialDisplayType";
+	prop_desc = "Special type of the image attribute for display and saving (NOT_USED, FLOAT, ...)";
+	prop_def  = "NOT_USED";
+	vect_data.clear();
+	vect_data.push_back("NOT_USED");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
 	prop_name = "DetectorVideoMode";
 	prop_desc = "Define the format of video stream: <br>\nAvailables values :<br>\n- NONE<BR>\n- Y8 <BR>\n- Y16<BR>\n- Y32<BR>\n- Y64<BR>\n- RGB555<BR>\n- RGB565<BR>\n- RGB24<BR>\n- RGB32<BR>\n- BGR24<BR>\n- BGR32<BR>\n- BAYER_RG8<BR>\n- BAYER_RG16<BR>\n- I420<BR>\n- YUV411<BR>\n- YUV422<BR>\n- YUV444<BR>\n<br>\nNota:<br>\nThis property is usefull only for detectors having video capabilities.<BR>\nOtherwise, use only NONE.";
 	prop_def  = "NONE";
