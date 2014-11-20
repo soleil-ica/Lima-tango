@@ -268,26 +268,25 @@ void LimaDetector::init_device()
 			case 32: dai.tai.data_type = Tango::DEV_ULONG;
 				break;
 			default: //ERROR
-				INFO_STREAM << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
 				m_status_message << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
+				ERROR_STREAM << m_status_message.str() << endl;
 				m_is_device_initialized = false;
 				set_state(Tango::FAULT);
 				return;
 		}
 
-			transform(specialDisplayType.begin(), specialDisplayType.end(), specialDisplayType.begin(), ::toupper);
-			if(specialDisplayType == "FLOAT") //- could be used by xpad for example
-			{
-				dai.tai.data_type = Tango::DEV_FLOAT;
-			}
-
+		//- Check if specialDisplayType is set (FLOAT for example)
+		transform(specialDisplayType.begin(), specialDisplayType.end(), specialDisplayType.begin(), ::toupper);
+		if(specialDisplayType == "FLOAT") //- could be used by xpad for example
+		{
+			dai.tai.data_type = Tango::DEV_FLOAT;
 		}
 
+		//- Check if accumulation mode
 		if (memorizedAcquisitionMode == "ACCUMULATION")
 		{
 			dai.tai.data_type = Tango::DEV_ULONG; //force to 32 bits if ACCUMULATION MODE, this is due to Lima core.
 		}
-
 
 		dai.tai.writable = Tango::READ;
 		dai.tai.disp_level = Tango::OPERATOR;
@@ -311,7 +310,7 @@ void LimaDetector::init_device()
 		m_hw = dynamic_cast<HwInterface*> (m_ct->hwInterface());
 		if (m_hw == 0)
 		{
-			INFO_STREAM << "Initialization Failed : Unable to get the interface of DetectorType (" << detectorType << ")!" << endl;
+			ERROR_STREAM << "Initialization Failed : Unable to get the interface of DetectorType (" << detectorType << ")!" << endl;
 			m_status_message << "Initialization Failed : Unable to get the interface of DetectorType (" << detectorType << ")!" << endl;
 			m_is_device_initialized = false;
 			set_state(Tango::FAULT);
@@ -337,7 +336,7 @@ void LimaDetector::init_device()
 				hw_det_info->setCurrImageType(Bpp32);
 				break;
 			default: //ERROR
-				INFO_STREAM << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
+				ERROR_STREAM << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
 				m_status_message << "Initialization Failed : DetectorPixelDepth " << "(" << detectorPixelDepth << ") is not supported!" << endl;
 				m_is_device_initialized = false;
 				set_state(Tango::FAULT);

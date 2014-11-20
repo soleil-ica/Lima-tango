@@ -33,14 +33,19 @@
         <dependency>
             <groupId>fr.soleil.lib</groupId>
             <artifactId>LimaCore-${aol}-shared-${mode}</artifactId>
-            <version>1.3.1</version>
+            <version>1.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>ncsa.uiuc.edu</groupId>
+            <artifactId>HDF5-${aol}-shared-${mode}</artifactId>
+            <version>1.8.13</version>
         </dependency>
         <!-- Lima Camera Plugins -->
-         <dependency>
+        <!--  <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaSimulator-${aol}-shared-${mode}</artifactId>
             <version>1.3.2</version>
-        </dependency>
+        </dependency> -->
 <!--        <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaBasler-${aol}-shared-${mode}</artifactId>
@@ -55,13 +60,13 @@
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaPilatus-${aol}-shared-${mode}</artifactId>
             <version>1.3.1</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaXpad-${aol}-shared-${mode}</artifactId>
-            <version>1.3.2</version>
+            <version>1.4.0</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaAdsc-${aol}-shared-${mode}</artifactId>
             <version>1.3.2</version>
@@ -102,9 +107,9 @@
                             <include>specifics/MarCCD/*.cpp</include>
                             <include>specifics/PilatusPixelDetector/*.cpp</include>
                             <include>specifics/ProsilicaCCD/*.cpp</include>
-                            <include>specifics/RoiCounters/*.cpp</include>-->
-                            <include>specifics/SimulatorCCD/*.cpp</include>                            
-                            <!--<include>specifics/XpadPixelDetector/*.cpp</include>-->
+                            <include>specifics/RoiCounters/*.cpp</include>
+                            <include>specifics/SimulatorCCD/*.cpp</include>   -->                         
+                            <include>specifics/XpadPixelDetector/*.cpp</include>
                         </includes>
                         <includePaths>                          
                             <includePath>src</includePath>                            
@@ -116,9 +121,9 @@
                             <includePath>specifics/MarCCD</includePath>                            
                             <includePath>specifics/PilatusPixelDetector</includePath>                            
                             <includePath>specifics/ProsilicaCCD</includePath>                            
-                            <includePath>specifics/RoiCounters</includePath>                            -->
-                            <includePath>specifics/SimulatorCCD</includePath>                                                        
-                            <!--<includePath>specifics/XpadPixelDetector</includePath>-->
+                            <includePath>specifics/RoiCounters</includePath>                            
+                            <includePath>specifics/SimulatorCCD</includePath>-->                                                        
+                            <includePath>specifics/XpadPixelDetector</includePath>
                         </includePaths>
                                 
                         <defines>
@@ -133,9 +138,9 @@
                             <define>MARCCD_ENABLED</define>
                             <define>PILATUS_ENABLED</define>
                             <define>PROSILICA_ENABLED</define>				
-                            <define>ROICOUNTERS_ENABLED</define>										                                                                                              -->
-                            <define>SIMULATOR_ENABLED</define>                            		
-                            <!--<define>XPAD_ENABLED</define>-->
+                            <define>ROICOUNTERS_ENABLED</define>
+                            <define>SIMULATOR_ENABLED</define>   -->                         		
+                            <define>XPAD_ENABLED</define>
                         </defines>                        
                     </cpp>        
 
