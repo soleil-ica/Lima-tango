@@ -67,6 +67,28 @@ namespace LimaDetector_ns
 {
 //+----------------------------------------------------------------------------
 //
+// method : 		PrepareClass::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *PrepareClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "PrepareClass::execute(): arrived" << endl;
+
+	((static_cast<LimaDetector *>(device))->prepare());
+	return new CORBA::Any();
+}
+
+//+----------------------------------------------------------------------------
+//
 // method : 		ResetFileIndexClass::execute()
 // 
 // description : 	method to trigger the execution of the command.
@@ -366,6 +388,11 @@ LimaDetectorClass *LimaDetectorClass::instance()
 //-----------------------------------------------------------------------------
 void LimaDetectorClass::command_factory()
 {
+	command_list.push_back(new PrepareClass("Prepare",
+		Tango::DEV_VOID, Tango::DEV_VOID,
+		"",
+		"",
+		Tango::OPERATOR));
 	command_list.push_back(new SnapCmd("Snap",
 		Tango::DEV_VOID, Tango::DEV_VOID,
 		"",
@@ -936,11 +963,56 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
+	prop_name = "FileWriteMode";
+	prop_desc = "Available only for Nexus format : Fix the SetWriteMode(). <br>\nAvailable values :<br>\n- IMMEDIATE<br>\n- SYNCHRONOUS<br>\n- DELAYED";
+	prop_def  = "IMMEDIATE";
+	vect_data.clear();
+	vect_data.push_back("IMMEDIATE");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "FileMemoryMode";
+	prop_desc = "Available only for Nexus format : Fix the SetDataItemMemoryMode().<br>\nAvailable values :<br>\n- COPY<br>\n- NO_COPY";
+	prop_def  = "COPY";
+	vect_data.clear();
+	vect_data.push_back("COPY");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
 	prop_name = "BufferMaxMemoryPercent";
 	prop_desc = "Define the Percent of Memory reserved by buffer control (from 0 to 100 %).";
 	prop_def  = "70";
 	vect_data.clear();
 	vect_data.push_back("70");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "UsePrepareCmd";
+	prop_desc = "";
+	prop_def  = "false";
+	vect_data.clear();
+	vect_data.push_back("false");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -988,9 +1060,11 @@ void LimaDetectorClass::set_default_property()
 
 	prop_name = "DebugFormats";
 	prop_desc = "Define Lima traces format.<BR>\nAvailables values :<BR>\n- DateTime<BR>\n- Thread<BR>\n- Module<BR>\n- Obj<BR>\n- Funct<BR>\n- FileLine<BR>";
-	prop_def  = "DateTime\nFunct";
+	prop_def  = "DateTime\nModule\nType\nFunct";
 	vect_data.clear();
 	vect_data.push_back("DateTime");
+	vect_data.push_back("Module");
+	vect_data.push_back("Type");
 	vect_data.push_back("Funct");
 	if (prop_def.length()>0)
 	{

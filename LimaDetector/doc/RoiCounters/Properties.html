@@ -43,9 +43,9 @@
 <Br>
 <center>
 <h1>
-LimaDetector		<Br>
-Device Commands Description 		<Br> <Br>
-LimaDetector Class	<Br>
+Lima		<Br>
+Properties Description 		<Br> <Br>
+RoiCounters Class	<Br>
 </h1>
 <b>
 Revision:  - Author: 
@@ -54,72 +54,75 @@ Revision:  - Author:
 
 
 <Center>
-<Br><Br>
-<A Href="DevCommandsFrame.html"> More Details on commands.... </a><Br>
-<Br> <Br>
-<Table Border=2 Cellpadding=3 CELLSPACING=0 WIDTH="100%">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<Td COLSPAN=3> <Font Size=+2><Center><b>Device Commands for Operator Level</b></td></Font></Center>
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<Td><Center><b>Command name</b></td></Center>
-<Td><Center><b>Argument In</b></td></Center>
-<Td><Center><b>Argument Out</b></td></Center>
-<Tr><Td><b>Init</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>State</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_STATE</Font></Td>
-<Tr><Td><b>Status</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>CONST_DEV_STRING</Font></Td>
-<Tr><Td><b>Prepare</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>Snap</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>Start</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>Stop</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>SetROI</b></Td>
-<Td><Font Size=-1>DEVVAR_ULONGARRAY</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>SetBinning</b></Td>
-<Td><Font Size=-1>DEVVAR_ULONGARRAY</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>ResetBinning</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Tr><Td><b>ResetROI</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-
-
-
-</Table></Center>
 <Br> <Br> <Br> 
-<Center>
 <Table Border=2 Cellpadding=3 CELLSPACING=0 WIDTH="100%">
 <TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<Td COLSPAN=3> <Font Size=+2><Center><b>Device Commands for Expert Level Only</b></td></Font></Center>
+<Td COLSPAN=3> <Font Size=+2><Center><b>Device Properties</b></td></Font></Center>
 <TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<Td><Center><b>Command name</b></td></Center>
-<Td><Center><b>Argument In</b></td></Center>
-<Td><Center><b>Argument Out</b></td></Center>
-<Tr><Td><b>GetAttributeAvailableValues</b></Td>
-<Td><Font Size=-1>DEV_STRING</Font></Td>
-<Td><Font Size=-1>DEVVAR_STRINGARRAY</Font></Td>
-<Tr><Td><b>ResetFileIndex</b></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
-<Td><Font Size=-1>DEV_VOID</Font></Td>
+<Td><Center><b>Property name</b></td></Center>
+<Td><Center><b>Property type</b></td></Center>
+<Td><Center><b>Description</b></td></Center>
+<Tr><Td><b><a href=#Dev_DefaultValues>NbRoiCounters </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_ULONG</Font></Td>
+<Td><Font Size=-1>Fix the number of Region Of Interest.<br>
+Statistical calculations  (sum, average, std, min, max) will be made for these regions of interest.</Font></Td></Tr>
 
+<Tr><Td><b><a href=#Dev_DefaultValues>__x </a></b></Td>
+<Td><Font Size=-1>Array of long</Font></Td>
+<Td><Font Size=-1>(Origin X) for each Region of Interest. </Font></Td></Tr>
 
+<Tr><Td><b><a href=#Dev_DefaultValues>__y </a></b></Td>
+<Td><Font Size=-1>Array of long</Font></Td>
+<Td><Font Size=-1> (Origin Y) for each Region of Interest.</Font></Td></Tr>
 
-</Table></Center>
+<Tr><Td><b><a href=#Dev_DefaultValues>__width </a></b></Td>
+<Td><Font Size=-1>Array of long</Font></Td>
+<Td><Font Size=-1> (Width) for each Region of Interest.</Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>__height </a></b></Td>
+<Td><Font Size=-1>Array of long</Font></Td>
+<Td><Font Size=-1>(Height) for each Region of Interest.</Font></Td></Tr>
+
+</Table>
+
+</Center>
+<Br><Br><Br>
+<Br><Br><Br>
+
+<A name=Dev_DefaultValues><!---  ---></a>
+<Font Size=+1>Device Properties Default Values:</Font><Br>
+<Table Border=2 Cellpadding=2 CELLSPACING=2>
+    <tr BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+        <Td><b>Property Name</b></td>
+        <td><b>Default Values</b></td>
+    </Tr>
+    <Tr>
+        <Td>NbRoiCounters</Td>
+        <td>2</td>
+    </Tr>
+    <Tr>
+        <Td>__x</Td>
+        <td>0, 0</td>
+    </Tr>
+    <Tr>
+        <Td>__y</Td>
+        <td>0, 0</td>
+    </Tr>
+    <Tr>
+        <Td>__width</Td>
+        <td>10, 10</td>
+    </Tr>
+    <Tr>
+        <Td>__height</Td>
+        <td>10, 10</td>
+    </Tr>
+</Table>
+
+<Br><Br><Br>
+<Center><b>
+There is no Class properties.<Br><Br>
+</Center></b>
+<Br> <Br> <Br> 
 
 <!--- html Footer --->
 
