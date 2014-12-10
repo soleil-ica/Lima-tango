@@ -2499,6 +2499,7 @@ def _video_image_2_struct(image):
 #    LimaCCDs class main method
 #
 #==================================================================
+verboseLevel = 0
 def main() :
     global verboseLevel
     verboseLevel = 0
