@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 ############################################################################
+
+import sys
 import time
 import os, tempfile, re, imp
 from subprocess import Popen, PIPE
@@ -31,27 +33,32 @@ LimaDir = None
 StrictVersionPolicy = None
 EnvVersionDepth = {'MAJOR': 1, 'MINOR': 2, 'FULL': 3}
 
-def get_server_name(argv):
+def get_server_name(argv=None):
     """
     Returns full server name <server_type>/<server_instance>.
     (ex: LimaCCDs/basler01)
     """
+    if argv is None:
+        argv = sys.argv
     full_exec_name = argv[0]
     exec_name = os.path.split(full_exec_name)[-1]
     exec_name = os.path.splitext(exec_name)[0]
     return "/".join((exec_name, argv[1]))
 
-def get_device_class_map(server):
+def get_device_class_map(server=None):
     """
     Retuns a dict of devices for the given server.
     The dict key is a tango class name and the value is a list of
     devices of that tango class name.
 
     :param server: full server name (ex: LimaCCDs/basler01)
+                   [default: use current process args]
     :type server: str
     :return: Returns dict<tango class name : list of device names>
     :rtype: dict
     """
+    if server is None:
+        server = get_server_name()
     db = PyTango.Database()
     dev_list = db.get_device_class_list(server)
     dev_map = {}
@@ -62,27 +69,32 @@ def get_device_class_map(server):
         dev_names.append(dev_name)
     return dev_map
 
-def get_lima_device_name(server):
+def get_lima_device_name(server=None):
     """
     Returns LimaCCDs device name for the given server
 
     :param server: full server name (ex: LimaCCDs/basler01)
+                   [default: use current process args]
     :type server: str
     :return: LimaCCDs tango device name for the given server
     :rtype: str
     """
-    return get_device_class_map(server)['LimaCCDs'][0]
+    if server is None:
+        server = get_server_name()
+    server_type = server.split("/", 1)[0]
+    return get_device_class_map(server=server)[server_type][0]
 
-def get_lima_camera_type(server):
+def get_lima_camera_type(server=None):
     """
     Returns the Lima camera type for the given server
 
     :param server: full server name (ex: LimaCCDs/basler01)
+                   [default: use current process args]
     :type server: str
     :return: the lima camera type for the given server (Ex: Basler)
     :rtype: str
     """
-    lima_dev_name = get_lima_device_name(server)
+    lima_dev_name = get_lima_device_name(server=None)
     db = PyTango.Database()
     prop_dict = db.get_device_property(lima_dev_name, 'LimaCameraType')
     camera_type = prop_dict['LimaCameraType']
