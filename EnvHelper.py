@@ -85,10 +85,7 @@ def get_lima_device_name(server=None):
     :return: LimaCCDs tango device name for the given server
     :rtype: str
     """
-    if server is None:
-        server = get_server_name()
-    server_type = server.split("/", 1)[0]
-    return get_device_class_map(server=server)[server_type][0]
+    return get_device_class_map(server=server)['LimaCCDs'][0]
 
 def get_lima_camera_type(server=None):
     """
