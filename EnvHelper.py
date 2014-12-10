@@ -23,31 +23,7 @@ import time
 import os, tempfile, re, imp
 from subprocess import Popen, PIPE
 
-FindCoreVerHelperPy = """
-import os, sys, PyTango
-
-class LimaCCDs(PyTango.Device_4Impl):
-    def __init__(self, *args) :
-        PyTango.Device_4Impl.__init__(self,*args)
-        self.get_device_properties(self.get_device_class())
-        print 'LimaCameraType=%s' % self.LimaCameraType
-
-class LimaCCDsClass(PyTango.DeviceClass):
-    device_property_list = {
-        'LimaCameraType':
-        	[PyTango.DevString, "Camera Plugin name",[]],
-        'NbProcessingThread':
-        	[PyTango.DevString, "Number of thread for processing", [2]],
-        'AccThresholdCallbackMoedule':
-        	[PyTango.DevString, "Plugin name file which manage threshold",
-                 []],
-    }
-
-tango_util = PyTango.Util(sys.argv)
-tango_util.add_TgClass(LimaCCDsClass, LimaCCDs, 'LimaCCDs')
-tango_util_inst = PyTango.Util.instance()
-tango_util_inst.server_init()
-"""
+import PyTango
 
 ModDepend = ['Core', 'Espia']
 Debug = 0
@@ -55,40 +31,74 @@ LimaDir = None
 StrictVersionPolicy = None
 EnvVersionDepth = {'MAJOR': 1, 'MINOR': 2, 'FULL': 3}
 
+def get_server_name(argv):
+    """
+    Returns full server name <server_type>/<server_instance>.
+    (ex: LimaCCDs/basler01)
+    """
+    full_exec_name = argv[0]
+    exec_name = os.path.split(full_exec_name)[-1]
+    exec_name = os.path.splitext(exec_name)[0]
+    return "/".join((exec_name, argv[1]))
+
+def get_device_class_map(server):
+    """
+    Retuns a dict of devices for the given server.
+    The dict key is a tango class name and the value is a list of
+    devices of that tango class name.
+
+    :param server: full server name (ex: LimaCCDs/basler01)
+    :type server: str
+    :return: Returns dict<tango class name : list of device names>
+    :rtype: dict
+    """
+    db = PyTango.Database()
+    dev_list = db.get_device_class_list(server)
+    dev_map = {}
+    for class_name, dev_name in zip(dev_list[1::2], dev_list[::2]):
+        dev_names = dev_map.get(class_name)
+        if dev_names is None:
+            dev_map[class_name] = dev_names = []
+        dev_names.append(dev_name)
+    return dev_map
+
+def get_lima_device_name(server):
+    """
+    Returns LimaCCDs device name for the given server
+
+    :param server: full server name (ex: LimaCCDs/basler01)
+    :type server: str
+    :return: LimaCCDs tango device name for the given server
+    :rtype: str
+    """
+    return get_device_class_map(server)['LimaCCDs'][0]
+
+def get_lima_camera_type(server):
+    """
+    Returns the Lima camera type for the given server
+
+    :param server: full server name (ex: LimaCCDs/basler01)
+    :type server: str
+    :return: the lima camera type for the given server (Ex: Basler)
+    :rtype: str
+    """
+    lima_dev_name = get_lima_device_name(server)
+    db = PyTango.Database()
+    prop_dict = db.get_device_property(lima_dev_name, 'LimaCameraType')
+    camera_type = prop_dict['LimaCameraType']
+    if not camera_type:
+        raise ValueError("LimaCameraType property not set")
+    return camera_type[0]
+
 def setup_lima_env(argv):
     if not check_args(argv):
         return
     if not check_link_strict_version():
         return
-    tdir = tempfile.gettempdir()
-    sname = os.path.basename(argv[0])
-    pname = sname.split('.py')[0] + '.py'
-    aux_py_name = os.path.join(tdir, pname)
-    aux_py = open(aux_py_name, 'wt')
-    aux_py.write(FindCoreVerHelperPy)
-    aux_py.close()
-    args = ['python', aux_py_name]
-    for arg in argv[1:]:
-        if not arg.startswith('-v'):
-            args.append(arg)
-    for r in range(2):
-        pobj = Popen(args, stdout=PIPE, stderr=PIPE)
-        output = {}
-        for l in pobj.stdout.readlines():
-            key, val = l.strip().split('=')
-            output[key] = val
-        while pobj.poll() is None:
-          time.sleep(0.1) 
-        print_debug('Retry %d - got from TANGO database: %s' % (r, output))
-        if 'LimaCameraType' in output.keys():
-            break
-    os.unlink(aux_py_name)
-    if 'LimaCameraType' not in output.keys():
-        print 'Warning: EnvHelper could not find LimaCameraType for server', \
-              argv[1]
-        return
+    server_name = get_server_name(argv)
+    lima_camera_type = get_lima_camera_type(server_name)
     cdir = os.path.join(os.path.dirname(__file__), 'camera')
-    cfile_name = os.path.join(cdir, output['LimaCameraType'] + '.py')
+    cfile_name = os.path.join(cdir, lima_camera_type + '.py')
     cfile = open(cfile_name, 'rt')
     h = '^[ \t]*'
     p = '(?P<plugin>[A-Za-z0-9_]+)'
@@ -109,7 +119,7 @@ def setup_lima_env(argv):
         if 'LIMA_' in k and '_VERSION' in k and \
                k not in ['LIMA_LINK_STRICT_VERSION']:
             print_debug('Env: %s=%s' % (k, v))
-    return output['LimaCameraType']
+    return lima_camera_type
 
 def check_args(argv):
     global Debug
@@ -123,7 +133,7 @@ def check_args(argv):
 
 def check_link_strict_version():
     global StrictVersionPolicy
-    
+
     cmd = 'from Lima import Core; '
     cmd += 'import os; print os.environ["LIMA_LINK_STRICT_VERSION"]'
     args = ['python', '-c', cmd]
@@ -160,7 +170,7 @@ def setup_env(mod):
         os.environ[env_var_name] = set_env_version_depth(dver)
         if dname != 'Core':
             setup_env(dname)
-    
+
 def find_dep_vers(mod):
     vers = {}
     vre_str = 'v[0-9]+\.[0-9]+\.[0-9]+'
