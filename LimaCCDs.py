@@ -59,6 +59,7 @@ if 'linux' in sys.platform:
     from EnvHelper import setup_lima_env
     LimaCameraType = setup_lima_env(sys.argv)
 
+from EnvHelper import get_sub_devices
 from AttrHelper import get_attr_4u
 
 from Lima import Core
@@ -2493,21 +2494,6 @@ def _video_image_2_struct(image):
     return videoheader + image.buffer()
 
  
-def get_sub_devices() :
-    className2deviceName = {}
-    #get sub devices
-    fullpathExecName = sys.argv[0]
-    execName = os.path.split(fullpathExecName)[-1]
-    execName = os.path.splitext(execName)[0]
-    personalName = '/'.join([execName,sys.argv[1]])
-    dataBase = PyTango.Database()
-    result = dataBase.get_device_class_list(personalName)
-    for i in range(len(result.value_string) / 2) :
-        class_name = result.value_string[i * 2]
-        deviceName = result.value_string[i * 2 + 1]
-        className2deviceName[deviceName] = class_name
-    return className2deviceName
-
 #==================================================================
 #
 #    LimaCCDs class main method

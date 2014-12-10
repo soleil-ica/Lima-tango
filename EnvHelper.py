@@ -33,6 +33,12 @@ LimaDir = None
 StrictVersionPolicy = None
 EnvVersionDepth = {'MAJOR': 1, 'MINOR': 2, 'FULL': 3}
 
+def get_sub_devices():
+    db = PyTango.Database()
+    server_name = get_server_name(sys.argv)
+    result = db.get_device_class_list(server_name)
+    return dict(zip(result[1::2], result[::2]))
+
 def get_server_name(argv=None):
     """
     Returns full server name <server_type>/<server_instance>.
