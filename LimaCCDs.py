@@ -429,6 +429,12 @@ class LimaCCDs(PyTango.Device_4Impl) :
                 except AttributeError:
                     deb.Error("Accumulation threshold plugins module don't have get_acc_threshold_callback function")
 
+        #ImageType Bpp32F (Float 32)
+        if SystemHasFeature('Core.Bpp32F'):
+            self.ImageType2NbBytes[Core.Bpp32F] = (4,1)
+            self.ImageType2String[Core.Bpp32F] = 'Bpp32F'
+            self.ImageType2DataArrayType[Core.Bpp32F] = 8
+
         #Tango Enum to Lima Enum
         self.__Prefix2SubClass = {'acc' : self.__control.acquisition,
                                   'acq' : self.__control.acquisition,
@@ -486,7 +492,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
                                         'OVERWRITE' : Core.CtSaving.Overwrite,
                                         'APPEND' : Core.CtSaving.Append}
 
-        if SystemHasFeature('Core.CtSaving.Multiset'):
+        if SystemHasFeature('Core.CtSaving.MultiSet'):
             self.__SavingOverwritePolicy['MULTISET'] = Core.CtSaving.MultiSet
 
         self.__AcqTriggerMode = {'INTERNAL_TRIGGER' : Core.IntTrig,
@@ -535,7 +541,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
 
         #INIT display shared memory
         try:
-            shared_memory_names = ['LimaCCds',self.LimaCameraType]
+            shared_memory_names = ['LimaCCds',sys.argv[1]]
             shared_memory = self.__control.display()
             shared_memory.setNames(*self.__shared_memory_names)
         except AttributeError:
@@ -608,13 +614,21 @@ class LimaCCDs(PyTango.Device_4Impl) :
     	import gc
 	gc.collect()
 
-    def always_executed_hook(self) :
+    @Core.DEB_MEMBER_FUNCT
+    def apply_config(self) :
+        '''
+        Apply configuration. Identification of config to apply is found
+        in DS properties "ConfigurationDefaultName" and
+        "ConfigurationFilePath".
+        Apply by default "default" config.
+        '''
         if not self.__configInit:
             self.__configInit = True
             #Configuration mgt
             config_file_path = self.ConfigurationFilePath
             config_default_name = self.ConfigurationDefaultName
 
+            deb.Always("Applied config : %s : %s " % (config_file_path, config_default_name))
             self.__configDefaultActiveFlag = False
             if SystemHasFeature('Core.CtConfig'):
                 config = self.__control.config()
@@ -2516,10 +2530,15 @@ def main() :
             print 'SEB_EXP'
             import traceback
             traceback.print_exc()
-        
+
         U = PyTango.Util.instance()
         U.server_init()
-        try:
+
+        # Configurations management (load default or custom config)
+        dev = U.get_device_list_by_class("LimaCCDs")
+        dev[0].apply_config()
+
+	try:
             export_default_plugins()
         except:
             print 'SEB_EXP'
