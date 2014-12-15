@@ -24,6 +24,9 @@ import sys
 import time
 import os, tempfile, re, imp
 from subprocess import Popen, PIPE
+import inspect
+import logging
+import functools
 
 import PyTango
 
@@ -74,7 +77,6 @@ def get_device_class_map(server=None, cache=True):
     except NameError:
         __LIMA_CLASS_MAP = {}
         dev_map = __LIMA_CLASS_MAP
-        
     if server is None:
         server = get_server_name()
     db = PyTango.Database()
@@ -259,3 +261,156 @@ def version_cmp(x, y):
 def print_debug(msg):
     if Debug:
         print msg
+def __get_ct_classes():
+    import Lima.Core
+
+    global CT_KLASSES
+    try:
+        return CT_KLASSES
+    except NameError:
+        pass
+
+    classes = {}
+    for member_name in dir(Lima.Core):
+        if not member_name.startswith("Ct"):
+            continue
+        member = getattr(Lima.Core, member_name)
+        if not inspect.isclass(member):
+            continue
+        classes[member_name] = member
+    CT_KLASSES = classes
+    return classes
+
+
+def __filter(obj, tango_class_name, member_name, member):
+    import Lima.Core
+    # Avoid enumerations
+    is_enum = type(type(member)) == type(Lima.Core.CtControl.CameraErrorCode)
+    if is_enum:
+        return False
+    return True
+
+
+def __to_lower_separator(text, sep="_"):
+    r = text[0].lower()
+    for c in text[1:]:
+        if c.isupper():
+            r += sep
+            c = c.lower()
+        r += c
+    return r
+
+
+def to_tango_object(ct):
+    """
+    Create an adapter for CtControl, CtImage, CtSaving, etc that
+    has attributes. Example: CtImage has a getRoi and setRoi methods.
+    The returned object will have them as well, plus a python roi
+    property.
+    """
+    global CT_TANGO_MAP
+    try:
+        ct_tango_map = CT_TANGO_MAP
+    except NameError:
+        CT_TANGO_MAP = {}
+        ct_tango_map = CT_TANGO_MAP
+
+    ct_klass = ct.__class__
+    klass = ct_tango_map.get(ct_klass)
+    if klass:
+        return klass(ct)
+
+    ct_klass_name = ct_klass.__name__
+
+    def getter(obj, name=None):
+        ct = obj.__dict__["__ct"]
+        return getattr(ct, name)()
+
+    def setter(obj, value, name=None):
+        ct = obj.__dict__["__ct"]
+        return getattr(ct, name)(value)
+
+    patched_members = {}
+    for member_name in dir(ct_klass):
+        # skip non "get" members
+        if not member_name.startswith("get"):
+            continue
+
+        _fget = getattr(ct_klass, member_name)
+
+        # skip non callables
+        if not callable(_fget):
+            continue
+
+        name = member_name[3:]
+        fget_name = member_name
+        fset_name = "set" + name
+        name_lower_us = __to_lower_separator(name)
+        fget_name = member_name
+
+        fget = functools.partial(getter, name=fget_name)
+
+        if hasattr(ct_klass, fset_name):
+            fset = functools.partial(setter, name=fset_name)
+        else:
+            fset = None
+
+        logging.debug("added artificial member %s.%s",
+                      ct_klass.__name__, name_lower_us)
+        patched_members[name_lower_us] = fget, fset
+
+    keys = patched_members.keys()
+
+    class klass(object):
+
+        def __init__(self, ct):
+            self.__dict__["__ct"] = ct
+
+        def __getattr__(self, name):
+            return getattr(self.__dict__["__ct"], name)
+
+        def __setattr__(self, name, value):
+            return setattr(self.__dict__["__ct"], name, value)
+
+        def __dir__(self):
+            return dir(self.__dict__["__ct"]) + keys
+
+    for name, value in patched_members.items():
+        setattr(klass, name, property(*value))
+
+    klass.__name__ = ct_klass_name
+    ct_tango_map[ct_klass] = klass
+
+    return klass(ct)
+
+
+def create_tango_objects(ct_control, name_template):
+    import PyTango
+    import PyTango.server
+
+    # create a server just to store objects
+    server = PyTango.server.Server("dummy", server_type="LimaCCDs")
+
+    names = []
+
+    tango_ct_control = to_tango_object(ct_control)
+    klass_name = "CtControl"
+    name = name_template.format(type=klass_name)
+    tango_object = server.register_object(tango_ct_control, name, klass_name,
+                                          member_filter=__filter)
+    names.append(name)
+
+    for ct_item_name in __get_ct_classes():
+        # "CtImage" becomes "image()"
+        ct_item_name_l = ct_item_name[2:].lower()
+        ct_item_func = getattr(ct_control, ct_item_name_l, None)
+        if ct_item_func is None:
+            continue
+        ct_item = ct_item_func()
+        tango_ct_item = to_tango_object(ct_item)
+        name = name_template.format(type=ct_item_name)
+        tango_object = server.register_object(tango_ct_item, name,
+                                              ct_item_name,
+                                              member_filter=__filter)
+        names.append(name)
+    return server, names
