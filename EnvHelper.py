@@ -33,11 +33,12 @@ LimaDir = None
 StrictVersionPolicy = None
 EnvVersionDepth = {'MAJOR': 1, 'MINOR': 2, 'FULL': 3}
 
-def get_sub_devices():
-    db = PyTango.Database()
-    server_name = get_server_name(sys.argv)
-    result = db.get_device_class_list(server_name)
-    return dict(zip(result[1::2], result[::2]))
+def get_sub_devices(server=None, cache=True):
+    result = {}
+    devices = get_device_class_map(server=server, cache=cache)
+    for class_name, devices in devices.items():
+        result[class_name] = devices[0]
+    return result
 
 def get_server_name(argv=None):
     """
@@ -51,7 +52,7 @@ def get_server_name(argv=None):
     exec_name = os.path.splitext(exec_name)[0]
     return "/".join((exec_name, argv[1]))
 
-def get_device_class_map(server=None):
+def get_device_class_map(server=None, cache=True):
     """
     Retuns a dict of devices for the given server.
     The dict key is a tango class name and the value is a list of
@@ -60,14 +61,25 @@ def get_device_class_map(server=None):
     :param server: full server name (ex: LimaCCDs/basler01)
                    [default: use current process args]
     :type server: str
+    :param cache: use last value stored in cache
+    :type cache: bool
     :return: Returns dict<tango class name : list of device names>
     :rtype: dict
     """
+    global __LIMA_CLASS_MAP
+    try:
+        dev_map = __LIMA_CLASS_MAP
+        if cache:
+            print 0
+            return dev_map
+    except NameError:
+        __LIMA_CLASS_MAP = {}
+        dev_map = __LIMA_CLASS_MAP
+        
     if server is None:
         server = get_server_name()
     db = PyTango.Database()
     dev_list = db.get_device_class_list(server)
-    dev_map = {}
     for class_name, dev_name in zip(dev_list[1::2], dev_list[::2]):
         dev_names = dev_map.get(class_name)
         if dev_names is None:
@@ -75,35 +87,49 @@ def get_device_class_map(server=None):
         dev_names.append(dev_name)
     return dev_map
 
-def get_lima_device_name(server=None):
+def get_lima_device_name(server=None, cache=True):
     """
     Returns LimaCCDs device name for the given server
 
     :param server: full server name (ex: LimaCCDs/basler01)
                    [default: use current process args]
     :type server: str
+    :param cache: use last value stored in cache
+    :type cache: bool    
     :return: LimaCCDs tango device name for the given server
     :rtype: str
     """
-    return get_device_class_map(server=server)['LimaCCDs'][0]
+    return get_device_class_map(server=server, cache=cache)['LimaCCDs'][0]
 
-def get_lima_camera_type(server=None):
+def get_lima_camera_type(server=None, cache=True):
     """
     Returns the Lima camera type for the given server
 
     :param server: full server name (ex: LimaCCDs/basler01)
                    [default: use current process args]
     :type server: str
+    :param cache: use last value stored in cache
+    :type cache: bool    
     :return: the lima camera type for the given server (Ex: Basler)
     :rtype: str
     """
-    lima_dev_name = get_lima_device_name(server=None)
+    global __LIMA_CAMERA_TYPE
+    try:
+        camera_type = __LIMA_CAMERA_TYPE
+        if cache:
+            return camera_type
+    except NameError:
+        pass
+    
+    lima_dev_name = get_lima_device_name(server=server, cache=cache)
     db = PyTango.Database()
     prop_dict = db.get_device_property(lima_dev_name, 'LimaCameraType')
     camera_type = prop_dict['LimaCameraType']
     if not camera_type:
         raise ValueError("LimaCameraType property not set")
-    return camera_type[0]
+    camera_type = camera_type[0]
+    __LIMA_CAMERA_TYPE = camera_type
+    return camera_type
 
 def setup_lima_env(argv):
     if not check_args(argv):
