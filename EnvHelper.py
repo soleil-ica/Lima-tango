@@ -70,7 +70,6 @@ def get_device_class_map(server=None, cache=True):
     try:
         dev_map = __LIMA_CLASS_MAP
         if cache:
-            print 0
             return dev_map
     except NameError:
         __LIMA_CLASS_MAP = {}
