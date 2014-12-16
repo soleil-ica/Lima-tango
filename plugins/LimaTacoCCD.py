@@ -197,6 +197,11 @@ class LimaTacoCCDs(PyTango.Device_4Impl, object):
         except:
             self.ManualAsynchronousWrite = 0
 
+        #ImageType Bpp32F (Float 32)
+        try:
+            self.ImageType2DataArrayType[Core.Bpp32F] = 8
+        except AttributeError: pass
+
 #==================================================================
 #
 #    LimaTacoCCDs read/write attribute methods
@@ -735,11 +740,6 @@ class LimaTacoCCDs(PyTango.Device_4Impl, object):
 	    display = control.display()
 	except AttributeError:
 	    return
-	try:
-	    if livedisplay_act:
-	        display.setNames('_ccd_ds_', 'limaccd_live')
-	except Core.Exception:
-	    pass
 	display.setActive(livedisplay_act)
 
     @Core.DEB_MEMBER_FUNCT
