@@ -261,6 +261,7 @@ def version_cmp(x, y):
 def print_debug(msg):
     if Debug:
         print msg
+
 def __get_ct_classes():
     import Lima.Core
 
@@ -309,8 +310,7 @@ def to_tango_object(ct):
     try:
         ct_tango_map = CT_TANGO_MAP
     except NameError:
-        CT_TANGO_MAP = {}
-        ct_tango_map = CT_TANGO_MAP
+        ct_tango_map = CT_TANGO_MAP = {}
 
     ct_klass = ct.__class__
     klass = ct_tango_map.get(ct_klass)
@@ -367,6 +367,8 @@ def to_tango_object(ct):
             return getattr(self.__dict__["__ct"], name)
 
         def __setattr__(self, name, value):
+            if hasattr(self, name):
+                return object.__setattr__(self, name, value)
             return setattr(self.__dict__["__ct"], name, value)
 
         def __dir__(self):
@@ -377,9 +379,7 @@ def to_tango_object(ct):
 
     klass.__name__ = ct_klass_name
     ct_tango_map[ct_klass] = klass
-
     return klass(ct)
-
 
 def create_tango_objects(ct_control, name_template):
     import PyTango
