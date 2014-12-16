@@ -2399,11 +2399,10 @@ def export_default_plugins() :
                         import traceback
                         traceback.print_exc()
 
-def export_ct_control(server, names):
+def export_ct_control(ct_map):
     util = PyTango.Util.instance()
     tango_dev_map = get_sub_devices()
-    for name in names:
-        tango_object = server.get_tango_object(name)
+    for name, (tango_ct, tango_object) in ct_map.iteritems():
         tango_class_name = tango_object.tango_class_name
         # device already created.
         if tango_class_name in tango_dev_map:
@@ -2561,10 +2560,9 @@ def main() :
         name_template = "{0}/{{type}}/{1}".format(beamline_name, camera_name)
 
         # register Tango classes corresponding to CtControl, CtImage, ...
-        server, names = create_tango_objects(control, name_template)
+        server, ct_map = create_tango_objects(control, name_template)
         tango_classes = set()
-        for name in names:
-            tango_object = server.get_tango_object(name)
+        for name, (tango_ct_object, tango_object) in ct_map.iteritems():
             tango_class = server.get_tango_class(tango_object.class_name)
             tango_classes.add(tango_class)
         for tango_class in tango_classes:
@@ -2583,7 +2581,7 @@ def main() :
             import traceback
             traceback.print_exc()
 
-        export_ct_control(server, names)
+        export_ct_control(ct_map)
 
         U.server_run()
 
