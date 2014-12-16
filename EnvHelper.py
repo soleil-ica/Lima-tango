@@ -281,15 +281,13 @@ def __get_ct_classes():
     CT_KLASSES = classes
     return classes
 
-
 def __filter(obj, tango_class_name, member_name, member):
     import Lima.Core
     # Avoid enumerations
     is_enum = type(type(member)) == type(Lima.Core.CtControl.CameraErrorCode)
-    if is_enum:
+    if is_enum and member_name[0].isupper():
         return False
     return True
-
 
 def __to_lower_separator(text, sep="_"):
     r = text[0].lower()
@@ -299,7 +297,6 @@ def __to_lower_separator(text, sep="_"):
             c = c.lower()
         r += c
     return r
-
 
 def to_tango_object(ct):
     """
