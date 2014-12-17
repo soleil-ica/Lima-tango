@@ -2540,6 +2540,9 @@ def main() :
             try:
                 verboseLevel = int(option[2:])
             except: pass
+
+    pytango_ver = PyTango.__version_info__[:3]
+
     try:
         py = PyTango.Util(sys.argv)
         py.add_TgClass(LimaCCDsClass,LimaCCDs,'LimaCCDs')
@@ -2555,20 +2558,26 @@ def main() :
         # create ct control
         control = _get_control()
 
-        master_dev_name = get_lima_device_name()
-        beamline_name, _, camera_name = master_dev_name.split('/')
-        name_template = "{0}/{{type}}/{1}".format(beamline_name, camera_name)
+        if pytango_ver >= (8,1,7):
+            master_dev_name = get_lima_device_name()
+            beamline_name, _, camera_name = master_dev_name.split('/')
+            name_template = "{0}/{{type}}/{1}".format(beamline_name, camera_name)
 
-        # register Tango classes corresponding to CtControl, CtImage, ...
-        server, ct_map = create_tango_objects(control, name_template)
-        tango_classes = set()
-        for name, (tango_ct_object, tango_object) in ct_map.iteritems():
-            tango_class = server.get_tango_class(tango_object.class_name)
-            tango_classes.add(tango_class)
-        for tango_class in tango_classes:
-            py.add_class(tango_class.TangoClassClass, tango_class)
+            # register Tango classes corresponding to CtControl, CtImage, ...
+            server, ct_map = create_tango_objects(control, name_template)
+            tango_classes = set()
+            for name, (tango_ct_object, tango_object) in ct_map.iteritems():
+                tango_class = server.get_tango_class(tango_object.class_name)
+                tango_classes.add(tango_class)
+            for tango_class in tango_classes:
+                py.add_class(tango_class.TangoClassClass, tango_class)
 
-        U.server_init()
+            U.server_init()
+
+            export_ct_control(ct_map)
+
+        else:
+            U.server_init()
 
         # Configurations management (load default or custom config)
         dev = U.get_device_list_by_class("LimaCCDs")
@@ -2580,8 +2589,6 @@ def main() :
             print 'SEB_EXP'
             import traceback
             traceback.print_exc()
-
-        export_ct_control(ct_map)
 
         U.server_run()
 
