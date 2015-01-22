@@ -64,10 +64,10 @@ namespace Eiger_ns
 //-----------------------------------------------------------------------------
 bool Eiger::is_countrateCorrection_allowed(Tango::AttReqType type)
 {
-	if (get_state() == Tango::FAULT	||
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
 		get_state() == Tango::RUNNING)
 	{
-		//	End of Generated Code
 
 		//	Re-Start of Generated Code
 		return false;
@@ -83,10 +83,10 @@ bool Eiger::is_countrateCorrection_allowed(Tango::AttReqType type)
 //-----------------------------------------------------------------------------
 bool Eiger::is_flatfieldCorrection_allowed(Tango::AttReqType type)
 {
-	if (get_state() == Tango::FAULT	||
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
 		get_state() == Tango::RUNNING)
 	{
-		//	End of Generated Code
 
 		//	Re-Start of Generated Code
 		return false;
@@ -102,10 +102,10 @@ bool Eiger::is_flatfieldCorrection_allowed(Tango::AttReqType type)
 //-----------------------------------------------------------------------------
 bool Eiger::is_pixelMask_allowed(Tango::AttReqType type)
 {
-	if (get_state() == Tango::FAULT	||
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
 		get_state() == Tango::RUNNING)
 	{
-		//	End of Generated Code
 
 		//	Re-Start of Generated Code
 		return false;
@@ -121,11 +121,16 @@ bool Eiger::is_pixelMask_allowed(Tango::AttReqType type)
 //-----------------------------------------------------------------------------
 bool Eiger::is_thresholdEnergy_allowed(Tango::AttReqType type)
 {
-	if (get_state() == Tango::FAULT	||
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
 		get_state() == Tango::RUNNING)
 	{
-		//	End of Generated Code
 
+        //	End of Generated Code
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
 		//	Re-Start of Generated Code
 		return false;
 	}
@@ -140,10 +145,10 @@ bool Eiger::is_thresholdEnergy_allowed(Tango::AttReqType type)
 //-----------------------------------------------------------------------------
 bool Eiger::is_virtualPixelCorrection_allowed(Tango::AttReqType type)
 {
-	if (get_state() == Tango::FAULT	||
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
 		get_state() == Tango::RUNNING)
 	{
-		//	End of Generated Code
 
 		//	Re-Start of Generated Code
 		return false;
@@ -159,11 +164,15 @@ bool Eiger::is_virtualPixelCorrection_allowed(Tango::AttReqType type)
 //-----------------------------------------------------------------------------
 bool Eiger::is_photonEnergy_allowed(Tango::AttReqType type)
 {
-	if (get_state() == Tango::FAULT	||
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
 		get_state() == Tango::RUNNING)
 	{
 		//	End of Generated Code
-
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
 		//	Re-Start of Generated Code
 		return false;
 	}
@@ -178,10 +187,15 @@ bool Eiger::is_photonEnergy_allowed(Tango::AttReqType type)
 //-----------------------------------------------------------------------------
 bool Eiger::is_temperature_allowed(Tango::AttReqType type)
 {
-	if (get_state() == Tango::FAULT	||
+	if (get_state() == Tango::INIT	 ||
+		get_state() == Tango::FAULT  ||
 		get_state() == Tango::RUNNING)
 	{
 		//	End of Generated Code
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
 
 		//	Re-Start of Generated Code
 		return false;
@@ -197,10 +211,15 @@ bool Eiger::is_temperature_allowed(Tango::AttReqType type)
 //-----------------------------------------------------------------------------
 bool Eiger::is_humidity_allowed(Tango::AttReqType type)
 {
-	if (get_state() == Tango::FAULT	||
+	if (get_state() == Tango::INIT	 ||
+		get_state() == Tango::FAULT  ||
 		get_state() == Tango::RUNNING)
 	{
 		//	End of Generated Code
+		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
+		{
+           return true;
+		}
 
 		//	Re-Start of Generated Code
 		return false;
@@ -216,14 +235,28 @@ bool Eiger::is_humidity_allowed(Tango::AttReqType type)
 //-----------------------------------------------------------------------------
 bool Eiger::is_efficiencyCorrection_allowed(Tango::AttReqType type)
 {
-	if (get_state() == Tango::FAULT	||
+	if (get_state() == Tango::INIT	||
+		get_state() == Tango::FAULT	||
 		get_state() == Tango::RUNNING)
 	{
-		//	End of Generated Code
 
 		//	Re-Start of Generated Code
 		return false;
 	}
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		Eiger::is_compression_allowed
+// 
+// description : 	Read/Write allowed for compression attribute.
+//
+//-----------------------------------------------------------------------------
+bool Eiger::is_compression_allowed(Tango::AttReqType type)
+{
+		//	End of Generated Code
+
+		//	Re-Start of Generated Code
 	return true;
 }
 

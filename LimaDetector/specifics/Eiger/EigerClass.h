@@ -45,6 +45,20 @@ namespace Eiger_ns
 {//=====================================
 //	Define classes for attributes
 //=====================================
+class compressionAttrib: public Tango::Attr
+{
+public:
+	compressionAttrib():Attr("compression", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
+	~compressionAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<Eiger *>(dev))->read_compression(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<Eiger *>(dev))->write_compression(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<Eiger *>(dev))->is_compression_allowed(ty);}
+};
+
 class humidityAttrib: public Tango::Attr
 {
 public:

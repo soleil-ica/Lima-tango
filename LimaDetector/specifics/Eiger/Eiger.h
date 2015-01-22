@@ -79,7 +79,8 @@ class Eiger : public Tango::Device_4Impl
 public :
 	//	Add your own data members here
 	//-----------------------------------------
-
+	Tango::DevDouble attr_thresholdEnergy_read_cache;
+	Tango::DevDouble attr_photonEnergy_read_cache;
 
 	//	Here is the Start of the automatic code generation part
 	//-------------------------------------------------------------	
@@ -104,6 +105,8 @@ public :
 		Tango::DevDouble	attr_photonEnergy_write;
 		Tango::DevDouble	*attr_temperature_read;
 		Tango::DevDouble	*attr_humidity_read;
+		Tango::DevBoolean	*attr_compression_read;
+		Tango::DevBoolean	attr_compression_write;
 //@}
 
 /**
@@ -148,6 +151,10 @@ public :
  *	Stores the value of photonEnergy
  */
 	Tango::DevDouble	memorizedPhotonEnergy;
+/**
+ *	Stores the value of compression
+ */
+	Tango::DevBoolean	memorizedCompression;
 //@}
 
 /**
@@ -285,6 +292,14 @@ public :
  */
 	virtual void read_humidity(Tango::Attribute &attr);
 /**
+ *	Extract real attribute values for compression acquisition result.
+ */
+	virtual void read_compression(Tango::Attribute &attr);
+/**
+ *	Write compression attribute values to hardware.
+ */
+	virtual void write_compression(Tango::WAttribute &attr);
+/**
  *	Read/Write allowed for countrateCorrection attribute.
  */
 	virtual bool is_countrateCorrection_allowed(Tango::AttReqType type);
@@ -320,6 +335,10 @@ public :
  *	Read/Write allowed for humidity attribute.
  */
 	virtual bool is_humidity_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for compression attribute.
+ */
+	virtual bool is_compression_allowed(Tango::AttReqType type);
 /**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code

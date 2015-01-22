@@ -109,6 +109,7 @@ void Eiger::delete_device()
    DELETE_SCALAR_ATTRIBUTE(attr_temperature_read);
    DELETE_SCALAR_ATTRIBUTE(attr_humidity_read);
    DELETE_SCALAR_ATTRIBUTE(attr_efficiencyCorrection_read);
+   DELETE_SCALAR_ATTRIBUTE(attr_compression_read);
 }
 
 //+----------------------------------------------------------------------------
@@ -135,6 +136,7 @@ void Eiger::init_device()
    CREATE_SCALAR_ATTRIBUTE(attr_temperature_read);
    CREATE_SCALAR_ATTRIBUTE(attr_humidity_read);
    CREATE_SCALAR_ATTRIBUTE(attr_efficiencyCorrection_read);
+   CREATE_SCALAR_ATTRIBUTE(attr_compression_read);
 
 	m_is_device_initialized = false;
 	set_state(Tango::INIT);
@@ -224,6 +226,12 @@ void Eiger::init_device()
       attr_efficiencyCorrection.set_write_value(attr_efficiencyCorrection_read);
 	  write_efficiencyCorrection(attr_efficiencyCorrection);
 
+	  // compression
+      *attr_compression_read = memorizedCompression;
+      Tango::WAttribute &attr_compression = dev_attr->get_w_attr_by_name("compression");
+      attr_compression.set_write_value(attr_compression_read);
+	  write_compression(attr_compression);
+
 	}
 	catch(Exception& e)
 	{
@@ -272,6 +280,7 @@ void Eiger::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("MemorizedEfficiencyCorrection"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedThresholdEnergy"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedPhotonEnergy"));
+	dev_prop.push_back(Tango::DbDatum("MemorizedCompression"));
 
 	//	Call database and extract values
 	//--------------------------------------------
@@ -381,6 +390,17 @@ void Eiger::get_device_property()
 	//	And try to extract MemorizedPhotonEnergy value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedPhotonEnergy;
 
+	//	Try to initialize MemorizedCompression from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedCompression;
+	else {
+		//	Try to initialize MemorizedCompression from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedCompression;
+	}
+	//	And try to extract MemorizedCompression value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedCompression;
+
 
 
 	//	End of Automatic code generation
@@ -394,6 +414,7 @@ void Eiger::get_device_property()
 	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "false", 	 "MemorizedEfficiencyCorrection");
 	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "4000.0",    "MemorizedThresholdEnergy");
 	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "8000.0", 	 "MemorizedPhotonEnergy");
+	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "true", 	 "MemorizedCompression");
 }
 //+----------------------------------------------------------------------------
 //
@@ -452,6 +473,62 @@ void Eiger::read_attr_hardware(vector<long> &attr_list)
 	DEBUG_STREAM << "Eiger::read_attr_hardware(vector<long> &attr_list) entering... "<< endl;
 	//	Add your own code here
 }
+//+----------------------------------------------------------------------------
+//
+// method : 		Eiger::read_compression
+// 
+// description : 	Extract real attribute values for compression acquisition result.
+//
+//-----------------------------------------------------------------------------
+void Eiger::read_compression(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "Eiger::read_compression(Tango::Attribute &attr) entering... "<< endl;
+
+   try
+   {
+      m_camera->getCompression(*attr_compression_read);
+      attr.set_value(attr_compression_read);
+   }
+   catch(Tango::DevFailed& df)
+   {
+      ERROR_STREAM << df << endl;
+      //- rethrow exception
+      Tango::Except::re_throw_exception(df,
+                 static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+                 static_cast<const char*> (string(df.errors[0].desc).c_str()),
+                 static_cast<const char*> ("Eiger::read_compression"));
+   } 	
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		Eiger::write_compression
+// 
+// description : 	Write compression attribute values to hardware.
+//
+//-----------------------------------------------------------------------------
+void Eiger::write_compression(Tango::WAttribute &attr)
+{
+	DEBUG_STREAM << "Eiger::write_compression(Tango::WAttribute &attr) entering... "<< endl;
+
+	try
+	{
+		attr.get_write_value(attr_compression_write);
+	  	m_camera->setCompression(attr_compression_write);
+	  	memorizedCompression = attr_compression_write;
+	  	yat4tango::PropertyHelper::set_property(this, "MemorizedCompression", memorizedCompression);	  	
+	}
+	catch(Tango::DevFailed& df)
+	{
+	  	ERROR_STREAM << df << endl;
+	  	//- rethrow exception
+	  	Tango::Except::re_throw_exception(df,
+	                                    static_cast<const char*> ("TANGO_DEVICE_ERROR"),
+	                                    static_cast<const char*> (string(df.errors[0].desc).c_str()),
+	                                    static_cast<const char*> ("Eiger::write_compression"));
+	}	
+}
+
 //+----------------------------------------------------------------------------
 //
 // method : 		Eiger::write_efficiencyCorrection
@@ -624,7 +701,7 @@ void Eiger::write_thresholdEnergy(Tango::WAttribute &attr)
       Tango::Except::re_throw_exception(df,
                                         static_cast<const char*> ("TANGO_DEVICE_ERROR"),
                                         static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                        static_cast<const char*> ("Eiger::write_pixelMask"));
+                                        static_cast<const char*> ("Eiger::write_thresholdEnergy"));
    }    
 }
 
@@ -709,7 +786,7 @@ void Eiger::read_temperature(Tango::Attribute &attr)
 		Tango::Except::re_throw_exception(df,
 										  static_cast<const char*> ("TANGO_DEVICE_ERROR"),
 										  static_cast<const char*> (string(df.errors[0].desc).c_str()),
-										  static_cast<const char*> ("Hamamatsu::read_fps"));
+										  static_cast<const char*> ("Eiger::read_temperature"));
 	}
 	catch(Exception& e)
 	{
@@ -718,7 +795,7 @@ void Eiger::read_temperature(Tango::Attribute &attr)
 		Tango::Except::throw_exception(
 									   static_cast<const char*> ("TANGO_DEVICE_ERROR"),
 									   static_cast<const char*> (e.getErrMsg().c_str()),
-									   static_cast<const char*> ("Hamamatsu::read_fps"));
+									   static_cast<const char*> ("Eiger::read_temperature"));
 	}   
 }
 
@@ -745,7 +822,7 @@ void Eiger::read_humidity(Tango::Attribute &attr)
 		Tango::Except::re_throw_exception(df,
 										  static_cast<const char*> ("TANGO_DEVICE_ERROR"),
 										  static_cast<const char*> (string(df.errors[0].desc).c_str()),
-										  static_cast<const char*> ("Hamamatsu::read_fps"));
+										  static_cast<const char*> ("Eiger::read_humidity"));
 	}
 	catch(Exception& e)
 	{
@@ -754,7 +831,7 @@ void Eiger::read_humidity(Tango::Attribute &attr)
 		Tango::Except::throw_exception(
 									   static_cast<const char*> ("TANGO_DEVICE_ERROR"),
 									   static_cast<const char*> (e.getErrMsg().c_str()),
-									   static_cast<const char*> ("Hamamatsu::read_fps"));
+									   static_cast<const char*> ("Eiger::read_humidity"));
 	}    
 }
 
@@ -825,8 +902,17 @@ void Eiger::read_thresholdEnergy(Tango::Attribute &attr)
    
   try
    {
-      m_camera->getThresholdEnergy(*attr_thresholdEnergy_read);
-      attr.set_value(attr_thresholdEnergy_read);
+   		if ( Tango::STANDBY == get_state() )
+		{
+			m_camera->getThresholdEnergy(*attr_thresholdEnergy_read);
+			attr_thresholdEnergy_read_cache = *attr_thresholdEnergy_read;	
+		}
+		else if ( Tango::RUNNING == get_state() )	// use the cached value while in RUNNING state
+		{
+			*attr_thresholdEnergy_read = attr_thresholdEnergy_read_cache;
+		}
+      
+      	attr.set_value(attr_thresholdEnergy_read);
    }
    catch(Tango::DevFailed& df)
    {
@@ -879,8 +965,17 @@ void Eiger::read_photonEnergy(Tango::Attribute &attr)
    
    try
    {
-      m_camera->getPhotonEnergy(*attr_photonEnergy_read);
-      attr.set_value(attr_photonEnergy_read);   
+		if ( Tango::STANDBY == get_state() )
+		{
+      		m_camera->getPhotonEnergy(*attr_photonEnergy_read);
+      		attr_photonEnergy_read_cache = *attr_photonEnergy_read;
+		}
+		else if ( Tango::RUNNING == get_state() ) // use the cached value while in RUNNING state
+		{
+			*attr_photonEnergy_read = attr_photonEnergy_read_cache;
+		}		
+
+      	attr.set_value(attr_photonEnergy_read);   
    }
    catch(Tango::DevFailed& df)
    {
@@ -958,6 +1053,8 @@ Tango::DevState Eiger::dev_state()
 
 	return DeviceState;
 }
+
+
 
 
 

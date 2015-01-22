@@ -302,6 +302,15 @@ void EigerClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	humidityAttrib	*humidity = new humidityAttrib();
 	att_list.push_back(humidity);
 
+	//	Attribute : compression
+	compressionAttrib	*compression = new compressionAttrib();
+	Tango::UserDefaultAttrProp	compression_prop;
+	compression_prop.set_label("Compression");
+	compression_prop.set_description("Controls the compression of images");
+	compression->set_default_properties(compression_prop);
+	compression->set_disp_level(Tango::EXPERT);
+	att_list.push_back(compression);
+
 	//	End of Automatic code generation
 	//-------------------------------------------------------------
 }
@@ -479,6 +488,21 @@ void EigerClass::set_default_property()
 	prop_def  = "8000.0";
 	vect_data.clear();
 	vect_data.push_back("8000.0");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedCompression";
+	prop_desc = "Stores the value of compression";
+	prop_def  = "true";
+	vect_data.clear();
+	vect_data.push_back("true");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
