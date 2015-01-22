@@ -72,7 +72,11 @@ Revision:  - Author:
 
 <Tr><Td><b><a href=#Dev_DefaultValues>DetectorPacketSize </a></b></Td>
 <Td><Font Size=-1>Tango::DEV_LONG</Font></Td>
-<Td><Font Size=-1>Sets the packet size in bytes for the selected steam channel of the Transport Layer.<br></Font></Td></Tr>
+<Td><Font Size=-1>Define the packet size for the selected steam channel of the Transport Layer. (in bytes)<br></Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedInterPacketDelay </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_LONG</Font></Td>
+<Td><Font Size=-1>Memorize/Define the interpacket Delay in ticks for the selected steam channel of the Transport Layer.<br></Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>MemorizedGain </a></b></Td>
 <Td><Font Size=-1>Tango::DEV_DOUBLE</Font></Td>
@@ -106,6 +110,10 @@ Revision:  - Author:
     <Tr>
         <Td>DetectorPacketSize</Td>
         <td>1500</td>
+    </Tr>
+    <Tr>
+        <Td>MemorizedInterPacketDelay</Td>
+        <td>0</td>
     </Tr>
     <Tr>
         <Td>MemorizedGain</Td>
