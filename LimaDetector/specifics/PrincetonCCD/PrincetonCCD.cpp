@@ -184,6 +184,14 @@ void PrincetonCCD::init_device()
 		shutterMode.set_write_value(m_shutter_mode);
 		write_shutterMode(shutterMode);
 
+        transform(temperatureTargetAtInit.begin(), temperatureTargetAtInit.end(), temperatureTargetAtInit.begin(), ::toupper);
+		Tango::WAttribute &temperatureTarget = dev_attr->get_w_attr_by_name("temperatureTarget");
+        if(temperatureTargetAtInit == "DEFAULT")
+            temperatureTarget.set_write_value(defaultTemperatureTarget);
+        if(temperatureTargetAtInit == "MEMORIZED")
+            temperatureTarget.set_write_value(memorizedTemperatureTarget);
+		write_temperatureTarget(temperatureTarget);
+        
 		set_adcmode(memorizedADCMode);
 
 		Tango::WAttribute &gain = dev_attr->get_w_attr_by_name("gain");
@@ -229,8 +237,11 @@ void PrincetonCCD::get_device_property()
     //------------------------------------------------------------------
 	Tango::DbData	dev_prop;
 	dev_prop.push_back(Tango::DbDatum("DetectorNum"));
+	dev_prop.push_back(Tango::DbDatum("TemperatureTargetAtInit"));
+	dev_prop.push_back(Tango::DbDatum("DefaultTemperatureTarget"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedInternalAcquisitionMode"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedShutterMode"));
+	dev_prop.push_back(Tango::DbDatum("MemorizedTemperatureTarget"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedGain"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedADCMode"));
 
@@ -254,6 +265,28 @@ void PrincetonCCD::get_device_property()
 	//	And try to extract DetectorNum value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  detectorNum;
 
+	//	Try to initialize TemperatureTargetAtInit from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  temperatureTargetAtInit;
+	else {
+		//	Try to initialize TemperatureTargetAtInit from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  temperatureTargetAtInit;
+	}
+	//	And try to extract TemperatureTargetAtInit value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  temperatureTargetAtInit;
+
+	//	Try to initialize DefaultTemperatureTarget from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  defaultTemperatureTarget;
+	else {
+		//	Try to initialize DefaultTemperatureTarget from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  defaultTemperatureTarget;
+	}
+	//	And try to extract DefaultTemperatureTarget value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  defaultTemperatureTarget;
+
 	//	Try to initialize MemorizedInternalAcquisitionMode from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
 	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedInternalAcquisitionMode;
@@ -275,6 +308,17 @@ void PrincetonCCD::get_device_property()
 	}
 	//	And try to extract MemorizedShutterMode value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedShutterMode;
+
+	//	Try to initialize MemorizedTemperatureTarget from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedTemperatureTarget;
+	else {
+		//	Try to initialize MemorizedTemperatureTarget from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  memorizedTemperatureTarget;
+	}
+	//	And try to extract MemorizedTemperatureTarget value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedTemperatureTarget;
 
 	//	Try to initialize MemorizedGain from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
@@ -305,8 +349,11 @@ void PrincetonCCD::get_device_property()
     PropertyHelper::create_property_if_empty(this, dev_prop,"-1","DetectorNum");
 	PropertyHelper::create_property_if_empty(this, dev_prop,"STANDARD","MemorizedInternalAcquisitionMode");	
 	PropertyHelper::create_property_if_empty(this, dev_prop,"OPEN_PRE_EXPOSURE","MemorizedShutterMode");	
+    PropertyHelper::create_property_if_empty(this, dev_prop,"DEFAULT","TemperatureTargetAtInit");	            
+    PropertyHelper::create_property_if_empty(this, dev_prop,"-110","DefaultTemperatureTarget");	            
+    PropertyHelper::create_property_if_empty(this, dev_prop,"-110","MemorizedTemperatureTarget");	            
     PropertyHelper::create_property_if_empty(this, dev_prop,"1","MemorizedGain");	    
-	PropertyHelper::create_property_if_empty(this, dev_prop,"1","MemorizedADCMode");	    
+	PropertyHelper::create_property_if_empty(this, dev_prop,"1","MemorizedADCMode");	        
 	
 }
 //+----------------------------------------------------------------------------
@@ -588,10 +635,17 @@ void PrincetonCCD::read_temperatureTarget(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "PrincetonCCD::read_temperatureTarget(Tango::Attribute &attr) entering... "<< endl;
     try
-    {
-        double temperatureTarget = 0.000;
-       	temperatureTarget  = m_camera->getTemperatureSetPoint();
-        *attr_temperatureTarget_read = temperatureTarget;
+    {        
+        //#Jira : TANGODEVIC-752 :  do not refresh while acquisition is RUNNING, use value in cache
+        if(get_state()!= Tango::RUNNING)
+        {
+            *attr_temperatureTarget_read  = m_camera->getTemperatureSetPoint();                
+            attr_temperatureTarget_cache = *attr_temperatureTarget_read;
+        }
+        else
+        {
+            *attr_temperatureTarget_read = attr_temperatureTarget_cache;
+        }
         attr.set_value(attr_temperatureTarget_read);
     }
     catch(Tango::DevFailed& df)
@@ -627,7 +681,8 @@ void PrincetonCCD::write_temperatureTarget(Tango::WAttribute &attr)
     try
     {
         attr.get_write_value(attr_temperatureTarget_write);
-       m_camera->setTemperatureSetPoint(attr_temperatureTarget_write);
+        m_camera->setTemperatureSetPoint(attr_temperatureTarget_write);        
+        PropertyHelper::set_property(this, "MemorizedTemperatureTarget", attr_temperatureTarget_write);       
     }
     catch(Tango::DevFailed& df)
     {
@@ -661,10 +716,12 @@ void PrincetonCCD::read_temperature(Tango::Attribute &attr)
 	DEBUG_STREAM << "PrincetonCCD::read_temperature(Tango::Attribute &attr) entering... "<< endl;
     try
     {
-        double temperature = 0.000;
-       	temperature  = m_camera->getTemperature();
-        *attr_temperature_read = temperature;
-        attr.set_value(attr_temperature_read);
+        //#Jira : TANGODEVIC-752 : do not refresh while acquisition is RUNNING
+        if(get_state() != Tango::RUNNING)
+        {
+            *attr_temperature_read  = m_camera->getTemperature();
+            attr.set_value(attr_temperature_read);
+        }
     }
     catch(Tango::DevFailed& df)
     {
@@ -697,8 +754,17 @@ void PrincetonCCD::read_gain(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "PrincetonCCD::read_gain(Tango::Attribute &attr) entering... "<< endl;	
     try
-    {
-		*attr_gain_read = (Tango::DevUShort)m_camera->getGain();		
+    {	
+        //#Jira : TANGODEVIC-752 :  do not refresh while acquisition is RUNNING, use value in cache
+        if(get_state()!= Tango::RUNNING)
+        {
+            *attr_gain_read = (Tango::DevUShort)m_camera->getGain();            
+            attr_gain_cache = *attr_gain_read;
+        }
+        else
+        {
+            *attr_gain_read = attr_gain_cache;
+        }        
         attr.set_value(attr_gain_read);
     }
     catch(Tango::DevFailed& df)
@@ -733,9 +799,9 @@ void PrincetonCCD::write_gain(Tango::WAttribute &attr)
 	DEBUG_STREAM << "PrincetonCCD::write_gain(Tango::WAttribute &attr) entering... "<< endl;
     try
     {
-       attr.get_write_value(attr_gain_write);
-       m_camera->setGain(attr_gain_write);
-       PropertyHelper::set_property(this, "MemorizedGain", attr_gain_write);       
+        attr.get_write_value(attr_gain_write);
+        m_camera->setGain(attr_gain_write);                
+        PropertyHelper::set_property(this, "MemorizedGain", attr_gain_write);       
     }
     catch(Tango::DevFailed& df)
     {
@@ -883,4 +949,8 @@ Tango::DevState PrincetonCCD::dev_state()
 
     return argout;
 }
+
+
+
+
 }	//	namespace

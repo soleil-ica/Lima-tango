@@ -84,7 +84,8 @@ class PrincetonCCD: public Tango::Device_4Impl
 public :
     //    Add your own data members here
     //-----------------------------------------
-
+        Tango::DevUShort            attr_gain_cache;
+        Tango::DevDouble            attr_temperatureTarget_cache;
 
     //    Here is the Start of the automatic code generation part
     //-------------------------------------------------------------    
@@ -115,6 +116,16 @@ public :
  */
 	string	detectorNum;
 /**
+ *	Define which Temperature must be used at init device<br>
+ *	- DEFAULT : use DefaultTemperatureTarget value<br>
+ *	- MEMORIZED : use MemorizedTemperatureTarget value<br>
+ */
+	string	temperatureTargetAtInit;
+/**
+ *	Define the Temperature Target of the Cooler at Init device if TemperatureAtInit = DEFAULT. (in Celsius)<br>
+ */
+	Tango::DevDouble	defaultTemperatureTarget;
+/**
  *	Memorize/Define the internalAcquisitionMode attribute at Init device<br>
  *	Availables values :<br>
  *	- STANDARD<br>
@@ -129,6 +140,10 @@ public :
  *	- OPEN_NO_CHANGE<br>
  */
 	string	memorizedShutterMode;
+/**
+ *	Define the Temperature Target of the Cooler at Init device if TemperatureAtInit = MEMORIZED. (in Celsius)<br>
+ */
+	Tango::DevDouble	memorizedTemperatureTarget;
 /**
  *	
  */
@@ -320,6 +335,7 @@ protected :
 	
     std::string                 m_acquisition_mode;	//aquisition mode name 	(STANDARD, CONTINUOUS, FOCUS)
     std::string	                m_shutter_mode;	 //shutter mode name 	(OPEN_NEVER, OPEN_PRE_EXPOSURE, OPEN_NO_CHANGE)
+        
     
 };
 

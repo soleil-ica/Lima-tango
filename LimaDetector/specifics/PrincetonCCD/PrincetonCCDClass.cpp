@@ -294,7 +294,7 @@ void PrincetonCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : temperature
 	temperatureAttrib	*temperature = new temperatureAttrib();
 	Tango::UserDefaultAttrProp	temperature_prop;
-	temperature_prop.set_unit("�");
+	temperature_prop.set_unit("?C");
 	temperature_prop.set_format("%6.2f");
 	temperature->set_default_properties(temperature_prop);
 	att_list.push_back(temperature);
@@ -302,7 +302,7 @@ void PrincetonCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : temperatureTarget
 	temperatureTargetAttrib	*temperature_target = new temperatureTargetAttrib();
 	Tango::UserDefaultAttrProp	temperature_target_prop;
-	temperature_target_prop.set_unit("�");
+	temperature_target_prop.set_unit("?C");
 	temperature_target_prop.set_format("%6.2f");
 	temperature_target->set_default_properties(temperature_target_prop);
 	att_list.push_back(temperature_target);
@@ -401,6 +401,36 @@ void PrincetonCCDClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
+	prop_name = "TemperatureTargetAtInit";
+	prop_desc = "Define which Temperature must be used at init device<br>\n- DEFAULT : use DefaultTemperatureTarget value<br>\n- MEMORIZED : use MemorizedTemperatureTarget value<br>";
+	prop_def  = "DEFAULT";
+	vect_data.clear();
+	vect_data.push_back("DEFAULT");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "DefaultTemperatureTarget";
+	prop_desc = "Define the Temperature Target of the Cooler at Init device if TemperatureAtInit = DEFAULT. (in Celsius)<br>";
+	prop_def  = "-110";
+	vect_data.clear();
+	vect_data.push_back("-110");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
 	prop_name = "MemorizedInternalAcquisitionMode";
 	prop_desc = "Memorize/Define the internalAcquisitionMode attribute at Init device<br>\nAvailables values :<br>\n- STANDARD<br>\n- FOCUS<br>";
 	prop_def  = "STANDARD";
@@ -421,6 +451,21 @@ void PrincetonCCDClass::set_default_property()
 	prop_def  = "OPEN_NO_CHANGE";
 	vect_data.clear();
 	vect_data.push_back("OPEN_NO_CHANGE");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedTemperatureTarget";
+	prop_desc = "Define the Temperature Target of the Cooler at Init device if TemperatureAtInit = MEMORIZED. (in Celsius)<br>";
+	prop_def  = "-110";
+	vect_data.clear();
+	vect_data.push_back("-110");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
