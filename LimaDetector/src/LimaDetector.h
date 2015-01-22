@@ -189,7 +189,10 @@ public:
  *	Define the type of the connected Detector .<BR>
  *	Availables types :<BR>
  *	- AdscCCD<BR>
+ *	- AviexCCD<br>
  *	- BaslerCCD<BR>
+ *	- Eiger<br>
+ *	- Hamamatsu<br>
  *	- MarCCD<BR>
  *	- Pco<BR>
  *	- PerkinElmer<BR>
@@ -208,8 +211,9 @@ public:
  *	- 8 <br>
  *	- 16<br>
  *	- 32<br>
+ *	- 32S<br>
  */
-	Tango::DevUShort	detectorPixelDepth;
+	string	detectorPixelDepth;
 /**
  *	Special type of the image attribute for display and saving (NOT_USED, FLOAT, ...)
  */

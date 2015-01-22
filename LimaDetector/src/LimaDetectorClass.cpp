@@ -814,7 +814,7 @@ void LimaDetectorClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "DetectorType";
-	prop_desc = "Define the type of the connected Detector .<BR>\nAvailables types :<BR>\n- AdscCCD<BR>\n- BaslerCCD<BR>\n- MarCCD<BR>\n- Pco<BR>\n- PerkinElmer<BR>\n- PilatusPixelDetector<BR>\n- ProsilicaCCD<BR>\n- PrincetonCCD<BR>\n- SimulatorCCD<BR>\n- XpadPixelDetector<BR>\n\n";
+	prop_desc = "Define the type of the connected Detector .<BR>\nAvailables types :<BR>\n- AdscCCD<BR>\n- AviexCCD<br>\n- BaslerCCD<BR>\n- Eiger<br>\n- Hamamatsu<br>\n- MarCCD<BR>\n- Pco<BR>\n- PerkinElmer<BR>\n- PilatusPixelDetector<BR>\n- ProsilicaCCD<BR>\n- PrincetonCCD<BR>\n- SimulatorCCD<BR>\n- XpadPixelDetector<BR>\n\n";
 	prop_def  = "SimulatorCCD";
 	vect_data.clear();
 	vect_data.push_back("SimulatorCCD");
@@ -829,7 +829,7 @@ void LimaDetectorClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "DetectorPixelDepth";
-	prop_desc = "Define the pixel depth of the detector : <br>\nAvailables values : <br>\n- 8 <br>\n- 16<br>\n- 32<br>";
+	prop_desc = "Define the pixel depth of the detector : <br>\nAvailables values : <br>\n- 8 <br>\n- 16<br>\n- 32<br>\n- 32S<br>";
 	prop_def  = "16";
 	vect_data.clear();
 	vect_data.push_back("16");
