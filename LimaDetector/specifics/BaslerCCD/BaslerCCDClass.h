@@ -102,6 +102,42 @@ public:
 	{return (static_cast<BaslerCCD *>(dev))->is_temperature_allowed(ty);}
 };
 
+class currentThroughputAttrib: public Tango::Attr
+{
+public:
+	currentThroughputAttrib():Attr("currentThroughput", Tango::DEV_LONG, Tango::READ) {};
+	~currentThroughputAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<BaslerCCD *>(dev))->read_currentThroughput(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<BaslerCCD *>(dev))->is_currentThroughput_allowed(ty);}
+};
+
+class maxThroughputAttrib: public Tango::Attr
+{
+public:
+	maxThroughputAttrib():Attr("maxThroughput", Tango::DEV_LONG, Tango::READ) {};
+	~maxThroughputAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<BaslerCCD *>(dev))->read_maxThroughput(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<BaslerCCD *>(dev))->is_maxThroughput_allowed(ty);}
+};
+
+class bandwidthAssignedAttrib: public Tango::Attr
+{
+public:
+	bandwidthAssignedAttrib():Attr("bandwidthAssigned", Tango::DEV_LONG, Tango::READ) {};
+	~bandwidthAssignedAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<BaslerCCD *>(dev))->read_bandwidthAssigned(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<BaslerCCD *>(dev))->is_bandwidthAssigned_allowed(ty);}
+};
+
 class dataRateAttrib: public Tango::Attr
 {
 public:
@@ -124,6 +160,32 @@ public:
 	{(static_cast<BaslerCCD *>(dev))->read_frameRate(att);}
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
 	{return (static_cast<BaslerCCD *>(dev))->is_frameRate_allowed(ty);}
+};
+
+class interPacketDelayAttrib: public Tango::Attr
+{
+public:
+	interPacketDelayAttrib():Attr("interPacketDelay", Tango::DEV_LONG, Tango::READ_WRITE) {};
+	~interPacketDelayAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<BaslerCCD *>(dev))->read_interPacketDelay(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<BaslerCCD *>(dev))->write_interPacketDelay(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<BaslerCCD *>(dev))->is_interPacketDelay_allowed(ty);}
+};
+
+class packetSizeAttrib: public Tango::Attr
+{
+public:
+	packetSizeAttrib():Attr("packetSize", Tango::DEV_LONG, Tango::READ) {};
+	~packetSizeAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<BaslerCCD *>(dev))->read_packetSize(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<BaslerCCD *>(dev))->is_packetSize_allowed(ty);}
 };
 
 //=========================================

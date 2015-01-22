@@ -246,6 +246,27 @@ void BaslerCCDClass::device_factory(const Tango::DevVarStringArray *devlist_ptr)
 //-----------------------------------------------------------------------------
 void BaslerCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 {
+	//	Attribute : packetSize
+	packetSizeAttrib	*packet_size = new packetSizeAttrib();
+	Tango::UserDefaultAttrProp	packet_size_prop;
+	packet_size_prop.set_unit("Bytes");
+	packet_size_prop.set_standard_unit("Bytes");
+	packet_size_prop.set_display_unit("Bytes");    
+	packet_size_prop.set_description("The packet size for the selected steam channel of the Transport Layer. (in bytes)<br>");
+	packet_size->set_default_properties(packet_size_prop);
+	packet_size->set_disp_level(Tango::EXPERT);
+	att_list.push_back(packet_size);
+
+	//	Attribute : interPacketDelay
+	interPacketDelayAttrib	*inter_packet_delay = new interPacketDelayAttrib();
+	Tango::UserDefaultAttrProp	inter_packet_delay_prop;
+	inter_packet_delay_prop.set_description("Define the delay between transmission of each packet for the selected stream channel. (in ticks)<br> ");
+	inter_packet_delay->set_default_properties(inter_packet_delay_prop);
+	inter_packet_delay->set_disp_level(Tango::EXPERT);
+	inter_packet_delay->set_memorized();
+	inter_packet_delay->set_memorized_init(false);
+	att_list.push_back(inter_packet_delay);
+
 	//	Attribute : frameRate
 	frameRateAttrib	*frame_rate = new frameRateAttrib();
 	Tango::UserDefaultAttrProp	frame_rate_prop;
@@ -265,6 +286,27 @@ void BaslerCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	data_rate_prop.set_description("Display the current data rate (MB/s)<br>");
 	data_rate->set_default_properties(data_rate_prop);
 	att_list.push_back(data_rate);
+
+	//	Attribute : bandwidthAssigned
+	bandwidthAssignedAttrib	*bandwidth_assigned = new bandwidthAssignedAttrib();
+	Tango::UserDefaultAttrProp	bandwidth_assigned_prop;
+	bandwidth_assigned_prop.set_description("This value indicates the base bandwidth that will be used by the camera to transmit (image+chunk) data and to handle resends and control transmissions. (in Bytes/s)");
+	bandwidth_assigned->set_default_properties(bandwidth_assigned_prop);
+	att_list.push_back(bandwidth_assigned);
+
+	//	Attribute : maxThroughput
+	maxThroughputAttrib	*max_throughput = new maxThroughputAttrib();
+	Tango::UserDefaultAttrProp	max_throughput_prop;
+	max_throughput_prop.set_description("This value indicates the maximum amount of data that the camera could generate given its current settings and ideal conditions. (in Bytes/s)");
+	max_throughput->set_default_properties(max_throughput_prop);
+	att_list.push_back(max_throughput);
+
+	//	Attribute : currentThroughput
+	currentThroughputAttrib	*current_throughput = new currentThroughputAttrib();
+	Tango::UserDefaultAttrProp	current_throughput_prop;
+	current_throughput_prop.set_description("This value indicates the actual bandwidth that the camera will use to transmit (image+chunk) data given the curent AOIsettings, ... (in Bytes/s)");
+	current_throughput->set_default_properties(current_throughput_prop);
+	att_list.push_back(current_throughput);
 
 	//	Attribute : temperature
 	temperatureAttrib	*temperature = new temperatureAttrib();
@@ -388,10 +430,25 @@ void BaslerCCDClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "DetectorPacketSize";
-	prop_desc = "Sets the packet size in bytes for the selected steam channel of the Transport Layer.<br>";
+	prop_desc = "Define the packet size for the selected steam channel of the Transport Layer. (in bytes)<br>";
 	prop_def  = "1500";
 	vect_data.clear();
 	vect_data.push_back("1500");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedInterPacketDelay";
+	prop_desc = "Memorize/Define the interpacket Delay in ticks for the selected steam channel of the Transport Layer.<br>";
+	prop_def  = "0";
+	vect_data.clear();
+	vect_data.push_back("0");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
