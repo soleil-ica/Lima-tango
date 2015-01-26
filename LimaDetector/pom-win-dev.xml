@@ -43,13 +43,13 @@
         <dependency>
             <groupId>fr.soleil.lib</groupId>
             <artifactId>YAT4Tango-${aol}-static-${mode}</artifactId>
+             <version>1.8.8-vc9</version> 
         </dependency>
-        
         <dependency>
             <groupId>fr.soleil.lib</groupId>
-            <artifactId>YAT-${aol}-static-${mode}</artifactId>
+            <artifactId>YAT-${aol}-static-${mode}</artifactId>            
+            <version>1.9.6-vc9</version>
         </dependency>
-        
         <dependency>
             <groupId>fr.soleil.lib</groupId>
             <artifactId>LimaCore-${aol}-shared-${mode}</artifactId>
