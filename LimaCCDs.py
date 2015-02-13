@@ -162,7 +162,11 @@ class LimaCCDs(PyTango.Device_4Impl) :
         Core.Bpp16 : (2,0),
         Core.Bpp16S : (2,1),
         Core.Bpp32 : (4,0) ,
-        Core.Bpp32S : (4,1)
+        Core.Bpp32S : (4,1),
+        Core.Bpp1 : (1,0),
+        Core.Bpp6 : (1,0),
+        Core.Bpp12 : (2,0),
+        Core.Bpp24 : (4,0),
         }        
 
     ImageType2String = {
@@ -177,7 +181,11 @@ class LimaCCDs(PyTango.Device_4Impl) :
         Core.Bpp16 : "Bpp16" ,
         Core.Bpp16S : "Bpp16S" ,
         Core.Bpp32 : "Bpp32" ,
-        Core.Bpp32S : "Bpp32S"
+        Core.Bpp32S : "Bpp32S",
+        Core.Bpp1 : "Bpp1",
+        Core.Bpp6 : "Bpp6",
+        Core.Bpp12 : "Bpp12",
+        Core.Bpp24 : "Bpp24",
         }
 
     # DATA_ARRAY DevEncoded 
