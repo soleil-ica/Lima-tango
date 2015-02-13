@@ -100,6 +100,11 @@
     #include <VieworksVPSyncCtrlObj.h>    
 #endif
 
+#ifdef MERLIN_ENABLED
+    #include <MerlinCamera.h>
+    #include <MerlinInterface.h>
+#endif
+
 using namespace lima; 
 
 //-----------------------------------------------------
@@ -187,7 +192,12 @@ private:
     lima::VieworksVP::Interface* my_interface_vieworksvp;
 #endif
 
-	lima::CtControl*               my_control;
+#ifdef MERLIN_ENABLED
+    lima::Merlin::Camera* my_camera_merlin;
+    lima::Merlin::Interface* my_interface_merlin;
+#endif
+
+    lima::CtControl*               my_control;
 	static bool                    is_created;
 	std::string                    my_server_name;  
 	std::string                    my_device_name;
