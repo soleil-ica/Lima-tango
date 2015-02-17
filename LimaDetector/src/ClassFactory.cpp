@@ -90,6 +90,10 @@ static const char *RcsId = "$Id:  $";
 #include <VieworksVPClass.h>
 #endif
 
+#ifdef MERLIN_ENABLED
+#include <MerlinClass.h>
+#endif
+
 #ifndef WIN32
 #include "tango.h"
 #endif
@@ -151,7 +155,11 @@ void Tango::DServer::class_factory()
 #endif
 
 #ifdef VIEWORKSVP_ENABLED
-    add_class(VieworksVP_ns::Andor3Class::init("VieworksVP"));
+    add_class(VieworksVP_ns::VieworksVPClass::init("VieworksVP"));
+#endif
+
+#ifdef MERLIN_ENABLED
+    add_class(Merlin_ns::MerlinClass::init("Merlin"));
 #endif
 }
 

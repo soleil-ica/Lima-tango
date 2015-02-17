@@ -74,6 +74,11 @@ void ControlFactory::initialize_pointers()
     my_interface_vieworksvp = 0;
 #endif
 
+#ifdef MERLIN_ENABLED
+    my_camera_merlin    = 0;
+    my_interface_merlin = 0;
+#endif
+
     my_server_name 			= "none";
     my_device_name 			= "none";
 
@@ -404,6 +409,44 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         }
 #endif
 
+#ifdef MERLIN_ENABLED
+        if (detector_type == "Merlin")
+        {
+            if(!ControlFactory::is_created)
+            {
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("HostName"));
+				db_data.push_back(Tango::DbDatum("CmdPort"));
+                db_data.push_back(Tango::DbDatum("DataPort"));
+                db_data.push_back(Tango::DbDatum("ImageWidth"));
+                db_data.push_back(Tango::DbDatum("ImageHeight"));
+                db_data.push_back(Tango::DbDatum("Chips"));
+                db_data.push_back(Tango::DbDatum("Simulate"));
+
+                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                std::string hostName;
+                int cmdPort;
+                int dataPort;
+                int chips;
+                int imageWidth;
+                int imageHeight;
+                bool simulate;
+                db_data[0] >> hostName;
+                db_data[1] >> cmdPort;
+                db_data[2] >> dataPort;
+                db_data[3] >> imageWidth;
+                db_data[4] >> imageHeight;
+                db_data[5] >> chips;
+                db_data[6] >> simulate;
+
+                my_camera_merlin = new lima::Merlin::Camera(hostName, cmdPort, dataPort, imageWidth, imageHeight, chips, simulate);
+                my_interface_merlin = new lima::Merlin::Interface(*my_camera_merlin);
+                my_control = new lima::CtControl(my_interface_merlin);
+                ControlFactory::is_created = true;
+                return my_control;
+            }
+        }
+#endif
         
 
         if(!ControlFactory::is_created)
@@ -659,6 +702,22 @@ void ControlFactory::reset(const std::string& detector_type )
             }
 #endif
     
+#ifdef MERLIN_ENABLED
+            if (detector_type == "Merlin")
+            {
+                if(my_interface_merlin)
+                {
+                    delete my_interface_merlin;
+                    my_interface_merlin = 0;
+                }
+
+                if(my_camera_merlin)
+                {
+                    delete my_camera_merlin;
+                    my_camera_merlin = 0;
+                }
+            }
+#endif
         }
     }
     catch(Tango::DevFailed& df)

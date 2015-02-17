@@ -162,7 +162,11 @@ class LimaCCDs(PyTango.Device_4Impl) :
         Core.Bpp16 : (2,0),
         Core.Bpp16S : (2,1),
         Core.Bpp32 : (4,0) ,
-        Core.Bpp32S : (4,1)
+        Core.Bpp32S : (4,1),
+        Core.Bpp1 : (1,0),
+        Core.Bpp6 : (1,0),
+        Core.Bpp12 : (2,0),
+        Core.Bpp24 : (4,0),
         }        
 
     ImageType2String = {
@@ -177,7 +181,11 @@ class LimaCCDs(PyTango.Device_4Impl) :
         Core.Bpp16 : "Bpp16" ,
         Core.Bpp16S : "Bpp16S" ,
         Core.Bpp32 : "Bpp32" ,
-        Core.Bpp32S : "Bpp32S"
+        Core.Bpp32S : "Bpp32S",
+        Core.Bpp1 : "Bpp1",
+        Core.Bpp6 : "Bpp6",
+        Core.Bpp12 : "Bpp12",
+        Core.Bpp24 : "Bpp24",
         }
 
     # DATA_ARRAY DevEncoded 
@@ -422,6 +430,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
         self.__Attribute2FunctionBase = {'acq_trigger_mode':'TriggerMode',
                                          'saving_overwrite_policy' : 'OverwritePolicy',
                                          'saving_format' : 'Format',
+                                         'saving_managed_mode' : 'ManagedMode',
                                          'shutter_mode' : 'Mode',
 					 'image_rotation':'Rotation',
                                          'video_mode':'Mode',
@@ -441,6 +450,9 @@ class LimaCCDs(PyTango.Device_4Impl) :
         else:                           # Core too Old
             self.__AccTimeMode = {}
         
+        self.__SavingManagedMode = {'SOFTWARE' : Core.CtSaving.Software,
+                                    'HARDWARE' : Core.CtSaving.Hardware}
+
         self.__SavingFormat = {'RAW' : Core.CtSaving.RAW,
                                'EDF' : Core.CtSaving.EDF,
                                'CBF' : Core.CtSaving.CBFFormat}
@@ -1314,13 +1326,13 @@ class LimaCCDs(PyTango.Device_4Impl) :
         saving.setNextNumber(data)
 
     @Core.DEB_MEMBER_FUNCT
-    def read_saving_frame_per_file(self,attr) :
+    def read_saving_frames_per_file(self,attr) :
         saving = self.__control.saving()
 
-        attr.set_value(saving.getFramePerFile())
+        attr.set_value(saving.getFramesPerFile())
 
     @Core.DEB_MEMBER_FUNCT
-    def write_saving_frame_per_file(self,attr) :
+    def write_saving_frames_per_file(self,attr) :
         data = attr.get_write_value()
         saving = self.__control.saving()
 
@@ -2209,11 +2221,15 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         [[PyTango.DevString,
           PyTango.SCALAR,
           PyTango.READ_WRITE]],
+        'saving_managed_mode':
+        [[PyTango.DevString,
+          PyTango.SCALAR,
+          PyTango.READ_WRITE]],
         'saving_overwrite_policy':
         [[PyTango.DevString,
           PyTango.SCALAR,
           PyTango.READ_WRITE]],
-        'saving_frame_per_file':
+        'saving_frames_per_file':
         [[PyTango.DevLong,
           PyTango.SCALAR,
           PyTango.READ_WRITE]],
