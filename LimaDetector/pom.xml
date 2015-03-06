@@ -83,6 +83,12 @@
 				<version>1.3.0</version>
 			</dependency>
 						
+			<dependency>
+				<groupId>fr.soleil.lib.Lima.Camera</groupId>
+				<artifactId>LimaMerlin-${aol}-shared-${mode}</artifactId>
+				<version>1.3.0</version>
+			</dependency>
+
 			<!--<dependency>
 				<groupId>fr.soleil.lib.Lima.Camera</groupId>
 				<artifactId>LimaAviex-${aol}-shared-${mode}</artifactId>
@@ -197,6 +203,7 @@
 								<!--<define>ADSC_ENABLED</define>   
 								<define>PROSILICA_ENABLED</define>-->
 								<define>SIMULATOR_ENABLED</define>
+								<define>MERLIN_ENABLED</define>
 								<!--<define>ANDOR3_ENABLED</define>--> 	<!-- WIP -->
 								<!--<define>VIEWORKSVP_ENABLED</define>--> 	<!-- WIP -->
 							</defines>
