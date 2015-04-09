@@ -9,7 +9,7 @@
 
     <groupId>fr.soleil.device</groupId>
     <artifactId>LimaDetector-${aol}-${mode}</artifactId>
-    <version>1.5.0</version>
+    <version>1.5.1</version>
 	
     <packaging>nar</packaging>
     <name>LimaDetector</name>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaPilatus-${aol}-shared-${mode}</artifactId>
-            <version>1.3.3</version>
+            <version>1.4.0</version>
         </dependency>
         <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
@@ -81,7 +81,7 @@
         <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaAviex-${aol}-shared-${mode}</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         
         <dependency>
