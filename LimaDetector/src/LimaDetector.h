@@ -47,17 +47,17 @@
 #include <iostream>
 
 //- LIMA
-#include "Debug.h"
-#include "HwInterface.h"
-#include "CtControl.h"
-#include "CtAcquisition.h"
-#include "CtAccumulation.h"
-#include "CtSaving.h"
-#include "CtBuffer.h"
-#include "CtImage.h"
-#include "Data.h"
-#include "CtVideo.h"
-#include "CtShutter.h"
+#include "lima/Debug.h"
+#include "lima/HwInterface.h"
+#include "lima/CtControl.h"
+#include "lima/CtAcquisition.h"
+#include "lima/CtAccumulation.h"
+#include "lima/CtSaving.h"
+#include "lima/CtBuffer.h"
+#include "lima/CtImage.h"
+#include "processlib/Data.h"
+#include "lima/CtVideo.h"
+#include "lima/CtShutter.h"
 
 
 

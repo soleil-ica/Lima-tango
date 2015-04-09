@@ -46,10 +46,10 @@
  //	Add your own constant definitions here.
  //-----------------------------------------------
 #include "Factory.h"
-#include "HwInterface.h"
-#include "CtControl.h"
-#include "CtAcquisition.h"
-#include "CtImage.h"
+#include "lima/HwInterface.h"
+#include "lima/CtControl.h"
+#include "lima/CtAcquisition.h"
+#include "lima/CtImage.h"
 #include "HamamatsuInterface.h"
 #include "HamamatsuCamera.h"
 

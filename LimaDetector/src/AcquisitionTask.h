@@ -24,8 +24,8 @@
 #endif
 
 //- LIMA
-#include "CtControl.h"
-#include "CtVideo.h"
+#include "lima/CtControl.h"
+#include "lima/CtVideo.h"
 
 #ifndef WIN32
 #include <tango.h>

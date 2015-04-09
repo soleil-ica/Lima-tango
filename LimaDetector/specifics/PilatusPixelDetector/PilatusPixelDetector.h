@@ -47,9 +47,9 @@
 //- YAT/YAT4TANGO
 #include <yat4tango/PropertyHelper.h>
 
-#include "HwInterface.h"
-#include "CtControl.h"
-#include "CtAcquisition.h"
+#include "lima/HwInterface.h"
+#include "lima/CtControl.h"
+#include "lima/CtAcquisition.h"
 #include <PilatusCamera.h>
 #include <PilatusInterface.h>
 #include "Factory.h"

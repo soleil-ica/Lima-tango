@@ -17,9 +17,9 @@
 
 #include <Singleton.h>
 
-#include <HwInterface.h>
-#include <CtControl.h>
-#include "Debug.h"
+#include <lima/HwInterface.h>
+#include <lima/CtControl.h>
+#include "lima/Debug.h"
 #include <yat/threading/Mutex.h>
 
 
@@ -105,6 +105,11 @@
 #include <Andor3RoiCtrlObj.h>
 #include <Andor3ShutterCtrlObj.h>
 #include <Andor3SyncCtrlObj.h>    
+#endif
+
+#ifdef MERLIN_ENABLED
+#include <MerlinCamera.h>
+#include <MerlinInterface.h>
 #endif
 
 

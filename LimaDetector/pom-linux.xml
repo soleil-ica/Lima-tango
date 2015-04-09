@@ -9,7 +9,7 @@
 
     <groupId>fr.soleil.device</groupId>
     <artifactId>LimaDetector-${aol}-${mode}</artifactId>
-    <version>1.5.1</version>
+    <version>1.5.2</version>
 	
     <packaging>nar</packaging>
     <name>LimaDetector</name>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaPilatus-${aol}-shared-${mode}</artifactId>
-            <version>1.4.0</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
@@ -90,7 +90,11 @@
             <version>1.0.1</version>
         </dependency>
 
-               
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaMerlin-${aol}-shared-${mode}</artifactId>
+            <version>1.0.0</version>
+        </dependency>               
                 
     </dependencies>
         
@@ -114,7 +118,8 @@
                             <include>specifics/PilatusPixelDetector/*.cpp</include>
                             <include>specifics/ProsilicaCCD/*.cpp</include>
                             <include>specifics/RoiCounters/*.cpp</include>
-                            <include>specifics/SimulatorCCD/*.cpp</include>                            
+                            <include>specifics/SimulatorCCD/*.cpp</include>         
+                            <include>specifics/Merlin/*.cpp</include>                                               
                             <include>specifics/XpadPixelDetector/*.cpp</include>
                         </includes>
                         <includePaths>                          
@@ -128,7 +133,8 @@
                             <includePath>specifics/PilatusPixelDetector</includePath>                            
                             <includePath>specifics/ProsilicaCCD</includePath>                            
                             <includePath>specifics/RoiCounters</includePath>                            
-                            <includePath>specifics/SimulatorCCD</includePath>                                                        
+                            <includePath>specifics/SimulatorCCD</includePath>             
+                            <includePath>specifics/Merlin</includePath>                                                                       
                             <includePath>specifics/XpadPixelDetector</includePath>
                         </includePaths>
                                 
@@ -145,7 +151,8 @@
                             <define>PILATUS_ENABLED</define>
                             <define>PROSILICA_ENABLED</define>				
                             <define>ROICOUNTERS_ENABLED</define>										                                                                                              
-                            <define>SIMULATOR_ENABLED</define>                            		
+                            <define>SIMULATOR_ENABLED</define>                  
+                            <define>MERLIN_ENABLED</define>                                      		
                             <define>XPAD_ENABLED</define>
                         </defines>                        
                     </cpp>        

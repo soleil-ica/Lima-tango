@@ -51,10 +51,10 @@
 
 
 
-#include "HwInterface.h"
-#include "CtControl.h"
-#include "CtAcquisition.h"
-#include "CtImage.h"
+#include "lima/HwInterface.h"
+#include "lima/CtControl.h"
+#include "lima/CtAcquisition.h"
+#include "lima/CtImage.h"
 #include <AndorInterface.h>
 #include <AndorCamera.h>
 

@@ -374,6 +374,46 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
 #endif
 
 
+#ifdef MERLIN_ENABLED
+        if (detector_type == "Merlin")
+        {
+            if(!ControlFactory::m_is_created)
+            {
+                m_camera = 0;
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("HostName"));
+				db_data.push_back(Tango::DbDatum("CmdPort"));
+                db_data.push_back(Tango::DbDatum("DataPort"));
+                db_data.push_back(Tango::DbDatum("ImageWidth"));
+                db_data.push_back(Tango::DbDatum("ImageHeight"));
+                db_data.push_back(Tango::DbDatum("Chips"));
+                db_data.push_back(Tango::DbDatum("Simulate"));          
+                
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
+                std::string hostName;
+                long cmdPort;
+                long dataPort;
+                long chips;
+                long imageWidth;
+                long imageHeight;
+                bool simulate;
+                db_data[0] >> hostName;
+                db_data[1] >> cmdPort;
+                db_data[2] >> dataPort;
+                db_data[3] >> imageWidth;
+                db_data[4] >> imageHeight;
+                db_data[5] >> chips;
+                db_data[6] >> simulate;
+			
+                m_camera = static_cast<void*> (new Merlin::Camera(hostName, cmdPort, dataPort, imageWidth, imageHeight, chips, simulate));
+                m_interface = static_cast<void*> (new Merlin::Interface(*static_cast<Merlin::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Merlin::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
+            }
+        }
+#endif
+
 #ifdef ANDOR3_ENABLED
         if (detector_type == "Andor3")
         {
@@ -625,6 +665,13 @@ void ControlFactory::reset(const std::string& detector_type)
                     //NOP
                 }
 #endif 
+
+#ifdef MERLIN_ENABLED        
+                if (detector_type == "Merlin")
+                {
+                    delete (static_cast<Merlin::Camera*> (m_camera));
+                }
+#endif   
 
 #ifdef ANDOR3_ENABLED        
                 if (detector_type == "Andor3")

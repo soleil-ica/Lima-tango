@@ -46,9 +46,9 @@
 #include "tango.h"
 #include <yat4tango/PropertyHelper.h>
 
-#include "HwInterface.h"
-#include "CtControl.h"
-#include "CtAcquisition.h"
+#include "lima/HwInterface.h"
+#include "lima/CtControl.h"
+#include "lima/CtAcquisition.h"
 #include <AdscCamera.h>
 #include <AdscInterface.h>
 #include "Factory.h"
