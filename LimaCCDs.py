@@ -59,6 +59,9 @@ if 'linux' in sys.platform:
     from EnvHelper import setup_lima_env
     LimaCameraType = setup_lima_env(sys.argv)
 
+from EnvHelper import get_sub_devices
+from EnvHelper import get_lima_camera_type, get_lima_device_name
+from EnvHelper import create_tango_objects
 from AttrHelper import get_attr_4u
 
 from Lima import Core
@@ -159,7 +162,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
         Core.Bpp16 : (2,0),
         Core.Bpp16S : (2,1),
         Core.Bpp32 : (4,0) ,
-        Core.Bpp32S : (4,1)
+        Core.Bpp32S : (4,1),
         }        
 
     ImageType2String = {
@@ -174,7 +177,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
         Core.Bpp16 : "Bpp16" ,
         Core.Bpp16S : "Bpp16S" ,
         Core.Bpp32 : "Bpp32" ,
-        Core.Bpp32S : "Bpp32S"
+        Core.Bpp32S : "Bpp32S",
         }
 
     # DATA_ARRAY DevEncoded 
@@ -368,35 +371,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
 
         TacoSpecificName.append(self.LimaCameraType)
 
-        try:
-            m = __import__('camera.%s' % (self.LimaCameraType),None,None,'camera.%s' % (self.LimaCameraType))
-        except ImportError:
-            import traceback
-            traceback.print_exc()
-            self.set_state(PyTango.DevState.FAULT)
-        else:
-            properties = {}
-            try:
-                _, specificDevice = m.get_tango_specific_class_n_device()
-            except AttributeError: pass
-            else:
-                typeFlagsNameList = []
-                for l in range(verboseLevel + 1):
-                    typeFlagsNameList += VerboseLevel2TypeFlags.get(l, [])
-                Core.DebParams.setTypeFlagsNameList(typeFlagsNameList)
-
-                util = PyTango.Util.instance()
-                deviceName = self.__className2deviceName.get(specificDevice.__name__,None)
-                if deviceName:
-                    propertiesNames = dataBase.get_device_property_list(deviceName,"*")
-                    for pName in propertiesNames.value_string:
-                        key,value = dataBase.get_device_property(deviceName,pName).popitem()
-                        if len(value) == 1:
-                            value = value[0]
-                        properties[key] = value
-            
-            self.__control = m.get_control(**properties)
-            _set_control_ref(weakref.ref(self.__control))
+        self.__control = _get_control()
 
         try:
             nb_thread = int(self.NbProcessingThread)
@@ -434,6 +409,16 @@ class LimaCCDs(PyTango.Device_4Impl) :
             self.ImageType2NbBytes[Core.Bpp32F] = (4,1)
             self.ImageType2String[Core.Bpp32F] = 'Bpp32F'
             self.ImageType2DataArrayType[Core.Bpp32F] = 8
+            
+        #ImageType Bpp1 to Bpp24
+        if SystemHasFeature('Core.Bpp1'):
+            for Bpp_type,Bpp_def,Bpp_name,Bpp_size in [(Core.Bpp1,(1,0),"Bpp1",0),
+                                                       (Core.Bpp6,(1,0),"Bpp6", 0),
+                                                       (Core.Bpp12,(2,0),"Bpp12",1),
+                                                       (Core.Bpp24,(4,0),"Bpp24",2)] :
+                self.ImageType2NbBytes[Bpp_type] = Bpp_def
+                self.ImageType2String[Bpp_type] = Bpp_name
+                self.ImageType2DataArrayType[Bpp_type] = Bpp_size
 
         #Tango Enum to Lima Enum
         self.__Prefix2SubClass = {'acc' : self.__control.acquisition,
@@ -447,6 +432,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
         self.__Attribute2FunctionBase = {'acq_trigger_mode':'TriggerMode',
                                          'saving_overwrite_policy' : 'OverwritePolicy',
                                          'saving_format' : 'Format',
+                                         'saving_managed_mode' : 'ManagedMode',
                                          'shutter_mode' : 'Mode',
 					 'image_rotation':'Rotation',
                                          'video_mode':'Mode',
@@ -466,6 +452,9 @@ class LimaCCDs(PyTango.Device_4Impl) :
         else:                           # Core too Old
             self.__AccTimeMode = {}
         
+        self.__SavingManagedMode = {'SOFTWARE' : Core.CtSaving.Software,
+                                    'HARDWARE' : Core.CtSaving.Hardware}
+
         self.__SavingFormat = {'RAW' : Core.CtSaving.RAW,
                                'EDF' : Core.CtSaving.EDF,
                                'CBF' : Core.CtSaving.CBFFormat}
@@ -483,6 +472,9 @@ class LimaCCDs(PyTango.Device_4Impl) :
         if SystemHasFeature('Core.CtSaving.HDF5'):
             self.__SavingFormat['HDF5'] = Core.CtSaving.HDF5
             self.__SavingFormatDefaultSuffix[Core.CtSaving.HDF5] = '.h5'
+        if SystemHasFeature('Core.CtSaving.EDFConcat'):
+            self.__SavingFormat['EDFCONCAT'] = Core.CtSaving.EDFConcat
+            self.__SavingFormatDefaultSuffix[Core.CtSaving.EDFConcat] = '.edf'
 
         self.__SavingMode = {'MANUAL' : Core.CtSaving.Manual,
                              'AUTO_FRAME' : Core.CtSaving.AutoFrame,
@@ -541,7 +533,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
 
         #INIT display shared memory
         try:
-            shared_memory_names = ['LimaCCds',sys.argv[1]]
+            self.__shared_memory_names = ['LimaCCds',sys.argv[1]]
             shared_memory = self.__control.display()
             shared_memory.setNames(*self.__shared_memory_names)
         except AttributeError:
@@ -1365,24 +1357,6 @@ class LimaCCDs(PyTango.Device_4Impl) :
             defaultSuffix = self.__SavingFormatDefaultSuffix.get(value,'.unknown')
             saving.setSuffix(defaultSuffix)
 
-    ## @brief Read the frame per file
-    #
-    @Core.DEB_MEMBER_FUNCT
-    def read_frame_per_file(self,attr) :
-        saving = self.__control.saving()
-
-        value = saving.getFramePerFile()
-        attr.set_value(value)
-
-    ## @brief Change the number of saving frame per file
-    #
-    @Core.DEB_MEMBER_FUNCT
-    def write_frame_per_file(self,attr) :
-        data = attr.get_write_value()
-        saving = self.__control.saving()
-
-        saving.setFramesPerFile(data)
-
     ##@biref Read possible modules
     #
     def read_debug_modules_possible(self,attr) :
@@ -1831,7 +1805,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
     @Core.DEB_MEMBER_FUNCT
     def getPluginDeviceNameFromType(self,pluginType):
         pluginType2deviceName = dict([(x.lower().replace('deviceserver',''),y) for x,y in get_sub_devices().iteritems()])
-        return pluginType2deviceName.get(pluginType,'')
+        return pluginType2deviceName.get(pluginType.lower(),'')
 
 #----------------------------------------------------------------------------
 #                         Configuration Mgt
@@ -2231,6 +2205,10 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         [[PyTango.DevString,
           PyTango.SCALAR,
           PyTango.READ_WRITE]],
+        'saving_managed_mode':
+        [[PyTango.DevString,
+          PyTango.SCALAR,
+          PyTango.READ_WRITE]],
         'saving_overwrite_policy':
         [[PyTango.DevString,
           PyTango.SCALAR,
@@ -2424,6 +2402,22 @@ def export_default_plugins() :
                         import traceback
                         traceback.print_exc()
 
+def export_ct_control(ct_map):
+    util = PyTango.Util.instance()
+    tango_dev_map = get_sub_devices()
+    for name, (tango_ct, tango_object) in ct_map.iteritems():
+        tango_class_name = tango_object.tango_class_name
+        # device already created.
+        if tango_class_name in tango_dev_map:
+            continue
+        try:
+            print("Creating device {0}({1})...".format(tango_class_name, name))
+            util.create_device(tango_class_name, name)
+            print("Done")
+        except:
+            import traceback
+            traceback.print_exc()
+
 def _set_control_ref(ctrl_ref) :
     for module_name in plugins.__all__:
         try:
@@ -2492,27 +2486,55 @@ def _video_image_2_struct(image):
             0,0)                                  # padding
     return videoheader + image.buffer()
 
- 
-def get_sub_devices() :
-    className2deviceName = {}
-    #get sub devices
-    fullpathExecName = sys.argv[0]
-    execName = os.path.split(fullpathExecName)[-1]
-    execName = os.path.splitext(execName)[0]
-    personalName = '/'.join([execName,sys.argv[1]])
-    dataBase = PyTango.Database()
-    result = dataBase.get_device_class_list(personalName)
-    for i in range(len(result.value_string) / 2) :
-        class_name = result.value_string[i * 2]
-        deviceName = result.value_string[i * 2 + 1]
-        className2deviceName[deviceName] = class_name
-    return className2deviceName
+def _get_control():
+    global control
+    try:
+        return control
+    except NameError:
+        pass
+
+    camera_type = LimaCameraType or get_lima_camera_type()
+    mod_name = 'camera.' + camera_type
+    try:
+        m = __import__(mod_name, None, None, mod_name)
+    except ImportError:
+        import traceback
+        traceback.print_exc()
+    else:
+        properties = {}
+        className2deviceName = get_sub_devices()
+        try:
+            _, specificDevice = m.get_tango_specific_class_n_device()
+        except AttributeError:
+            pass
+        else:
+            typeFlagsNameList = []
+            for l in range(verboseLevel + 1):
+                typeFlagsNameList += VerboseLevel2TypeFlags.get(l, [])
+            Core.DebParams.setTypeFlagsNameList(typeFlagsNameList)
+
+            util = PyTango.Util.instance()
+            db = util.get_database()
+            deviceName = className2deviceName.get(specificDevice.__name__,None)
+            if deviceName:
+                propertiesNames = db.get_device_property_list(deviceName,"*")
+                for pName in propertiesNames.value_string:
+                    key,value = db.get_device_property(deviceName,pName).popitem()
+                    if len(value) == 1:
+                        value = value[0]
+                    properties[key] = value
+
+        control = m.get_control(**properties)
+        _set_control_ref(weakref.ref(control))
+        return control
+
 
 #==================================================================
 #
 #    LimaCCDs class main method
 #
 #==================================================================
+verboseLevel = 0
 def main() :
     global verboseLevel
     verboseLevel = 0
@@ -2521,6 +2543,9 @@ def main() :
             try:
                 verboseLevel = int(option[2:])
             except: pass
+
+    pytango_ver = PyTango.__version_info__[:3]
+
     try:
         py = PyTango.Util(sys.argv)
         py.add_TgClass(LimaCCDsClass,LimaCCDs,'LimaCCDs')
@@ -2532,7 +2557,30 @@ def main() :
             traceback.print_exc()
 
         U = PyTango.Util.instance()
-        U.server_init()
+
+        # create ct control
+        control = _get_control()
+
+        if pytango_ver >= (8,1,7):
+            master_dev_name = get_lima_device_name()
+            beamline_name, _, camera_name = master_dev_name.split('/')
+            name_template = "{0}/{{type}}/{1}".format(beamline_name, camera_name)
+
+            # register Tango classes corresponding to CtControl, CtImage, ...
+            server, ct_map = create_tango_objects(control, name_template)
+            tango_classes = set()
+            for name, (tango_ct_object, tango_object) in ct_map.iteritems():
+                tango_class = server.get_tango_class(tango_object.class_name)
+                tango_classes.add(tango_class)
+            for tango_class in tango_classes:
+                py.add_class(tango_class.TangoClassClass, tango_class)
+
+            U.server_init()
+
+            export_ct_control(ct_map)
+
+        else:
+            U.server_init()
 
         # Configurations management (load default or custom config)
         dev = U.get_device_list_by_class("LimaCCDs")
@@ -2544,6 +2592,7 @@ def main() :
             print 'SEB_EXP'
             import traceback
             traceback.print_exc()
+
         U.server_run()
 
     except PyTango.DevFailed,e:
