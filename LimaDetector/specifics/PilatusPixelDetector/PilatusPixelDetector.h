@@ -94,6 +94,8 @@ public :
  *    Attribute member data.
  */
 //@{
+		Tango::DevDouble	*attr_energy_read;
+		Tango::DevDouble	attr_energy_write;
 		Tango::DevLong	*attr_threshold_read;
 		Tango::DevLong	attr_threshold_write;
 		Tango::DevString	*attr_gain_read;
@@ -110,18 +112,46 @@ public :
  */
 //@{
 /**
- *	Socket Port of the Detector.
+ *	Detector port number
  */
 	Tango::DevLong	detectorPort;
 /**
- *	Socket Port of the Detector .
+ *	Detector IP address
  */
 	string	detectorIP;
+/**
+ *	Detector file containing informations about (model, size, pixeldepth, ...).
+ */
+	string	detectorCameraDefFileName;
 /**
  *	Enable/Disable monitoring of directory receiving image files.
  *	[default = enable reading directory]
  */
 	Tango::DevBoolean	useReader;
+/**
+ *	During acquisition, this is the elapsed time before declaring that is no available image returned by detector. (in ms)
+ */
+	Tango::DevULong	readerTimeout;
+/**
+ *	Memorize/Define the energy value<br>
+ */
+	Tango::DevDouble	memorizedEnergy;
+/**
+ *	Memorize/Define the threshold value<br>
+ */
+	Tango::DevLong	memorizedThreshold;
+/**
+ *	Memorize/Define the gain value<br>
+ */
+	string	memorizedGain;
+/**
+ *	Memorize/Define the imagePath value<br>
+ */
+	string	memorizedImagePath;
+/**
+ *	Memorize/Define the fileName value<br>
+ */
+	string	memorizedFileName;
 //@}
 
 /**
@@ -195,6 +225,14 @@ public :
  */
 	virtual void read_attr_hardware(vector<long> &attr_list);
 /**
+ *	Extract real attribute values for energy acquisition result.
+ */
+	virtual void read_energy(Tango::Attribute &attr);
+/**
+ *	Write energy attribute values to hardware.
+ */
+	virtual void write_energy(Tango::WAttribute &attr);
+/**
  *	Extract real attribute values for threshold acquisition result.
  */
 	virtual void read_threshold(Tango::Attribute &attr);
@@ -226,6 +264,10 @@ public :
  *	Write fileName attribute values to hardware.
  */
 	virtual void write_fileName(Tango::WAttribute &attr);
+/**
+ *	Read/Write allowed for energy attribute.
+ */
+	virtual bool is_energy_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for threshold attribute.
  */
@@ -322,6 +364,7 @@ protected :
     
     //LIMA objects
     Pilatus::Interface*     m_hw;
+    Pilatus::Camera*        m_camera;
     CtControl*              m_ct;    
 };
 

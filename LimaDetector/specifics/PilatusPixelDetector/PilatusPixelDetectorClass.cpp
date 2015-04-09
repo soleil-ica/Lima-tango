@@ -377,9 +377,22 @@ void PilatusPixelDetectorClass::device_factory(const Tango::DevVarStringArray *d
 //-----------------------------------------------------------------------------
 void PilatusPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 {
+	//	Attribute : energy
+	energyAttrib	*energy = new energyAttrib();
+	Tango::UserDefaultAttrProp	energy_prop;
+	energy_prop.set_unit("eV");
+	energy_prop.set_format("%6.2f");
+	energy_prop.set_description("Define a new energy (in eV).");
+	energy->set_default_properties(energy_prop);
+	energy->set_memorized();
+	energy->set_memorized_init(false);
+	att_list.push_back(energy);
+
 	//	Attribute : threshold
 	thresholdAttrib	*threshold = new thresholdAttrib();
 	Tango::UserDefaultAttrProp	threshold_prop;
+	threshold_prop.set_unit("eV");
+	threshold_prop.set_format("%6.2f");
 	threshold_prop.set_description("Define a new threshold (in eV).");
 	threshold->set_default_properties(threshold_prop);
 	threshold->set_memorized();
@@ -468,7 +481,7 @@ void PilatusPixelDetectorClass::set_default_property()
 	//	Set Default Class Properties
 	//	Set Default Device Properties
 	prop_name = "DetectorPort";
-	prop_desc = "Socket Port of the Detector.";
+	prop_desc = "Detector port number";
 	prop_def  = "6666";
 	vect_data.clear();
 	vect_data.push_back("6666");
@@ -483,10 +496,25 @@ void PilatusPixelDetectorClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "DetectorIP";
-	prop_desc = "Socket Port of the Detector .";
-	prop_def  = "-1";
+	prop_desc = "Detector IP address";
+	prop_def  = "127.0.0.1";
 	vect_data.clear();
-	vect_data.push_back("-1");
+	vect_data.push_back("127.0.0.1");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "DetectorCameraDefFileName";
+	prop_desc = "Detector file containing informations about (model, size, pixeldepth, ...).";
+	prop_def  = "NONE";
+	vect_data.clear();
+	vect_data.push_back("NONE");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -502,6 +530,96 @@ void PilatusPixelDetectorClass::set_default_property()
 	prop_def  = "true";
 	vect_data.clear();
 	vect_data.push_back("true");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "ReaderTimeout";
+	prop_desc = "During acquisition, this is the elapsed time before declaring that is no available image returned by detector. (in ms)";
+	prop_def  = "10000";
+	vect_data.clear();
+	vect_data.push_back("10000");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedEnergy";
+	prop_desc = "Memorize/Define the energy value<br>";
+	prop_def  = "6000";
+	vect_data.clear();
+	vect_data.push_back("6000");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedThreshold";
+	prop_desc = "Memorize/Define the threshold value<br>";
+	prop_def  = "3000";
+	vect_data.clear();
+	vect_data.push_back("3000");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedGain";
+	prop_desc = "Memorize/Define the gain value<br>";
+	prop_def  = "HIGH";
+	vect_data.clear();
+	vect_data.push_back("HIGH");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedImagePath";
+	prop_desc = "Memorize/Define the imagePath value<br>";
+	prop_def  = "/ramdisk/images/";
+	vect_data.clear();
+	vect_data.push_back("/ramdisk/images/");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "MemorizedFileName";
+	prop_desc = "Memorize/Define the fileName value<br>";
+	prop_def  = "image_%.5d.cbf";
+	vect_data.clear();
+	vect_data.push_back("image_%.5d.cbf");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);

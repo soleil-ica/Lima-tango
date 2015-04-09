@@ -108,6 +108,20 @@ public:
 	{return (static_cast<PilatusPixelDetector *>(dev))->is_threshold_allowed(ty);}
 };
 
+class energyAttrib: public Tango::Attr
+{
+public:
+	energyAttrib():Attr("energy", Tango::DEV_DOUBLE, Tango::READ_WRITE) {};
+	~energyAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<PilatusPixelDetector *>(dev))->read_energy(att);}
+	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
+	{(static_cast<PilatusPixelDetector *>(dev))->write_energy(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<PilatusPixelDetector *>(dev))->is_energy_allowed(ty);}
+};
+
 //=========================================
 //	Define classes for commands
 //=========================================
