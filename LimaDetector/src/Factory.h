@@ -107,6 +107,7 @@
 #include <Andor3SyncCtrlObj.h>    
 #endif
 
+
 #ifdef VIEWORKSVP_ENABLED
 #include <VieworksVPBinCtrlObj.h>
 #include <VieworksVPCamera.h>

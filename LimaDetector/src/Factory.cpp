@@ -185,22 +185,32 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("DetectorIP"));
                 db_data.push_back(Tango::DbDatum("DetectorPort"));
+                db_data.push_back(Tango::DbDatum("DetectorCameraDefFileName"));                
                 db_data.push_back(Tango::DbDatum("UseReader"));
+                db_data.push_back(Tango::DbDatum("ReaderTimeout"));
+                
                 (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
-                std::string camera_ip;
-                long camera_port;
-                bool use_reader;
+                std::string camera_ip = "127.0.0.1";
+                std::string camera_def = "camera.def";
+                long camera_port = 6666;
+                bool use_reader = false;
+                unsigned long reader_timeout = 10000;  //in ms
+                
                 db_data[0] >> camera_ip;
                 db_data[1] >> camera_port;
-                db_data[2] >> use_reader;
+                db_data[2] >> camera_def;
+                db_data[3] >> use_reader;
+                db_data[4] >> reader_timeout;
 
-                m_camera = static_cast<void*> (new Pilatus::Camera(camera_ip.c_str(), camera_port));
+                m_camera = static_cast<void*> (new Pilatus::Camera(camera_ip.c_str(), camera_port,const_cast<std::string&>(camera_def)));
                 if (m_camera && use_reader)
                     static_cast<Pilatus::Camera*> (m_camera)->enableDirectoryWatcher();
                 if (m_camera && !use_reader)
                     static_cast<Pilatus::Camera*> (m_camera)->disableDirectoryWatcher();
 
                 m_interface = static_cast<void*> (new Pilatus::Interface(*static_cast<Pilatus::Camera*> (m_camera)));
+                if(m_interface)
+                    static_cast<Pilatus::Interface*> (m_interface)->setTimeout(reader_timeout / 1000.);
                 m_control = new CtControl(static_cast<Pilatus::Interface*> (m_interface));
                 ControlFactory::m_is_created = true;
                 return m_control;
@@ -362,6 +372,7 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
             }
         }
 #endif
+
 
 #ifdef ANDOR3_ENABLED
         if (detector_type == "Andor3")

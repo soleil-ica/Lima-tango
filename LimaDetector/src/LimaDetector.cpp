@@ -621,7 +621,7 @@ void LimaDetector::init_device()
     try
     {
         //- Ensure to call this, only when LimaDetector & specifcs devices are created by ClassFactory
-        //- That means, we need to call tis only at teh command Init() and not at the start of the device
+        //- That means, we need to call tis only at the command Init() and not at the start of the device
         if(LimaDetector::m_init_count > 1)
         {
             //- force Init() on the specific sub device.
@@ -3097,7 +3097,7 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
                             last_image.dimensions[DIMENSIONS_HEIGHT_INDEX] //- height
                             );
                             break;
-                            //Unsigned 32 bits
+                            //signed 32 bits
                         case TangoTraits<Tango::DevLong>::type_id:
                             DEBUG_STREAM << "image->set_value() : DevLong" << endl;
                             cbd.tga->set_value((Tango::DevLong*)last_image.data(),
@@ -3163,7 +3163,7 @@ void LimaDetector::read_image_callback(yat4tango::DynamicAttributeReadCallbackDa
                             last_image.height()//- height
                             );
                             break;
-                            //Unsigned 32 bits
+                            //signed 32 bits
                         case TangoTraits<Tango::DevLong>::type_id:
                             DEBUG_STREAM << "image->set_value() : DevLong" << endl;
                             cbd.tga->set_value((Tango::DevLong*)last_image.buffer(),
