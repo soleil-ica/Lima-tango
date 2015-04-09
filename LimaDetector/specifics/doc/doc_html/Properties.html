@@ -45,7 +45,7 @@
 <h1>
 		<Br>
 Properties Description 		<Br> <Br>
-PilatusPixelDetector Class	<Br>
+BaslerCCD Class	<Br>
 </h1>
 <b>
 Revision:  - Author: 
@@ -62,34 +62,29 @@ Revision:  - Author:
 <Td><Center><b>Property name</b></td></Center>
 <Td><Center><b>Property type</b></td></Center>
 <Td><Center><b>Description</b></td></Center>
-<Tr><Td><b><a href=#Dev_DefaultValues>DetectorPort </a></b></Td>
-<Td><Font Size=-1>Tango::DEV_LONG</Font></Td>
-<Td><Font Size=-1>Socket Port of the Detector.</Font></Td></Tr>
-
 <Tr><Td><b><a href=#Dev_DefaultValues>DetectorIP </a></b></Td>
 <Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
-<Td><Font Size=-1>Socket Port of the Detector .</Font></Td></Tr>
+<Td><Font Size=-1>Ip Address of the Detector.</Font></Td></Tr>
 
-<Tr><Td><b><a href=#Dev_DefaultValues>UseReader </a></b></Td>
-<Td><Font Size=-1>Tango::DEV_BOOLEAN</Font></Td>
-<Td><Font Size=-1>Enable/Disable monitoring of directory receiving image files.
-[default = enable reading directory]</Font></Td></Tr>
-
-<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedThreshold </a></b></Td>
+<Tr><Td><b><a href=#Dev_DefaultValues>DetectorTimeout </a></b></Td>
 <Td><Font Size=-1>Tango::DEV_LONG</Font></Td>
-<Td><Font Size=-1>Memorize/Define the threshold value<br></Font></Td></Tr>
+<Td><Font Size=-1>During acquisition, this is the time before declaring that is no available image returned by detector. (in ms)</Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>DetectorPacketSize </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_LONG</Font></Td>
+<Td><Font Size=-1>Define the packet size for the selected steam channel of the Transport Layer. (in bytes)<br></Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedInterPacketDelay </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_LONG</Font></Td>
+<Td><Font Size=-1>Memorize/Define the interpacket Delay in ticks for the selected steam channel of the Transport Layer.<br></Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>MemorizedGain </a></b></Td>
-<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
-<Td><Font Size=-1>Memorize/Define the gain value<br></Font></Td></Tr>
+<Td><Font Size=-1>Tango::DEV_DOUBLE</Font></Td>
+<Td><Font Size=-1>Memorize/Define the  attribute  gain at Init device<br></Font></Td></Tr>
 
-<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedImagePath </a></b></Td>
-<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
-<Td><Font Size=-1>Memorize/Define the imagePath value<br></Font></Td></Tr>
-
-<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedFileName </a></b></Td>
-<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
-<Td><Font Size=-1>Memorize/Define the fileName value<br></Font></Td></Tr>
+<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedAutoGain </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_BOOLEAN</Font></Td>
+<Td><Font Size=-1>Memorize/Define the  attribute  autoGain at Init device<br></Font></Td></Tr>
 
 </Table>
 
@@ -105,32 +100,28 @@ Revision:  - Author:
         <td><b>Default Values</b></td>
     </Tr>
     <Tr>
-        <Td>DetectorPort</Td>
-        <td>6666</td>
-    </Tr>
-    <Tr>
         <Td>DetectorIP</Td>
-        <td>-1</td>
+        <td>127.0.0.1</td>
     </Tr>
     <Tr>
-        <Td>UseReader</Td>
-        <td>true</td>
+        <Td>DetectorTimeout</Td>
+        <td>11000</td>
     </Tr>
     <Tr>
-        <Td>MemorizedThreshold</Td>
-        <td>3000</td>
+        <Td>DetectorPacketSize</Td>
+        <td>1500</td>
+    </Tr>
+    <Tr>
+        <Td>MemorizedInterPacketDelay</Td>
+        <td>0</td>
     </Tr>
     <Tr>
         <Td>MemorizedGain</Td>
-        <td>HIGH</td>
+        <td>0</td>
     </Tr>
     <Tr>
-        <Td>MemorizedImagePath</Td>
-        <td>/ramdisk/images/</td>
-    </Tr>
-    <Tr>
-        <Td>MemorizedFileName</Td>
-        <td>image_%.5d.cbf</td>
+        <Td>MemorizedAutoGain</Td>
+        <td>False</td>
     </Tr>
 </Table>
 
