@@ -653,16 +653,16 @@ void BaslerCCD::read_dataRate(Tango::Attribute &attr)
                 
                 //get the frame rate
                 double frameRate = 0.0;                
-                (m_hw->getCamera()).getFrameRate((double&) frameRate);
+                m_hw->getCamera().getFrameRate((double&) frameRate);
                 
                 //get the detector pixel depth
-                int pixelDepth = 8;//default
+                 
                 HwDetInfoCtrlObj *hw_det_info;
                 m_hw->getHwCtrlObj(hw_det_info);
                 ImageType image_type;
                 hw_det_info->getCurrImageType(image_type);
                 FrameDim frame_dim;
-                pixelDepth = frame_dim.getImageTypeBpp(image_type);
+                int pixelDepth = frame_dim.getImageTypeBpp(image_type);
                 
                 //get the detector ROI
                 Roi roi;
@@ -1037,6 +1037,7 @@ Tango::DevState BaslerCCD::dev_state()
     argout = DeviceState;
     return argout;
 }
+
 
 
 

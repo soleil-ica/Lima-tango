@@ -93,19 +93,19 @@ public :
  *    Attribute member data.
  */
 //@{
-		Tango::DevLong	*attr_packetSize_read;
-		Tango::DevLong	*attr_interPacketDelay_read;
-		Tango::DevLong	attr_interPacketDelay_write;
 		Tango::DevDouble	*attr_frameRate_read;
 		Tango::DevDouble	*attr_dataRate_read;
-		Tango::DevLong	*attr_bandwidthAssigned_read;
-		Tango::DevLong	*attr_maxThroughput_read;
-		Tango::DevLong	*attr_currentThroughput_read;
 		Tango::DevDouble	*attr_temperature_read;
 		Tango::DevDouble	*attr_gain_read;
 		Tango::DevDouble	attr_gain_write;
 		Tango::DevBoolean	*attr_autoGain_read;
 		Tango::DevBoolean	attr_autoGain_write;
+		Tango::DevLong	*attr_packetSize_read;
+		Tango::DevLong	*attr_interPacketDelay_read;
+		Tango::DevLong	attr_interPacketDelay_write;
+		Tango::DevLong	*attr_bandwidthAssigned_read;
+		Tango::DevLong	*attr_maxThroughput_read;
+		Tango::DevLong	*attr_currentThroughput_read;
 		Tango::DevLong	*attr_statisticsFailedBufferCount_read;
 //@}
 
@@ -211,18 +211,6 @@ public :
  */
 	virtual void read_attr_hardware(vector<long> &attr_list);
 /**
- *	Extract real attribute values for packetSize acquisition result.
- */
-	virtual void read_packetSize(Tango::Attribute &attr);
-/**
- *	Extract real attribute values for interPacketDelay acquisition result.
- */
-	virtual void read_interPacketDelay(Tango::Attribute &attr);
-/**
- *	Write interPacketDelay attribute values to hardware.
- */
-	virtual void write_interPacketDelay(Tango::WAttribute &attr);
-/**
  *	Extract real attribute values for frameRate acquisition result.
  */
 	virtual void read_frameRate(Tango::Attribute &attr);
@@ -230,18 +218,6 @@ public :
  *	Extract real attribute values for dataRate acquisition result.
  */
 	virtual void read_dataRate(Tango::Attribute &attr);
-/**
- *	Extract real attribute values for bandwidthAssigned acquisition result.
- */
-	virtual void read_bandwidthAssigned(Tango::Attribute &attr);
-/**
- *	Extract real attribute values for maxThroughput acquisition result.
- */
-	virtual void read_maxThroughput(Tango::Attribute &attr);
-/**
- *	Extract real attribute values for currentThroughput acquisition result.
- */
-	virtual void read_currentThroughput(Tango::Attribute &attr);
 /**
  *	Extract real attribute values for temperature acquisition result.
  */
@@ -263,17 +239,33 @@ public :
  */
 	virtual void write_autoGain(Tango::WAttribute &attr);
 /**
+ *	Extract real attribute values for packetSize acquisition result.
+ */
+	virtual void read_packetSize(Tango::Attribute &attr);
+/**
+ *	Extract real attribute values for interPacketDelay acquisition result.
+ */
+	virtual void read_interPacketDelay(Tango::Attribute &attr);
+/**
+ *	Write interPacketDelay attribute values to hardware.
+ */
+	virtual void write_interPacketDelay(Tango::WAttribute &attr);
+/**
+ *	Extract real attribute values for bandwidthAssigned acquisition result.
+ */
+	virtual void read_bandwidthAssigned(Tango::Attribute &attr);
+/**
+ *	Extract real attribute values for maxThroughput acquisition result.
+ */
+	virtual void read_maxThroughput(Tango::Attribute &attr);
+/**
+ *	Extract real attribute values for currentThroughput acquisition result.
+ */
+	virtual void read_currentThroughput(Tango::Attribute &attr);
+/**
  *	Extract real attribute values for statisticsFailedBufferCount acquisition result.
  */
 	virtual void read_statisticsFailedBufferCount(Tango::Attribute &attr);
-/**
- *	Read/Write allowed for packetSize attribute.
- */
-	virtual bool is_packetSize_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for interPacketDelay attribute.
- */
-	virtual bool is_interPacketDelay_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for frameRate attribute.
  */
@@ -282,18 +274,6 @@ public :
  *	Read/Write allowed for dataRate attribute.
  */
 	virtual bool is_dataRate_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for bandwidthAssigned attribute.
- */
-	virtual bool is_bandwidthAssigned_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for maxThroughput attribute.
- */
-	virtual bool is_maxThroughput_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for currentThroughput attribute.
- */
-	virtual bool is_currentThroughput_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for temperature attribute.
  */
@@ -306,6 +286,26 @@ public :
  *	Read/Write allowed for autoGain attribute.
  */
 	virtual bool is_autoGain_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for packetSize attribute.
+ */
+	virtual bool is_packetSize_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for interPacketDelay attribute.
+ */
+	virtual bool is_interPacketDelay_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for bandwidthAssigned attribute.
+ */
+	virtual bool is_bandwidthAssigned_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for maxThroughput attribute.
+ */
+	virtual bool is_maxThroughput_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for currentThroughput attribute.
+ */
+	virtual bool is_currentThroughput_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for statisticsFailedBufferCount attribute.
  */
