@@ -39,11 +39,11 @@
 #define Merlin_H
 
 #include <tango.h>
-#include "HwInterface.h"
-#include "CtControl.h"
+#include "lima/HwInterface.h"
+#include "lima/CtControl.h"
 #include "MerlinCamera.h"
 #include "MerlinInterface.h"
-#include <Exceptions.h>
+#include <lima/Exceptions.h>
 #include "Factory.h"
 
 using namespace lima;

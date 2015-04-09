@@ -520,7 +520,7 @@ void Merlin::read_chargeSumming(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_chargeSumming) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	Camera::Switch mode;
+    	lima::Merlin::Camera::Switch mode;
     	m_camera->getChargeSumming(mode);
     	*attr_chargeSumming_read = mode;
     	attr.set_value(attr_chargeSumming_read);
@@ -555,7 +555,7 @@ void Merlin::write_chargeSumming(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_chargeSumming) ENABLED START -----*/
 	try {
-    	Camera::Switch mode = static_cast<Camera::Switch>(w_val);
+    	lima::Merlin::Camera::Switch mode = static_cast<lima::Merlin::Camera::Switch>(w_val);
 		m_camera->setChargeSumming(mode);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -586,7 +586,7 @@ void Merlin::read_colourMode(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_colourMode) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	Camera::ColourMode mode;
+    	lima::Merlin::Camera::ColourMode mode;
     	m_camera->getColourMode(mode);
     	*attr_colourMode_read = mode;
     	attr.set_value(attr_colourMode_read);
@@ -621,7 +621,7 @@ void Merlin::write_colourMode(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_colourMode) ENABLED START -----*/
 	try {
-    	Camera::ColourMode mode = static_cast<Camera::ColourMode>(w_val);
+    	lima::Merlin::Camera::ColourMode mode = static_cast<lima::Merlin::Camera::ColourMode>(w_val);
 		m_camera->setColourMode(mode);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -652,7 +652,7 @@ void Merlin::read_continuousRW(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_continuousRW) ENABLED START -----*/
 	//	Set the attribute value
 	try {
-    	Camera::Switch mode;
+    	lima::Merlin::Camera::Switch mode;
     	m_camera->getContinuousRW(mode);
     	*attr_continuousRW_read = mode;
     	attr.set_value(attr_continuousRW_read);
@@ -688,7 +688,7 @@ void Merlin::write_continuousRW(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_continuousRW) ENABLED START -----*/
 	try {
-    	Camera::Switch mode = static_cast<Camera::Switch>(w_val);
+    	lima::Merlin::Camera::Switch mode = static_cast<lima::Merlin::Camera::Switch>(w_val);
 		m_camera->setContinuousRW(mode);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -719,7 +719,7 @@ void Merlin::read_counter(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_counter) ENABLED START -----*/
 	//	Set the attribute value
 	try {
-    	m_camera->getEnableCounters((Camera::Counter&)*attr_counter_read);
+    	m_camera->getEnableCounters((lima::Merlin::Camera::Counter&)*attr_counter_read);
     	attr.set_value(attr_counter_read);
  	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -752,7 +752,7 @@ void Merlin::write_counter(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_counter) ENABLED START -----*/
 	try {
-    	Camera::Counter mode = static_cast<Camera::Counter>(w_val);
+    	lima::Merlin::Camera::Counter mode = static_cast<lima::Merlin::Camera::Counter>(w_val);
 		m_camera->setEnableCounters(mode);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -783,7 +783,7 @@ void Merlin::read_gain(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_gain) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	Camera::GainSetting gain;
+    	lima::Merlin::Camera::GainSetting gain;
     	m_camera->getGain(gain);
     	*attr_gain_read = gain;
     	attr.set_value(attr_gain_read);
@@ -818,7 +818,7 @@ void Merlin::write_gain(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_gain) ENABLED START -----*/
 	try {
-    	Camera::GainSetting gain = static_cast<Camera::GainSetting>(w_val);
+    	lima::Merlin::Camera::GainSetting gain = static_cast<lima::Merlin::Camera::GainSetting>(w_val);
 		m_camera->setGain(gain);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -948,7 +948,7 @@ void Merlin::read_threshold0(Tango::Attribute &attr)
 	//	Set the attribute value
     try {
     	float threshold;
-    	m_camera->getThreshold(Camera::THRESHOLD0, threshold);
+    	m_camera->getThreshold(lima::Merlin::Camera::THRESHOLD0, threshold);
     	*attr_threshold0_read = threshold;
     	attr.set_value(attr_threshold0_read);
     } catch (Tango::DevFailed& df) {
@@ -982,7 +982,7 @@ void Merlin::write_threshold0(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_threshold0) ENABLED START -----*/
 	try {
-    	m_camera->setThreshold(Camera::THRESHOLD0, w_val);
+    	m_camera->setThreshold(lima::Merlin::Camera::THRESHOLD0, w_val);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
 		Tango::Except::re_throw_exception(df,
@@ -1013,7 +1013,7 @@ void Merlin::read_threshold1(Tango::Attribute &attr)
 	//	Set the attribute value
     try {
     	float threshold;
-    	m_camera->getThreshold(Camera::THRESHOLD1, threshold);
+    	m_camera->getThreshold(lima::Merlin::Camera::THRESHOLD1, threshold);
     	*attr_threshold1_read = threshold;
     	attr.set_value(attr_threshold1_read);
     } catch (Tango::DevFailed& df) {
@@ -1047,7 +1047,7 @@ void Merlin::write_threshold1(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_threshold1) ENABLED START -----*/
 	try {
-    	m_camera->setThreshold(Camera::THRESHOLD1, w_val);
+    	m_camera->setThreshold(lima::Merlin::Camera::THRESHOLD1, w_val);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
 		Tango::Except::re_throw_exception(df,
@@ -1078,7 +1078,7 @@ void Merlin::read_threshold2(Tango::Attribute &attr)
 	//	Set the attribute value
     try {
     	float threshold;
-    	m_camera->getThreshold(Camera::THRESHOLD2, threshold);
+    	m_camera->getThreshold(lima::Merlin::Camera::THRESHOLD2, threshold);
     	*attr_threshold2_read = threshold;
     	attr.set_value(attr_threshold2_read);
     } catch (Tango::DevFailed& df) {
@@ -1112,7 +1112,7 @@ void Merlin::write_threshold2(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_threshold2) ENABLED START -----*/
 	try {
-    	m_camera->setThreshold(Camera::THRESHOLD2, w_val);
+    	m_camera->setThreshold(lima::Merlin::Camera::THRESHOLD2, w_val);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
 		Tango::Except::re_throw_exception(df,
@@ -1143,7 +1143,7 @@ void Merlin::read_threshold3(Tango::Attribute &attr)
 	//	Set the attribute value
     try {
     	float threshold;
-    	m_camera->getThreshold(Camera::THRESHOLD3, threshold);
+    	m_camera->getThreshold(lima::Merlin::Camera::THRESHOLD3, threshold);
     	*attr_threshold3_read = threshold;
     	attr.set_value(attr_threshold3_read);
     } catch (Tango::DevFailed& df) {
@@ -1177,7 +1177,7 @@ void Merlin::write_threshold3(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_threshold3) ENABLED START -----*/
 	try {
-    	m_camera->setThreshold(Camera::THRESHOLD3, w_val);
+    	m_camera->setThreshold(lima::Merlin::Camera::THRESHOLD3, w_val);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
 		Tango::Except::re_throw_exception(df,
@@ -1208,7 +1208,7 @@ void Merlin::read_threshold4(Tango::Attribute &attr)
 	//	Set the attribute value
     try {
     	float threshold;
-    	m_camera->getThreshold(Camera::THRESHOLD4, threshold);
+    	m_camera->getThreshold(lima::Merlin::Camera::THRESHOLD4, threshold);
     	*attr_threshold4_read = threshold;
     	attr.set_value(attr_threshold4_read);
     } catch (Tango::DevFailed& df) {
@@ -1242,7 +1242,7 @@ void Merlin::write_threshold4(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_threshold4) ENABLED START -----*/
 	try {
-    	m_camera->setThreshold(Camera::THRESHOLD4, w_val);
+    	m_camera->setThreshold(lima::Merlin::Camera::THRESHOLD4, w_val);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
 		Tango::Except::re_throw_exception(df,
@@ -1273,7 +1273,7 @@ void Merlin::read_threshold5(Tango::Attribute &attr)
 	//	Set the attribute value
     try {
     	float threshold;
-    	m_camera->getThreshold(Camera::THRESHOLD5, threshold);
+    	m_camera->getThreshold(lima::Merlin::Camera::THRESHOLD5, threshold);
     	*attr_threshold5_read = threshold;
     	attr.set_value(attr_threshold5_read);
     } catch (Tango::DevFailed& df) {
@@ -1307,7 +1307,7 @@ void Merlin::write_threshold5(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_threshold5) ENABLED START -----*/
 	try {
-    	m_camera->setThreshold(Camera::THRESHOLD5, w_val);
+    	m_camera->setThreshold(lima::Merlin::Camera::THRESHOLD5, w_val);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
 		Tango::Except::re_throw_exception(df,
@@ -1338,7 +1338,7 @@ void Merlin::read_threshold6(Tango::Attribute &attr)
 	//	Set the attribute value
     try {
     	float threshold;
-    	m_camera->getThreshold(Camera::THRESHOLD6, threshold);
+    	m_camera->getThreshold(lima::Merlin::Camera::THRESHOLD6, threshold);
     	*attr_threshold6_read = threshold;
     	attr.set_value(attr_threshold6_read);
     } catch (Tango::DevFailed& df) {
@@ -1372,7 +1372,7 @@ void Merlin::write_threshold6(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_threshold6) ENABLED START -----*/
 	try {
-    	m_camera->setThreshold(Camera::THRESHOLD6, w_val);
+    	m_camera->setThreshold(lima::Merlin::Camera::THRESHOLD6, w_val);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
 		Tango::Except::re_throw_exception(df,
@@ -1403,7 +1403,7 @@ void Merlin::read_threshold7(Tango::Attribute &attr)
 	//	Set the attribute value
     try {
     	float threshold;
-    	m_camera->getThreshold(Camera::THRESHOLD7, threshold);
+    	m_camera->getThreshold(lima::Merlin::Camera::THRESHOLD7, threshold);
     	*attr_threshold7_read = threshold;
     	attr.set_value(attr_threshold7_read);
     } catch (Tango::DevFailed& df) {
@@ -1437,7 +1437,7 @@ void Merlin::write_threshold7(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_threshold7) ENABLED START -----*/
 	try {
-    	m_camera->setThreshold(Camera::THRESHOLD7, w_val);
+    	m_camera->setThreshold(lima::Merlin::Camera::THRESHOLD7, w_val);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
 		Tango::Except::re_throw_exception(df,
@@ -1467,7 +1467,7 @@ void Merlin::read_triggerStartType(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_triggerStartType) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	Camera::Trigger type;
+    	lima::Merlin::Camera::Trigger type;
     	m_camera->getTriggerStartType(type);
     	*attr_triggerStartType_read = type;
     	attr.set_value(attr_triggerStartType_read);
@@ -1502,7 +1502,7 @@ void Merlin::write_triggerStartType(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_triggerStartType) ENABLED START -----*/
 	try {
-    	Camera::Trigger trigger = static_cast<Camera::Trigger>(w_val);
+    	lima::Merlin::Camera::Trigger trigger = static_cast<lima::Merlin::Camera::Trigger>(w_val);
 		m_camera->setTriggerStartType(trigger);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -1533,7 +1533,7 @@ void Merlin::read_triggerStopType(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_triggerStopType) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	Camera::Trigger type;
+    	lima::Merlin::Camera::Trigger type;
     	m_camera->getTriggerStopType(type);
     	*attr_triggerStopType_read = type;
     	attr.set_value(attr_triggerStopType_read);
@@ -1568,7 +1568,7 @@ void Merlin::write_triggerStopType(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_triggerStopType) ENABLED START -----*/
 	try {
-    	Camera::Trigger trigger = static_cast<Camera::Trigger>(w_val);
+    	lima::Merlin::Camera::Trigger trigger = static_cast<lima::Merlin::Camera::Trigger>(w_val);
 		m_camera->setTriggerStopType(trigger);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -1599,7 +1599,7 @@ void Merlin::read_triggerOutTTL(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_triggerOutTTL) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	Camera::TriggerOutput trigOut;
+    	lima::Merlin::Camera::TriggerOutput trigOut;
     	m_camera->getTriggerOutTTL(trigOut);
     	*attr_triggerOutTTL_read = trigOut;
     	attr.set_value(attr_triggerOutTTL_read);
@@ -1634,7 +1634,7 @@ void Merlin::write_triggerOutTTL(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_triggerOutTTL) ENABLED START -----*/
 	try {
-    	Camera::TriggerOutput trigOut = static_cast<Camera::TriggerOutput>(w_val);
+    	lima::Merlin::Camera::TriggerOutput trigOut = static_cast<lima::Merlin::Camera::TriggerOutput>(w_val);
 		m_camera->setTriggerOutTTL(trigOut);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -1667,7 +1667,7 @@ void Merlin::read_triggerOutLVDS(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_triggerOutLVDS) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	Camera::TriggerOutput trigOut;
+    	lima::Merlin::Camera::TriggerOutput trigOut;
     	m_camera->getTriggerOutTTL(trigOut);
     	*attr_triggerOutLVDS_read = trigOut;
     	attr.set_value(attr_triggerOutLVDS_read);
@@ -1702,7 +1702,7 @@ void Merlin::write_triggerOutLVDS(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_triggerOutLVDS) ENABLED START -----*/
 	try {
-    	Camera::TriggerOutput trigOut = static_cast<Camera::TriggerOutput>(w_val);
+    	lima::Merlin::Camera::TriggerOutput trigOut = static_cast<lima::Merlin::Camera::TriggerOutput>(w_val);
 		m_camera->setTriggerOutLVDS(trigOut);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -1735,7 +1735,7 @@ void Merlin::read_triggerOutTTLInvert(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_triggerOutTTLInvert) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	Camera::TriggerLevel level;
+    	lima::Merlin::Camera::TriggerLevel level;
     	m_camera->getTriggerOutTTLInvert(level);
     	*attr_triggerOutTTLInvert_read = level;
     	attr.set_value(attr_triggerOutTTLInvert_read);
@@ -1770,7 +1770,7 @@ void Merlin::write_triggerOutTTLInvert(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_triggerOutTTLInvert) ENABLED START -----*/
 	try {
-    	Camera::TriggerLevel level = static_cast<Camera::TriggerLevel>(w_val);
+    	lima::Merlin::Camera::TriggerLevel level = static_cast<lima::Merlin::Camera::TriggerLevel>(w_val);
 		m_camera->setTriggerOutTTLInvert(level);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -1803,7 +1803,7 @@ void Merlin::read_triggerOutLVDSInvert(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_triggerOutLVDSInvert) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	Camera::TriggerLevel level;
+    	lima::Merlin::Camera::TriggerLevel level;
     	m_camera->getTriggerOutLVDSInvert(level);
     	*attr_triggerOutLVDSInvert_read = level;
     	attr.set_value(attr_triggerOutLVDSInvert_read);
@@ -1838,7 +1838,7 @@ void Merlin::write_triggerOutLVDSInvert(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_triggerOutLVDSInvert) ENABLED START -----*/
 	try {
-    	Camera::TriggerLevel level = static_cast<Camera::TriggerLevel>(w_val);
+    	lima::Merlin::Camera::TriggerLevel level = static_cast<lima::Merlin::Camera::TriggerLevel>(w_val);
 		m_camera->setTriggerOutLVDSInvert(level);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
@@ -2005,7 +2005,7 @@ void Merlin::read_triggerUseDelay(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_triggerUseDelay) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	Camera::Switch mode;
+    	lima::Merlin::Camera::Switch mode;
     	m_camera->getTriggerUseDelay(mode);
     	*attr_triggerUseDelay_read = mode;
     	attr.set_value(attr_triggerUseDelay_read);
@@ -2040,7 +2040,7 @@ void Merlin::write_triggerUseDelay(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_triggerUseDelay) ENABLED START -----*/
 	try {
-    	Camera::Switch mode = static_cast<Camera::Switch>(w_val);
+    	lima::Merlin::Camera::Switch mode = static_cast<lima::Merlin::Camera::Switch>(w_val);
 		m_camera->setTriggerUseDelay(mode);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
