@@ -386,8 +386,10 @@ void RoiCounters::always_executed_hook()
 {
     yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
     try
-    {
-        m_status_message.str("");
+    {    
+        if(!m_is_device_initialized)//nothing to do ! device need init
+            return;
+        
         //- get the singleton control objet used to pilot the lima framework
         m_ct = ControlFactory::instance().get_control("RoiCounters");
 
@@ -452,7 +454,7 @@ void RoiCounters::read_version(Tango::Attribute &attr)
     DEBUG_STREAM << "RoiCounters::read_version(Tango::Attribute &attr) entering... " << endl;
     try
     {
-        strcpy(*attr_version_read, "1.0.0");
+        strcpy(*attr_version_read, CURRENT_VERSION);
         attr.set_value(attr_version_read);
     }
     catch(Tango::DevFailed& df)
@@ -553,7 +555,7 @@ void RoiCounters::read_roi()
                 iter2++)
                 {
                     INFO_STREAM << "++++++++++++++++++++++++++++++++" << endl;
-                    INFO_STREAM << "+++ roi n°: " << roinum << "\t" << endl;
+                    INFO_STREAM << "+++ roi nï¿½: " << roinum << "\t" << endl;
                     INFO_STREAM << "++++++++++++++++++++++++++++++++" << endl;
 
                     attr_frameNumber_value = (*iter2).frameNumber + 1;
@@ -673,6 +675,19 @@ bool RoiCounters::create_all_dynamic_attributes(void)
 {
     DEBUG_STREAM << "RoiCounters::create_all_dynamic_attributes() - [BEGIN]" << endl;
     INFO_STREAM << "Create all dynamic attributes :" << endl;
+    if(nbRoiCounters > MAX_NB_ROICOUNTERS)
+    {
+        m_status_message.str("");
+        m_status_message  <<"Failed to instanciate dynamic attributes  - "
+                <<"nbRoiCounters property must not exceed : "
+                << MAX_NB_ROICOUNTERS
+                <<std::endl;
+        ERROR_STREAM << m_status_message.str() << std::endl;
+        set_state(Tango::FAULT);
+        set_status(m_status_message.str());
+        return false;        
+    }
+    
     //- add some dynamic attributes
     try
     {
