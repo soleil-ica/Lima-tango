@@ -64,16 +64,44 @@ Revision:  - Author:
 <Td><Center><b>Description</b></td></Center>
 <Tr><Td><b><a href=#Dev_DefaultValues>DetectorPort </a></b></Td>
 <Td><Font Size=-1>Tango::DEV_LONG</Font></Td>
-<Td><Font Size=-1>Socket Port of the Detector.</Font></Td></Tr>
+<Td><Font Size=-1>Detector port number</Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>DetectorIP </a></b></Td>
 <Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
-<Td><Font Size=-1>Socket Port of the Detector .</Font></Td></Tr>
+<Td><Font Size=-1>Detector IP address</Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>DetectorCameraDefFileName </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
+<Td><Font Size=-1>Detector file containing informations about (model, size, pixeldepth, ...).</Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>UseReader </a></b></Td>
 <Td><Font Size=-1>Tango::DEV_BOOLEAN</Font></Td>
 <Td><Font Size=-1>Enable/Disable monitoring of directory receiving image files.
 [default = enable reading directory]</Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>ReaderTimeout </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_DOUBLE</Font></Td>
+<Td><Font Size=-1>During acquisition, this is the elapsed time before declaring that is no available image returned by detector. (in ms)</Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedEnergy </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_DOUBLE</Font></Td>
+<Td><Font Size=-1>Memorize/Define the energy value<br></Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedThreshold </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_LONG</Font></Td>
+<Td><Font Size=-1>Memorize/Define the threshold value<br></Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedGain </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
+<Td><Font Size=-1>Memorize/Define the gain value<br></Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedImagePath </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
+<Td><Font Size=-1>Memorize/Define the imagePath value<br></Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedFileName </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
+<Td><Font Size=-1>Memorize/Define the fileName value<br></Font></Td></Tr>
 
 </Table>
 
@@ -94,11 +122,39 @@ Revision:  - Author:
     </Tr>
     <Tr>
         <Td>DetectorIP</Td>
-        <td>-1</td>
+        <td>127.0.0.1</td>
+    </Tr>
+    <Tr>
+        <Td>DetectorCameraDefFileName</Td>
+        <td>NONE</td>
     </Tr>
     <Tr>
         <Td>UseReader</Td>
         <td>true</td>
+    </Tr>
+    <Tr>
+        <Td>ReaderTimeout</Td>
+        <td>10000</td>
+    </Tr>
+    <Tr>
+        <Td>MemorizedEnergy</Td>
+        <td>6000</td>
+    </Tr>
+    <Tr>
+        <Td>MemorizedThreshold</Td>
+        <td>3000</td>
+    </Tr>
+    <Tr>
+        <Td>MemorizedGain</Td>
+        <td>HIGH</td>
+    </Tr>
+    <Tr>
+        <Td>MemorizedImagePath</Td>
+        <td>/ramdisk/images/</td>
+    </Tr>
+    <Tr>
+        <Td>MemorizedFileName</Td>
+        <td>image_%.5d.cbf</td>
     </Tr>
 </Table>
 
