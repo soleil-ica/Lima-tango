@@ -254,11 +254,67 @@ IBUFFER_V32    0x40<Br>&nbsp
 <Br>&nbsp
 </ul><Br>
 <Br>
-<A NAME="UploadCalibration"><!-- --></A>
-<A NAME="UploadCalibration"><!-- --></A>
-<h2>14 - UploadCalibration</h2>
+<A NAME="CalibrateOTNMedium"><!-- --></A>
+<A NAME="CalibrateOTNMedium"><!-- --></A>
+<h2>14 - CalibrateOTNMedium</h2>
 <ul>
-<Li><Strong>Description: </Strong> Upload a calibration from a file defined in the property CalibrationPath<Br>&nbsp
+<Li><Strong>Description: </Strong> Start the Over The Noise Medium calibration<Br>&nbsp
+<Li><Strong>Argin:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::STANDBY</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
+<A NAME="CalibrateOTNFast"><!-- --></A>
+<A NAME="CalibrateOTNFast"><!-- --></A>
+<h2>15 - CalibrateOTNFast</h2>
+<ul>
+<Li><Strong>Description: </Strong> Start the Over The Noise Fast calibration<Br>&nbsp
+<Li><Strong>Argin:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::STANDBY</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
+<A NAME="CalibrateBEAM"><!-- --></A>
+<A NAME="CalibrateBEAM"><!-- --></A>
+<h2>16 - CalibrateBEAM</h2>
+<ul>
+<Li><Strong>Description: </Strong> Start the BEAM calibration<Br>&nbsp
+<Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
+ : Texp, ithl_max, itune, imfp<Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::STANDBY</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
+<A NAME="CalibrateOTN"><!-- --></A>
+<A NAME="CalibrateOTN"><!-- --></A>
+<h2>17 - CalibrateOTN</h2>
+<ul>
+<Li><Strong>Description: </Strong> Start the Over The Noise calibration<Br>&nbsp
+<Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
+ : itune, imfp<Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::STANDBY</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
+<A NAME="UploadCalibration"><!-- --></A>
+<A NAME="UploadCalibration"><!-- --></A>
+<h2>18 - UploadCalibration</h2>
+<ul>
+<Li><Strong>Description: </Strong> Upload a calibration from a directory defined in the property CalibrationPath<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
@@ -270,7 +326,7 @@ IBUFFER_V32    0x40<Br>&nbsp
 <Br>
 <A NAME="UploadWaitTimes"><!-- --></A>
 <A NAME="UploadWaitTimes"><!-- --></A>
-<h2>15 - UploadWaitTimes</h2>
+<h2>19 - UploadWaitTimes</h2>
 <ul>
 <Li><Strong>Description: </Strong> Upload a tralectory of wait times, instead of having always the same value<Br>&nbsp
 <Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
@@ -284,7 +340,7 @@ IBUFFER_V32    0x40<Br>&nbsp
 <Br>
 <A NAME="IncrementITHL"><!-- --></A>
 <A NAME="IncrementITHL"><!-- --></A>
-<h2>16 - IncrementITHL</h2>
+<h2>20 - IncrementITHL</h2>
 <ul>
 <Li><Strong>Description: </Strong> Increment the ITHL of 1 unit<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
@@ -298,7 +354,7 @@ IBUFFER_V32    0x40<Br>&nbsp
 <Br>
 <A NAME="DecrementITHL"><!-- --></A>
 <A NAME="DecrementITHL"><!-- --></A>
-<h2>17 - DecrementITHL</h2>
+<h2>21 - DecrementITHL</h2>
 <ul>
 <Li><Strong>Description: </Strong> Decrement the ITHL of 1 unit<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>

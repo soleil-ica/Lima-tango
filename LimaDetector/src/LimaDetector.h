@@ -869,8 +869,12 @@ protected:
     AcquisitionTask*                    m_acquisition_task;
     AcquisitionTask::AcqConfig          m_acq_conf;
 
+	//-
+	std::vector<std::string>			m_trig_mode_list;
+	std::string							m_trig_mode_list_str;
+
     //- yat image Dynamic/command Attribute    
-    DynamicInterfaceManager m_dim;
+    DynamicInterfaceManager				m_dim;
 
 } ;
 

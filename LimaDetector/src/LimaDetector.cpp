@@ -590,6 +590,46 @@ void LimaDetector::init_device()
         //- Activate video mode in order to get notification associated to image acquisition
         INFO_STREAM << "Activate video mode in order to get notification for each acquired image." << endl;
         m_ct->video()->setActive(true);
+
+		//- Get the triggerModeList
+		TrigModeList modeList;
+        m_ct->acquisition()->getTriggerModeList(modeList);
+		m_trig_mode_list.clear();
+		m_trig_mode_list_str = "";
+        for(int i = 0; i < modeList.size(); i++)
+        {
+			switch(modeList[i])
+			{
+				case IntTrig:
+					m_trig_mode_list.push_back("INTERNAL_SINGLE");
+					m_trig_mode_list_str+="\nINTERNAL_SINGLE";
+					break;
+				case ExtTrigSingle:
+					m_trig_mode_list.push_back("EXTERNAL_SINGLE");
+					m_trig_mode_list_str+="\nEXTERNAL_SINGLE";
+					break;
+				case ExtTrigMult:
+					m_trig_mode_list.push_back("EXTERNAL_MULTI");
+					m_trig_mode_list_str+="\nEXTERNAL_MULTI";
+					break;
+				case ExtGate:
+					m_trig_mode_list.push_back("EXTERNAL_GATE");
+					m_trig_mode_list_str+="\nEXTERNAL_GATE";
+					break;
+				case IntTrigMult:
+					m_trig_mode_list.push_back("INTERNAL_MULTI");
+					m_trig_mode_list_str+="\nINTERNAL_MULTI";
+					break;
+				case ExtStartStop:
+					m_trig_mode_list.push_back("EXTERNAL_START_STOP");
+					m_trig_mode_list_str+="\nEXTERNAL_START_STOP";
+					break;
+				case ExtTrigReadout:
+					m_trig_mode_list.push_back("EXTERNAL_READOUT");
+					m_trig_mode_list_str+="\nEXTERNAL_READOUT";
+					break;
+			}
+        }
     }
     catch(Exception& e)
     {
@@ -1867,27 +1907,17 @@ void LimaDetector::write_triggerMode(Tango::WAttribute &attr)
         m_trigger_mode = *attr_triggerMode_read; //memorize previous valid value
         attr.get_write_value(attr_triggerMode_write);
         string current = attr_triggerMode_write;
-        transform(current.begin(), current.end(), current.begin(), ::toupper);
-        if(current != "INTERNAL_SINGLE" &&
-        current != "EXTERNAL_SINGLE" &&
-        current != "EXTERNAL_MULTI" &&
-        current != "EXTERNAL_GATE" &&
-        current != "INTERNAL_MULTI" &&
-        current != "EXTERNAL_START_STOP" &&
-        current != "EXTERNAL_READOUT")
+		std::transform(current.begin(), current.end(), current.begin(), ::toupper);
+		//- find the trigmode
+		std::vector<std::string>::iterator it;
+		it = std::find(m_trig_mode_list.begin(), m_trig_mode_list.end(), current);
+		if (it == m_trig_mode_list.end())
         {
             strcpy(attr_triggerMode_write, m_trigger_mode.c_str());
 
-            Tango::Except::throw_exception((const char*)("CONFIGURATION_ERROR"),
-            (const char*)("Available Trigger Modes are:"
-            "\n- INTERNAL_SINGLE"
-            "\n- EXTERNAL_SINGLE"
-            "\n- EXTERNAL_MULTI"
-            "\n- EXTERNAL_GATE"
-            "\n- INTERNAL_MULTI"
-            "\n- EXTERNAL_START_STOP"
-            "\n- EXTERNAL_READOUT"),
-            (const char*)("LimaDetector::write_triggerMode"));
+            Tango::Except::throw_exception(	(const char*)("CONFIGURATION_ERROR"),
+											std::string("Available Trigger Modes are:" + m_trig_mode_list_str),
+											(const char*)("LimaDetector::write_triggerMode"));
         }
 
         TrigMode trig_mode = IntTrig;
@@ -3811,7 +3841,6 @@ void LimaDetector::reset_file_index()
  *
  */
 //+------------------------------------------------------------------
-
 Tango::DevVarStringArray *LimaDetector::get_attribute_available_values(Tango::DevString argin)
 {
     //	POGO has generated a method core with argout allocation.
@@ -3823,34 +3852,19 @@ Tango::DevVarStringArray *LimaDetector::get_attribute_available_values(Tango::De
 
     //	Add your own code to control device here
     Tango::DevVarStringArray *argout = new Tango::DevVarStringArray();
+	const Tango::DevVarStringArray *argout2;
     try
     {
         std::string attribute_name = argin;
         transform(attribute_name.begin(), attribute_name.end(), attribute_name.begin(), ::toupper);
         if(attribute_name == "TRIGGERMODE")
         {
-            TrigModeList modeList;
-            m_ct->acquisition()->getTriggerModeList(modeList);
+			argout->length(m_trig_mode_list.size());
 
-            argout->length(modeList.size());
-
-            for(int i = 0; i < modeList.size(); i++)
+			for(int i = 0; i < m_trig_mode_list.size(); i++)
             {
-                if(modeList[i] == IntTrig)
-                    (*argout)[i] = CORBA::string_dup("INTERNAL_SINGLE");
-                else if(modeList[i] == ExtTrigSingle)
-                    (*argout)[i] = CORBA::string_dup("EXTERNAL_SINGLE");
-                else if(modeList[i] == ExtTrigMult)
-                    (*argout)[i] = CORBA::string_dup("EXTERNAL_MULTI");
-                else if(modeList[i] == ExtGate)
-                    (*argout)[i] = CORBA::string_dup("EXTERNAL_GATE");
-                else if(modeList[i] == IntTrigMult)
-                    (*argout)[i] = CORBA::string_dup("INTERNAL_MULTI");
-                else if(modeList[i] == ExtStartStop)
-                    (*argout)[i] = CORBA::string_dup("EXTERNAL_START_STOP");
-                else if(modeList[i] == ExtTrigReadout)
-                    (*argout)[i] = CORBA::string_dup("EXTERNAL_READOUT");
-            }
+				(*argout)[i] = CORBA::string_dup(m_trig_mode_list[i].c_str());
+			}
         }
         else if((attribute_name == "SHUTTERMODE") && (m_ct->shutter()->hasCapability()))
         {

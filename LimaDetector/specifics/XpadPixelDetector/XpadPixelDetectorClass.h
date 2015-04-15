@@ -229,20 +229,6 @@ public:
 	{return (static_cast<XpadPixelDetector *>(dev))->is_normalizationFactor_allowed(ty);}
 };
 
-class deadTimeAttrib: public Tango::Attr
-{
-public:
-	deadTimeAttrib():Attr("deadTime", Tango::DEV_ULONG, Tango::WRITE) {};
-	~deadTimeAttrib() {};
-	
-	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<XpadPixelDetector *>(dev))->read_deadTime(att);}
-	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-	{(static_cast<XpadPixelDetector *>(dev))->write_deadTime(att);}
-	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<XpadPixelDetector *>(dev))->is_deadTime_allowed(ty);}
-};
-
 class enableDoublePixelCorrectionAttrib: public Tango::Attr
 {
 public:

@@ -63,35 +63,6 @@ namespace XpadPixelDetector_ns
 
 //+----------------------------------------------------------------------------
 //
-// method : 		XpadPixelDetector::is_deadTime_allowed
-// 
-// description : 	Read/Write allowed for deadTime attribute.
-//
-//-----------------------------------------------------------------------------
-bool XpadPixelDetector::is_deadTime_allowed(Tango::AttReqType type)
-{
-	if (get_state() == Tango::INIT	||
-		get_state() == Tango::RUNNING	||
-		get_state() == Tango::FAULT	||
-		get_state() == Tango::DISABLE)
-	{
-		//	End of Generated Code
-		if ( get_state()==Tango::RUNNING && type==Tango::READ_REQ )
-		{
-           return true;
-		}
-		
-		if ( get_state()==Tango::FAULT && is_device_initialized() )
-		{
-           return true;
-		}
-		//	Re-Start of Generated Code
-		return false;
-	}
-	return true;
-}
-//+----------------------------------------------------------------------------
-//
 // method : 		XpadPixelDetector::is_init_allowed
 // 
 // description : 	Read/Write allowed for init attribute.

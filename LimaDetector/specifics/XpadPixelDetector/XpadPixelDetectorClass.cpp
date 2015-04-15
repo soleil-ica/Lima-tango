@@ -791,17 +791,6 @@ void XpadPixelDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	enable_double_pixel_correction->set_memorized_init(true);
 	att_list.push_back(enable_double_pixel_correction);
 
-	//	Attribute : deadTime
-	deadTimeAttrib	*dead_time = new deadTimeAttrib();
-	Tango::UserDefaultAttrProp	dead_time_prop;
-	dead_time_prop.set_unit("ms");
-	dead_time_prop.set_format("%6d");
-	dead_time_prop.set_description("time between images");
-	dead_time->set_default_properties(dead_time_prop);
-	dead_time->set_memorized();
-	dead_time->set_memorized_init(true);
-	att_list.push_back(dead_time);
-
 	//	Attribute : normalizationFactor
 	normalizationFactorAttrib	*normalization_factor = new normalizationFactorAttrib();
 	Tango::UserDefaultAttrProp	normalization_factor_prop;
