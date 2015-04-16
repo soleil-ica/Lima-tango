@@ -204,9 +204,9 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
 
                 m_camera = static_cast<void*> (new Pilatus::Camera(camera_ip.c_str(), camera_port,const_cast<std::string&>(camera_def)));
                 if (m_camera && use_reader)
-                    static_cast<Pilatus::Camera*> (m_camera)->enableDirectoryWatcher();
+                    static_cast<Pilatus::Camera*> (m_camera)->enableReaderWatcher();
                 if (m_camera && !use_reader)
-                    static_cast<Pilatus::Camera*> (m_camera)->disableDirectoryWatcher();
+                    static_cast<Pilatus::Camera*> (m_camera)->disableReaderWatcher();
 
                 m_interface = static_cast<void*> (new Pilatus::Interface(*static_cast<Pilatus::Camera*> (m_camera)));
                 if(m_interface)
