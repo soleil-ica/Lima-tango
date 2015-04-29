@@ -9,7 +9,7 @@
 
     <groupId>fr.soleil.device</groupId>
     <artifactId>LimaDetector-${aol}-${mode}</artifactId>
-    <version>1.5.0</version>
+    <version>1.5.2</version>
 	
     <packaging>nar</packaging>
     <name>LimaDetector</name>
@@ -22,18 +22,16 @@
     </scm>
 	
     <dependencies>
-        <!-- VC9 versions -->
         <dependency>
             <groupId>org.tango</groupId>
             <artifactId>tango-cpp-api-${aol}-shared-${mode}</artifactId>
-            <version>7.2.6-vc9</version>
-            <!--<version>8.1.2b-vc9</version>-->
+            <version>8.1.2b-vc9</version>
         </dependency>
+		
         <dependency>
             <groupId>org.omnigroup</groupId>
             <artifactId>omniORB-${aol}-shared-${mode}</artifactId>
-            <version>4.1.4-vc9</version>
-            <!--<version>4.1.6-vc9</version>-->
+            <version>4.1.6-vc9</version>
         </dependency>
 
         <dependency>
@@ -59,46 +57,51 @@
             <artifactId>YAT-${aol}-static-${mode}</artifactId>            
             <version>1.9.13-SNAPSHOT</version>            
         </dependency>
-                
+		
         <dependency>
             <groupId>fr.soleil.lib</groupId>
             <artifactId>LimaCore-${aol}-shared-${mode}</artifactId>
-            <version>1.3.3</version>
+            <version>1.3.4</version>
         </dependency>
-        
         <!-- Lima Camera Plugins -->
         <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaSimulator-${aol}-shared-${mode}</artifactId>
+            <version>1.3.5</version>
+        </dependency>
+<!--		
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaAndor-${aol}-shared-${mode}</artifactId>
+            <version>1.3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaPco-${aol}-shared-${mode}</artifactId>
+            <version>1.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaPerkinElmer-${aol}-shared-${mode}</artifactId>
             <version>1.3.4</version>
         </dependency>
-        <!--        <dependency>
-                    <groupId>fr.soleil.lib.Lima.Camera</groupId>
-                    <artifactId>LimaAndor-${aol}-shared-${mode}</artifactId>
-                    <version>1.3.3</version>
-                </dependency>
-                <dependency>
-                    <groupId>fr.soleil.lib.Lima.Camera</groupId>
-                    <artifactId>LimaPco-${aol}-shared-${mode}</artifactId>
-                    <version>1.3.3</version>
-                </dependency>
-                <dependency>
-                    <groupId>fr.soleil.lib.Lima.Camera</groupId>
-                    <artifactId>LimaPerkinElmer-${aol}-shared-${mode}</artifactId>
-                    <version>1.3.2</version>
-                </dependency>
-                <dependency>
-                    <groupId>fr.soleil.lib.Lima.Camera</groupId>
-                    <artifactId>LimaRoperScientific-${aol}-shared-${mode}</artifactId>
-                    <version>1.3.3</version>
-                </dependency>
-              
-                <dependency>
-                    <groupId>fr.soleil.lib.Lima.Camera</groupId>
-                    <artifactId>LimaHamamatsu-${aol}-shared-${mode}</artifactId>
-                    <version>1.0.2</version>
-                </dependency>             
-        -->  				
+			
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaRoperScientific-${aol}-shared-${mode}</artifactId>
+            <version>1.3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaHamamatsu-${aol}-shared-${mode}</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.soleil.lib.Lima.Camera</groupId>
+            <artifactId>LimaUview-${aol}-shared-${mode}</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+-->		
     </dependencies>
         
     <build>
@@ -112,40 +115,46 @@
                         <sourceDirectory>${project.basedir}</sourceDirectory>
                         <includes>
                             <include>*.cpp</include>
-                            <!--                            <include>specifics/AndorCCD/*.cpp</include>
+							<!--
+                            <include>specifics/AndorCCD/*.cpp</include>
+                            <include>specifics/Hamamatsu/*.cpp</include>
                             <include>specifics/Pco/*.cpp</include>
                             <include>specifics/PerkinElmer/*.cpp</include>
                             <include>specifics/PrincetonCCD/*.cpp</include>
-                            <include>specifics/Layout/*.cpp</include>                           
-                            <include>specifics/RoiCounters/*.cpp</include>                         
-                            <include>specifics/Hamamatsu/*.cpp</include> 
-                            -->							
+                            <include>specifics/RoiCounters/*.cpp</include>
+                            <include>specifics/Layout/*.cpp</include>
+                            <include>specifics/UviewCCD/*.cpp</include>					
+							-->							
                             <include>specifics/SimulatorCCD/*.cpp</include>
                             
                         </includes>
                         <includePaths>
                             <includePath>src</includePath>
-                            <!--                            <include>specifics/AndorCCD</include>
+							<!--
+                            <include>specifics/AndorCCD</include>
+                            <include>specifics/Hamamatsu</include>
                             <include>specifics/Pco</include>
                             <include>specifics/PerkinElmer</include>
-                            <include>specifics/PrincetonCCD</include>                                                                                           
+                            <include>specifics/PrincetonCCD</include>
+                            <include>specifics/RoiCounters</include>
                             <include>specifics/Layout</include>
-                            <include>specifics/RoiCounters</include>                            
-                            <include>specifics/Hamamatsu</include>
-                            -->							
-                            <include>specifics/SimulatorCCD</include>           
+							<include>specifics/UviewCCD</include>
+							-->
+                            <include>specifics/SimulatorCCD</include>         
                         </includePaths>
                                 
                         <defines>
-                            <!-- define wich detector you need to ENABLE -->
-                            <!--                            <define>ANDOR_ENABLED</define>		                       
+                            <!-- define which detector you need to ENABLE -->
+							<!--
+                            <define>ANDOR_ENABLED</define>		
+                            <define>HAMAMATSU_ENABLED</define>                            
                             <define>PCO_ENABLED</define>
                             <define>PERKINELMER_ENABLED</define>
-                            <define>PRINCETON_ENABLED</define>                                                                                                
-                            <define>LAYOUT_ENABLED</define>                 
-                            <define>ROICOUNTERS_ENABLED</define>	                                       
-                            <define>HAMAMATSU_ENABLED</define>
-                            -->							
+                            <define>PRINCETON_ENABLED</define>                                    
+                            <define>ROICOUNTERS_ENABLED</define>	
+                            <define>LAYOUT_ENABLED</define>   
+							<define>UVIEW_ENABLED</define>
+							-->
                             <define>SIMULATOR_ENABLED</define>
                         </defines>                        
                     </cpp>        
