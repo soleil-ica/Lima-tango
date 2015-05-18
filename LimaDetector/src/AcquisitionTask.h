@@ -24,8 +24,8 @@
 #endif
 
 //- LIMA
-#include "CtControl.h"
-#include "CtVideo.h"
+#include "lima/CtControl.h"
+#include "lima/CtVideo.h"
 
 #ifndef WIN32
 #include <tango.h>
@@ -50,7 +50,7 @@ using namespace yat4tango;
 const size_t DEVICE_STOP_MSG                        = yat::FIRST_USER_MSG + 200;
 const size_t DEVICE_SNAP_MSG                        = yat::FIRST_USER_MSG + 201;
 const size_t DEVICE_START_MSG                       = yat::FIRST_USER_MSG + 202;
-const size_t DEVICE_ABORT_MSG                       = yat::FIRST_USER_MSG + 203;
+const size_t DEVICE_PREPARE_MSG                     = yat::FIRST_USER_MSG + 203;
 
 
 //--
@@ -78,6 +78,7 @@ namespace LimaDetector_ns
         struct AcqConfig
         {
             CtControl*        	ct;                          // lima control objet used in owner device (singleton)
+            bool            	use_prepare_cmd;        // status when abort is call
             string            	abort_status_message;        // status when abort is call
         };
 

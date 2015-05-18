@@ -1,0 +1,11 @@
+/**
+ * Device Class Identification:
+ * 
+ * Class Name   :	PilatusPixelDetector
+ * Contact      :	arafat.noureddine@synchrotron-soleil.fr
+ * Class Family :	Acquisition
+ * Platform     :	Unix Like
+ * Bus          :	Ethernet
+ * Manufacturer :	SOLEIL
+ * Reference    :	
+ */

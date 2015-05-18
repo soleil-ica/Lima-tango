@@ -38,27 +38,28 @@
 #include <tango.h>
 
 //- YAT/YAT4TANGO
+#include <yat4tango/PropertyHelper.h>
 #include <yat4tango/InnerAppender.h>
-#include <yat4tango/DynamicAttributeManager.h>
-
+#include <yat4tango/DynamicInterfaceManager.h>
 //- STL 
 #include <algorithm>
 #include <string>
 #include <iostream>
 
 //- LIMA
-#include "Debug.h"
-#include "HwInterface.h"
-#include "CtControl.h"
-#include "CtAcquisition.h"
-#include "CtAccumulation.h"
-#include "CtSaving.h"
-#include "CtImage.h"
-#include "CtVideo.h"
-#include "CtBuffer.h"
-#include "CtEvent.h"
-#include "CtShutter.h"
-#include "AcqState.h"
+#include "lima/Debug.h"
+#include "lima/HwInterface.h"
+#include "lima/CtControl.h"
+#include "lima/CtAcquisition.h"
+#include "lima/CtAccumulation.h"
+#include "lima/CtSaving.h"
+#include "lima/CtBuffer.h"
+#include "lima/CtImage.h"
+#include "processlib/Data.h"
+#include "lima/CtVideo.h"
+#include "lima/CtShutter.h"
+
+
 
 //- This Device
 #include "AcquisitionTask.h"
@@ -72,11 +73,11 @@ using namespace yat4tango;
  * @version    $Revision:  $
  */
 
- //    Add your own constant definitions here.
- //-----------------------------------------------
+//    Add your own constant definitions here.
+//-----------------------------------------------
 
-#define MAX_ATTRIBUTE_STRING_LENGTH     256
-const size_t LOG_BUFFER_DEPTH           = 1024;
+const size_t MAX_ATTRIBUTE_STRING_LENGTH = 256;
+const size_t LOG_BUFFER_DEPTH = 1024;
 
 namespace LimaDetector_ns
 {
@@ -117,38 +118,41 @@ namespace LimaDetector_ns
  */
 
 
-class LimaDetector: public Tango::Device_4Impl
+class LimaDetector : public Tango::Device_4Impl
 {
-public :
+public:
     //    Add your own data members here
     //-----------------------------------------
-    
-        /* used for dynamic attributes */
-		Tango::DevString	*attr_shutterMode_read;    
-        Tango::DevString	attr_shutterMode_write;
-        Tango::DevString    *attr_shutterState_read;
-        Tango::DevDouble    *attr_shutterOpenTime_read;
-        Tango::DevDouble    attr_shutterOpenTime_write;
-        Tango::DevDouble    *attr_shutterCloseTime_read;
-        Tango::DevDouble    attr_shutterCloseTime_write;
-        Tango::DevDouble    *attr_exposureAccTime_read;
-        Tango::DevDouble    attr_exposureAccTime_write;
-		
+
+    /* used for dynamic attributes */
+    Tango::DevString	*attr_shutterMode_read;
+    Tango::DevString	attr_shutterMode_write;
+    Tango::DevString    *attr_shutterState_read;
+    Tango::DevDouble    *attr_shutterOpenTime_read;
+    Tango::DevDouble    attr_shutterOpenTime_write;
+    Tango::DevDouble    *attr_shutterCloseTime_read;
+    Tango::DevDouble    attr_shutterCloseTime_write;
+    Tango::DevDouble    *attr_exposureAccTime_read;
+    Tango::DevDouble    attr_exposureAccTime_write;
+    Tango::DevULong    *attr_currentAccFrame_read;
+
 
 
     //    Here is the Start of the automatic code generation part
     //-------------------------------------------------------------    
-/**
- *    @name attributes
- *    Attribute member data.
- */
-//@{
+    /**
+     *    @name attributes
+     *    Attribute member data.
+     */
+    //@{
 		Tango::DevString	*attr_detectorDescription_read;
 		Tango::DevString	*attr_detectorType_read;
 		Tango::DevString	*attr_detectorModel_read;
 		Tango::DevUShort	*attr_detectorWidthMax_read;
 		Tango::DevUShort	*attr_detectorHeightMax_read;
 		Tango::DevUShort	*attr_detectorPixelDepth_read;
+		Tango::DevUShort	*attr_binnedWidthMax_read;
+		Tango::DevUShort	*attr_binnedHeightMax_read;
 		Tango::DevString	*attr_triggerMode_read;
 		Tango::DevString	attr_triggerMode_write;
 		Tango::DevString	*attr_acquisitionMode_read;
@@ -168,17 +172,15 @@ public :
 		Tango::DevULong	*attr_currentFrame_read;
 		Tango::DevBoolean	*attr_fileGeneration_read;
 		Tango::DevBoolean	attr_fileGeneration_write;
-		Tango::DevBoolean	*attr_flipX_read;
-		Tango::DevBoolean	attr_flipX_write;
-		Tango::DevBoolean	*attr_flipY_read;
-		Tango::DevBoolean	attr_flipY_write;
+		Tango::DevLong	*attr_fileNbFrames_read;
+		Tango::DevLong	attr_fileNbFrames_write;
 //@}
 
-/**
- * @name Device properties
- * Device properties member data.
- */
-//@{
+    /**
+     * @name Device properties
+     * Device properties member data.
+     */
+    //@{
 /**
  *	Detector user-defined text to identify the engine.
  */
@@ -187,7 +189,10 @@ public :
  *	Define the type of the connected Detector .<BR>
  *	Availables types :<BR>
  *	- AdscCCD<BR>
+ *	- AviexCCD<br>
  *	- BaslerCCD<BR>
+ *	- Eiger<br>
+ *	- Hamamatsu<br>
  *	- MarCCD<BR>
  *	- Pco<BR>
  *	- PerkinElmer<BR>
@@ -206,8 +211,13 @@ public :
  *	- 8 <br>
  *	- 16<br>
  *	- 32<br>
+ *	- 32S<br>
  */
-	Tango::DevUShort	detectorPixelDepth;
+	string	detectorPixelDepth;
+/**
+ *	Special type of the image attribute for display and saving (NOT_USED, FLOAT, ...)
+ */
+	string	specialDisplayType;
 /**
  *	Define the format of video stream: <br>
  *	Availables values :<br>
@@ -235,6 +245,12 @@ public :
  */
 	string	detectorVideoMode;
 /**
+ *	Choose the source of Data given to the image attribute :<br>
+ *	- VIDEO : use ctVideo->LastImage()
+ *	- ACQUISITION : use ctControl->ReadImage()
+ */
+	string	imageSource;
+/**
  *	Define the format of image files :<BR>
  *	Availables values :<br>
  *	- EDF<BR>
@@ -256,16 +272,38 @@ public :
  */
 	string	fileIndexPattern;
 /**
- *	Define the amount of frames stored in the target file.<br>
- *	If Nexus file, this is the NbAcqPerFile.
- */
-	Tango::DevLong	fileNbFrames;
-/**
  *	Define the Path where Files will be generated, only when savingFile is checked.
  *	
  *	
  */
 	string	fileTargetPath;
+/**
+ *	
+ */
+	Tango::DevLong	fileNbFrames;
+/**
+ *	Available only for Nexus format : Fix the SetWriteMode(). <br>
+ *	Available values :<br>
+ *	- IMMEDIATE<br>
+ *	- SYNCHRONOUS<br>
+ *	- DELAYED
+ */
+	string	fileWriteMode;
+/**
+ *	Available only for Nexus format : Fix the SetDataItemMemoryMode().<br>
+ *	Available values :<br>
+ *	- COPY<br>
+ *	- NO_COPY
+ */
+	string	fileMemoryMode;
+/**
+ *	Define the Percent of Memory reserved by buffer control (from 0 to 100 %).
+ */
+	Tango::DevUShort	bufferMaxMemoryPercent;
+/**
+ *	
+ */
+	Tango::DevBoolean	usePrepareCmd;
 /**
  *	Define modules that we need to have some debug traces.<BR>
  *	Availables values :<BR>
@@ -377,72 +415,71 @@ public :
  */
 	Tango::DevBoolean	memorizedFileGeneration;
 /**
- *	Memorize/Define the flipX attribute at Init device<br>
+ *	
  */
-	Tango::DevBoolean	memorizedFlipX;
-/**
- *	Memorize/Define the flipY attribute at Init device<br>
- */
-	Tango::DevBoolean	memorizedFlipY;
+	Tango::DevLong	memorizedFileNbFrames;
 //@}
 
-/**
- *    @name Device properties
- *    Device property member data.
- */
-//@{
-//@}
+    /**
+     *    @name Device properties
+     *    Device property member data.
+     */
+    //@{
+    //@}
 
-/**@name Constructors
- * Miscellaneous constructors */
-//@{
-/**
- * Constructs a newly allocated Command object.
- *
- *    @param cl    Class.
- *    @param s     Device Name
- */
-    LimaDetector(Tango::DeviceClass *cl,string &s);
-/**
- * Constructs a newly allocated Command object.
- *
- *    @param cl    Class.
- *    @param s     Device Name
- */
-    LimaDetector(Tango::DeviceClass *cl,const char *s);
-/**
- * Constructs a newly allocated Command object.
- *
- *    @param cl    Class.
- *    @param s     Device name
- *    @param d    Device description.
- */
-    LimaDetector(Tango::DeviceClass *cl,const char *s,const char *d);
-//@}
+    /**@name Constructors
+     * Miscellaneous constructors */
+    //@{
+    /**
+     * Constructs a newly allocated Command object.
+     *
+     *    @param cl    Class.
+     *    @param s     Device Name
+     */
+    LimaDetector(Tango::DeviceClass *cl, string &s);
+    /**
+     * Constructs a newly allocated Command object.
+     *
+     *    @param cl    Class.
+     *    @param s     Device Name
+     */
+    LimaDetector(Tango::DeviceClass *cl, const char *s);
+    /**
+     * Constructs a newly allocated Command object.
+     *
+     *    @param cl    Class.
+     *    @param s     Device name
+     *    @param d    Device description.
+     */
+    LimaDetector(Tango::DeviceClass *cl, const char *s, const char *d);
+    //@}
 
-/**@name Destructor
- * Only one destructor is defined for this class */
-//@{
-/**
- * The object destructor.
- */    
-    ~LimaDetector() {delete_device();};
-/**
- *    will be called at device destruction or at init command.
- */
+    /**@name Destructor
+     * Only one destructor is defined for this class */
+    //@{
+    /**
+     * The object destructor.
+     */
+    ~LimaDetector()
+    {
+        delete_device();
+    };
+    /**
+     *    will be called at device destruction or at init command.
+     */
     void delete_device();
-//@}
+    //@}
 
-    
-/**@name Miscellaneous methods */
-//@{
-/**
- *    Initialize the device
- */
+
+    /**@name Miscellaneous methods */
+    //@{
+    /**
+     *    Initialize the device
+     */
     virtual void init_device();
-/**
- *    Always executed method before execution command method.
- */
+    /**
+     *    Always executed method before execution command method.
+     */
     virtual void always_executed_hook();
 
 //@}
@@ -480,6 +517,14 @@ public :
  *	Extract real attribute values for detectorPixelDepth acquisition result.
  */
 	virtual void read_detectorPixelDepth(Tango::Attribute &attr);
+/**
+ *	Extract real attribute values for binnedWidthMax acquisition result.
+ */
+	virtual void read_binnedWidthMax(Tango::Attribute &attr);
+/**
+ *	Extract real attribute values for binnedHeightMax acquisition result.
+ */
+	virtual void read_binnedHeightMax(Tango::Attribute &attr);
 /**
  *	Extract real attribute values for triggerMode acquisition result.
  */
@@ -557,21 +602,13 @@ public :
  */
 	virtual void write_fileGeneration(Tango::WAttribute &attr);
 /**
- *	Extract real attribute values for flipX acquisition result.
+ *	Extract real attribute values for fileNbFrames acquisition result.
  */
-	virtual void read_flipX(Tango::Attribute &attr);
+	virtual void read_fileNbFrames(Tango::Attribute &attr);
 /**
- *	Write flipX attribute values to hardware.
+ *	Write fileNbFrames attribute values to hardware.
  */
-	virtual void write_flipX(Tango::WAttribute &attr);
-/**
- *	Extract real attribute values for flipY acquisition result.
- */
-	virtual void read_flipY(Tango::Attribute &attr);
-/**
- *	Write flipY attribute values to hardware.
- */
-	virtual void write_flipY(Tango::WAttribute &attr);
+	virtual void write_fileNbFrames(Tango::WAttribute &attr);
 /**
  *	Read/Write allowed for detectorDescription attribute.
  */
@@ -596,6 +633,14 @@ public :
  *	Read/Write allowed for detectorPixelDepth attribute.
  */
 	virtual bool is_detectorPixelDepth_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for binnedWidthMax attribute.
+ */
+	virtual bool is_binnedWidthMax_allowed(Tango::AttReqType type);
+/**
+ *	Read/Write allowed for binnedHeightMax attribute.
+ */
+	virtual bool is_binnedHeightMax_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for triggerMode attribute.
  */
@@ -649,13 +694,13 @@ public :
  */
 	virtual bool is_fileGeneration_allowed(Tango::AttReqType type);
 /**
- *	Read/Write allowed for flipX attribute.
+ *	Read/Write allowed for fileNbFrames attribute.
  */
-	virtual bool is_flipX_allowed(Tango::AttReqType type);
+	virtual bool is_fileNbFrames_allowed(Tango::AttReqType type);
 /**
- *	Read/Write allowed for flipY attribute.
+ *	Execution allowed for Prepare command.
  */
-	virtual bool is_flipY_allowed(Tango::AttReqType type);
+	virtual bool is_Prepare_allowed(const CORBA::Any &any);
 /**
  *	Execution allowed for Snap command.
  */
@@ -689,23 +734,20 @@ public :
  */
 	virtual bool is_GetAttributeAvailableValues_allowed(const CORBA::Any &any);
 /**
- *	Execution allowed for OpenShutter command.
+ *	Execution allowed for ResetFileIndex command.
  */
-	virtual bool is_OpenShutter_allowed(const CORBA::Any &any);
-/**
- *	Execution allowed for CloseShutter command.
- */
-	virtual bool is_CloseShutter_allowed(const CORBA::Any &any);
-/**
- *	Execution allowed for NexusResetBufferIndex command.
- */
-	virtual bool is_NexusResetBufferIndex_allowed(const CORBA::Any &any);
+	virtual bool is_ResetFileIndex_allowed(const CORBA::Any &any);
 /**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code
  *	@exception DevFailed
  */
 	virtual Tango::DevState	dev_state();
+/**
+ * Prepare the acquisition (Apply parameters like bin/roi/exposure/.. & allocate buffers & ...)
+ *	@exception DevFailed
+ */
+	void	prepare();
 /**
  * Starts the acquisition of a number of frames equal to  'nbFrames' attribute value.
  *	@exception DevFailed
@@ -754,20 +796,10 @@ public :
  */
 	Tango::DevVarStringArray	*get_attribute_available_values(Tango::DevString);
 /**
- * Open the shutter in case of Shutter being in available and in Manual Mode
+ * Reset the file index
  *	@exception DevFailed
  */
-	void	open_shutter();
-/**
- * Close the shutter in case of Shutter being in available and in Manual Mode
- *	@exception DevFailed
- */
-	void	close_shutter();
-/**
- * Reset the nexus buffer index to index 1.
- *	@exception DevFailed
- */
-	void	nexus_reset_buffer_index();
+	void	reset_file_index();
 
 /**
  *	Read the device properties from database
@@ -778,8 +810,11 @@ public :
     //    Here is the end of the automatic code generation part
     //-------------------------------------------------------------    
 
-	//method in charge of displaying image in the "image" dynamic attribute
+    //method in charge of displaying image in the "image" dynamic attribute
     void    read_image_callback(yat4tango::DynamicAttributeReadCallbackData& cbd);
+
+    void    execute_open_shutter_callback (yat4tango::DynamicCommandExecuteCallbackData& cbd);
+    void    execute_close_shutter_callback (yat4tango::DynamicCommandExecuteCallbackData& cbd);
 
     void    read_shutterMode_callback(yat4tango::DynamicAttributeReadCallbackData& cbd);
     void    write_shutterMode_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd);
@@ -791,55 +826,36 @@ public :
     void    write_shutterCloseTime_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd);
 
     void    read_shutterState_callback(yat4tango::DynamicAttributeReadCallbackData& cbd);
-
+    
     void    read_exposureAccTime_callback(yat4tango::DynamicAttributeReadCallbackData& cbd);
     void    write_exposureAccTime_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd);
+    
+    void    read_currentAccFrame_callback(yat4tango::DynamicAttributeReadCallbackData& cbd);    
 
     // return true if the device is correctly initialized in init_device
-    bool    is_device_initialized(){return m_is_device_initialized;};
-
-    /*******************************************************************
-     * \class EventCallback
-     * \brief Class that will receive the lima events
-     *******************************************************************/
-    /*class EventCallback : public lima::EventCallback
+    bool    is_device_initialized()
     {
-	    DEB_CLASS_NAMESPC(DebModCamera, "EventCallback", "LimaDetector");
+        return m_is_device_initialized;
+    };
 
-     public:
-	    EventCallback();
-	    virtual ~EventCallback();
 
-     protected:
-         virtual void processEvent(lima::Event *my_event);
-    };*/
-
-protected :    
+protected:
     //    Add your own data members here
     //-----------------------------------------
-    //- Store the values into the property
-    //- Properties stuff    
-    int                 find_index_from_property_name(Tango::DbData& dev_prop, string property_name);
-    template <class T>
-    void                create_property_if_empty(Tango::DbData& dev_prop,T value, string property_name);    
-    template <class T>
-    void                set_property(string property_name, T value);
-    template <class T>
-    T                   get_property(string property_name) ;
-    
+
     //Create Yat::task to manage device Start/Snap/Stop commands
-    bool                create_acquisition_task(void);    
-        
+    bool                create_acquisition_task(void);
+
     //print parameters acquisition
     void                print_acq_conf();
 
     //get the last frame number acquired
     long long           get_last_image_counter(void);
-    
+
     //state & status stuff
     bool                                m_is_device_initialized ;
     stringstream                        m_status_message;
-    static bool                         m_is_created;		//indicate when the construction of "generic" device is completed.
+    static int                          m_init_count;		//indicate when the construction of "generic" device is completed.
 
     //LIMA objects
     HwInterface*                        m_hw;				//object to the generic interface of camera's
@@ -848,15 +864,19 @@ protected :
     string                              m_trigger_mode; 	//trigger mode name 	(INTERNAL_SINGLE, EXTERNAL_SINGLE, EXTERNAL_MULTI, EXTERNAL_GATE, INTERNAL_MULTI, EXTERNAL_START_STOP, EXTERNAL_READOUT)
     string                              m_shutter_mode; 	//shutter mode name 	(MANUAL, AUTO_FRAME, AUTO_SEQUENCE)
     string                              m_acquisition_mode;	//aquisition mode name 	(SINGLE, ACCUMULATION) nota: imageType is forced to 32 bits in ACCUMULATION MODE
-
+    string                              m_saving_options;
     //-Yat::task objects, manage device Start/Snap/Stop commands
     AcquisitionTask*                    m_acquisition_task;
     AcquisitionTask::AcqConfig          m_acq_conf;
-    
-    //- yat image Dynamic Attribute
-    DynamicAttributeManager*            m_dam;
 
-};
+	//-
+	std::vector<std::string>			m_trig_mode_list;
+	std::string							m_trig_mode_list_str;
+
+    //- yat image Dynamic/command Attribute    
+    DynamicInterfaceManager				m_dim;
+
+} ;
 
 }    // namespace_ns
 

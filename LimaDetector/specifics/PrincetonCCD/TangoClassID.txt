@@ -1,0 +1,11 @@
+/**
+ * Device Class Identification:
+ * 
+ * Class Name   :	PrincetonCCD
+ * Contact      :	arafat.noureddine@synchrotron-soleil.fr
+ * Class Family :	Acquisition
+ * Platform     :	Windows
+ * Bus          :	Not Applicable
+ * Manufacturer :	none
+ * Reference    :	
+ */

@@ -62,8 +62,26 @@ Revision:  - Author:
 <Td><Center><b>Data Type</b></td></Center>
 <Td><Center><b>R/W Type</b></td></Center>
 <Td><Center><b>Expert</b></td></Center>
+<Tr><Td><b>packetSize</b>: <Font Size=-1>The packet size for the selected steam channel of the Transport Layer. (in bytes)<br></Font></Td>
+<Td><Center><Font Size=-1>DEV_LONG</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>Yes</Font></Center></Td></Tr>
+
+<Tr><Td><b>interPacketDelay</b>: <Font Size=-1>Define the delay between transmission of each packet for the selected stream channel. (in ticks)<br> </Font></Td>
+<Td><Center><Font Size=-1>DEV_LONG</Font></Center></Td><Td><Center><Font Size=-1>READ_WRITE</Font></Center></Td><Td><Center><Font Size=-1>Yes</Font></Center></Td></Tr>
+
 <Tr><Td><b>frameRate</b>: <Font Size=-1>Display the current frame rate (nb frames/s)<br></Font></Td>
 <Td><Center><Font Size=-1>DEV_DOUBLE</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
+
+<Tr><Td><b>dataRate</b>: <Font Size=-1>Display the current data rate (MB/s)<br></Font></Td>
+<Td><Center><Font Size=-1>DEV_DOUBLE</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
+
+<Tr><Td><b>bandwidthAssigned</b>: <Font Size=-1>This value indicates the base bandwidth that will be used by the camera to transmit (image+chunk) data and to handle resends and control transmissions. (in Bytes/s)</Font></Td>
+<Td><Center><Font Size=-1>DEV_LONG</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
+
+<Tr><Td><b>maxThroughput</b>: <Font Size=-1>This value indicates the maximum amount of data that the camera could generate given its current settings and ideal conditions. (in Bytes/s)</Font></Td>
+<Td><Center><Font Size=-1>DEV_LONG</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
+
+<Tr><Td><b>currentThroughput</b>: <Font Size=-1>This value indicates the actual bandwidth that the camera will use to transmit (image+chunk) data given the curent AOIsettings, ... (in Bytes/s)</Font></Td>
+<Td><Center><Font Size=-1>DEV_LONG</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
 
 <Tr><Td><b>temperature</b>: <Font Size=-1>Display the current temperature of the BoardSensor.</Font></Td>
 <Td><Center><Font Size=-1>DEV_DOUBLE</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
@@ -73,6 +91,9 @@ Revision:  - Author:
 
 <Tr><Td><b>autoGain</b>: <Font Size=-1>Let the detector manage the gain automatically. [0..1]</Font></Td>
 <Td><Center><Font Size=-1>DEV_BOOLEAN</Font></Center></Td><Td><Center><Font Size=-1>READ_WRITE</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
+
+<Tr><Td><b>statisticsFailedBufferCount</b></Td>
+<Td><Center><Font Size=-1>DEV_LONG</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
 
 </Table>
 </Center>

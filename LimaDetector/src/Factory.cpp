@@ -1,118 +1,101 @@
+//+=============================================================================
+//
+// file :         Factory.cpp
+//
+// description : This module handles the creation of the main lima object (CtControl) for each type of camera
+//
+// copyleft :    Synchrotron SOLEIL
+//               L'Orme des merisiers - Saint Aubin
+//               BP48 - 91192 Gif sur Yvette
+//               FRANCE
+//
+//-=============================================================================
 #include <Factory.h>
 
 #include <iostream>
 
-bool  ControlFactory::is_created = false;
+bool ControlFactory::m_is_created = false;
+
 
 
 //-----------------------------------------------------------------------------------------
-void ControlFactory::initialize_pointers()
+void ControlFactory::initialize()
 {
-    my_control				= 0;
+    m_control = 0;
+    m_camera	 = 0;
+    m_interface = 0;
 
-#ifdef SIMULATOR_ENABLED
-    my_camera_simulator 	= 0;
-    my_interface_simulator 	= 0;
+    m_server_name = "none";
+    m_device_name_specific = "none";
+	
+#ifdef LAYOUT_ENABLED    
+    m_device_name_layout = "none";
 #endif
-
-#ifdef AVIEX_ENABLED
-    my_camera_aviex 		= 0;
-    my_interface_aviex   	= 0;
-#endif
-    
-#ifdef BASLER_ENABLED
-    my_camera_basler 		= 0;
-    my_interface_basler 	= 0;
-#endif
-
-#ifdef XPAD_ENABLED
-    my_camera_xpad 			= 0;
-    my_interface_xpad 		= 0;
-#endif
-
-#ifdef PILATUS_ENABLED
-    my_camera_pilatus 		= 0;
-    my_interface_pilatus 	= 0;
-#endif
-
-#ifdef MARCCD_ENABLED
-    my_camera_marccd 		= 0;
-    my_interface_marccd 	= 0;
-#endif
-
-#ifdef ADSC_ENABLED
-    my_camera_adsc 			= 0;
-    my_interface_adsc 		= 0;
-#endif
-
-#ifdef PROSILICA_ENABLED
-    my_camera_prosilica 	= 0;
-    my_interface_prosilica 	= 0;
-#endif
-
-#ifdef PRINCETON_ENABLED
-    my_camera_princeton 	= 0;
-    my_interface_princeton 	= 0;
-#endif
-
-#ifdef PCO_ENABLED
-    my_camera_pco 	        = 0;
-    my_interface_pco 	    = 0;
-#endif
-
-#ifdef PERKINELMER_ENABLED
-    my_interface_perkinelmer= 0;
-#endif
-
-#ifdef ANDOR3_ENABLED
-    my_camera_andor3        = 0;
-    my_interface_andor3	    = 0;
-#endif
-
-#ifdef VIEWORKSVP_ENABLED
-    my_camera_vieworksvp    = 0;
-    my_interface_vieworksvp = 0;
-#endif
-
-#ifdef MERLIN_ENABLED
-    my_camera_merlin    = 0;
-    my_interface_merlin = 0;
-#endif
-
-    my_server_name 			= "none";
-    my_device_name 			= "none";
-
-    my_status.str("");
-    my_state 				= Tango::INIT;
+	
+#ifdef ROICOUNTERS_ENABLED    	
+	m_device_name_roicounters = "none";	
+#endif	 
+	
+    m_status.str("");
+    m_state = Tango::INIT;
 }
 
 //-----------------------------------------------------------------------------------------
-CtControl* ControlFactory::get_control( const std::string& detector_type)
+yat::Mutex& ControlFactory::get_global_mutex()
 {
-    yat::MutexLock scoped_lock(object_lock);
+    return object_control_lock;
+}
+
+//-----------------------------------------------------------------------------------------
+CtControl* ControlFactory::create_control(const std::string& detector_type)
+{
+    yat::AutoMutex<> _lock(object_control_lock);
     try
     {
         //get the tango device/instance
-        if(!ControlFactory::is_created)
+        if (!ControlFactory::m_is_created)
         {
-			initialize_pointers();
-            std::string  detector = detector_type;
-            Tango::DbDatum db_datum;
-            my_server_name = Tango::Util::instance()->get_ds_name ();
-            db_datum = (Tango::Util::instance()->get_database())->get_device_name(my_server_name,detector);
-            db_datum >> my_device_name;
+            initialize();
+            
+            {
+                std::string specific = detector_type;
+                Tango::DbDatum db_datum;
+                m_server_name = Tango::Util::instance()->get_ds_name();
+                db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, specific);
+                db_datum >> m_device_name_specific;
+            }
+
+#ifdef LAYOUT_ENABLED
+            {
+                std::string layout = "Layout";
+                Tango::DbDatum db_datum;
+                m_server_name = Tango::Util::instance()->get_ds_name();
+                db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, layout);
+                db_datum >> m_device_name_layout;
+            }     
+#endif         
+			
+#ifdef ROICOUNTERS_ENABLED
+            {
+                std::string roicounters = "RoiCounters";
+                Tango::DbDatum db_datum;
+                m_server_name = Tango::Util::instance()->get_ds_name();
+                db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, roicounters);
+                db_datum >> m_device_name_roicounters;
+            }     
+#endif  			
         }
 
 #ifdef SIMULATOR_ENABLED
         if (detector_type == "SimulatorCCD")
         {
-            if(!ControlFactory::is_created)
-            {       
-                my_camera_simulator         = new lima::Simulator::Camera();
-                my_interface_simulator      = new lima::Simulator::Interface(*my_camera_simulator);
-                my_control                  = new lima::CtControl(my_interface_simulator);
-                ControlFactory::is_created  = true;
-                return my_control;
+            if (!ControlFactory::m_is_created)
+            {
+                m_camera = static_cast<void*> (new Simulator::Camera());
+                m_interface = static_cast<void*> (new Simulator::Interface(*static_cast<Simulator::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Simulator::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
@@ -120,74 +103,76 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 #ifdef AVIEX_ENABLED
         if (detector_type == "AviexCCD")
         {
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("DetectorID"));
                 db_data.push_back(Tango::DbDatum("MxDatabaseFileFullName"));
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
                 std::string detector_id;
                 std::string database_file;
                 db_data[0] >> detector_id;
                 db_data[1] >> database_file;
-                my_camera_aviex            = new lima::Aviex::Camera(detector_id, database_file);                
-                my_interface_aviex         = new lima::Aviex::Interface(*my_camera_aviex);
-                my_control                 = new lima::CtControl(my_interface_aviex);          
-                ControlFactory::is_created = true;
-                return my_control;
+                m_camera = static_cast<void*> (new Aviex::Camera(detector_id, database_file));
+
+                m_interface = static_cast<void*> (new Aviex::Interface(*static_cast<Aviex::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Aviex::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
-        
+
 #ifdef BASLER_ENABLED
         if (detector_type == "BaslerCCD")
         {
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("DetectorIP"));
                 db_data.push_back(Tango::DbDatum("DetectorTimeout"));
                 db_data.push_back(Tango::DbDatum("DetectorPacketSize"));
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
                 std::string camera_ip;
                 db_data[0] >> camera_ip;
                 long detector_timeout = 11000;
-                db_data[1] >> detector_timeout;                
+                db_data[1] >> detector_timeout;
                 long packet_size = -1;
                 db_data[2] >> packet_size;
-                my_camera_basler            = new lima::Basler::Camera(camera_ip, packet_size);                
-                my_camera_basler->setTimeout(detector_timeout);      
-                my_interface_basler         = new lima::Basler::Interface(*my_camera_basler);
-                my_control                  = new lima::CtControl(my_interface_basler);          
-                ControlFactory::is_created  = true;
-                return my_control;
+                m_camera = static_cast<void*> (new Basler::Camera(camera_ip, packet_size));
+                static_cast<Basler::Camera*> (m_camera)->setTimeout(detector_timeout);
+
+                m_interface = static_cast<void*> (new Basler::Interface(*static_cast<Basler::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Basler::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
 
 #ifdef XPAD_ENABLED
         if (detector_type == "XpadPixelDetector")
-        {    
+        {
 
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("XpadModel"));
                 db_data.push_back(Tango::DbDatum("CalibrationAdjustingNumber"));
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
                 std::string xpad_model;
                 Tango::DevULong calibration_adjusting_number;
 
                 db_data[0] >> xpad_model;
                 db_data[1] >> calibration_adjusting_number;
 
-                my_camera_xpad                = new lima::Xpad::Camera(xpad_model);
-                my_camera_xpad->setCalibrationAdjustingNumber(calibration_adjusting_number);
+                m_camera = static_cast<void*> (new Xpad::Camera(xpad_model));
+                static_cast<Xpad::Camera*> (m_camera)->setCalibrationAdjustingNumber(calibration_adjusting_number);
 
-                my_interface_xpad             = new lima::Xpad::Interface(*my_camera_xpad);
-                my_control                    = new lima::CtControl(my_interface_xpad);
-                ControlFactory::is_created    = true;
-                return my_control;
+                m_interface = static_cast<void*> (new Xpad::Interface(*static_cast<Xpad::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Xpad::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
@@ -195,30 +180,40 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 #ifdef PILATUS_ENABLED
         if (detector_type == "PilatusPixelDetector")
         {
-
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("DetectorIP"));
                 db_data.push_back(Tango::DbDatum("DetectorPort"));
+                db_data.push_back(Tango::DbDatum("DetectorCameraDefFileName"));                
                 db_data.push_back(Tango::DbDatum("UseReader"));
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
-                std::string camera_ip;
-                long camera_port;
-                bool use_reader;
+                db_data.push_back(Tango::DbDatum("ReaderTimeout"));
+                
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
+                std::string camera_ip = "127.0.0.1";
+                std::string camera_def = "camera.def";
+                long camera_port = 6666;
+                bool use_reader = false;
+                unsigned long reader_timeout = 10000;  //in ms
+                
                 db_data[0] >> camera_ip;
                 db_data[1] >> camera_port;
-                db_data[2] >> use_reader;
+                db_data[2] >> camera_def;
+                db_data[3] >> use_reader;
+                db_data[4] >> reader_timeout;
 
-                my_camera_pilatus           = new lima::Pilatus::Camera(camera_ip.c_str(), camera_port);
-                if(my_camera_pilatus && use_reader)
-                    my_camera_pilatus->enableDirectoryWatcher();
-                if(my_camera_pilatus && !use_reader)
-                    my_camera_pilatus->disableDirectoryWatcher();
-                my_interface_pilatus        = new lima::Pilatus::Interface(*my_camera_pilatus);
-                my_control                  = new lima::CtControl(my_interface_pilatus);
-                ControlFactory::is_created  = true;
-                return my_control;
+                m_camera = static_cast<void*> (new Pilatus::Camera(camera_ip.c_str(), camera_port,const_cast<std::string&>(camera_def)));
+                if (m_camera && use_reader)
+                    static_cast<Pilatus::Camera*> (m_camera)->enableReaderWatcher();
+                if (m_camera && !use_reader)
+                    static_cast<Pilatus::Camera*> (m_camera)->disableReaderWatcher();
+
+                m_interface = static_cast<void*> (new Pilatus::Interface(*static_cast<Pilatus::Camera*> (m_camera)));
+                if(m_interface)
+                    static_cast<Pilatus::Interface*> (m_interface)->setTimeout(reader_timeout / 1000.);
+                m_control = new CtControl(static_cast<Pilatus::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
@@ -226,15 +221,15 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 #ifdef MARCCD_ENABLED
         if (detector_type == "MarCCD")
         {
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("DetectorIP"));
                 db_data.push_back(Tango::DbDatum("DetectorPort"));
                 db_data.push_back(Tango::DbDatum("DetectorTargetPath"));
-                db_data.push_back(Tango::DbDatum("ReaderTimeout"));                
+                db_data.push_back(Tango::DbDatum("ReaderTimeout"));
 
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
                 std::string camera_ip;
                 std::string img_path;
                 unsigned long camera_port = 2222;
@@ -245,13 +240,14 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[2] >> img_path;
                 db_data[3] >> reader_timeout;
 
-                my_camera_marccd           = new lima::Marccd::Camera(camera_ip.c_str(), camera_port, img_path);
-                my_interface_marccd        = new lima::Marccd::Interface(*my_camera_marccd);
-                if(my_interface_marccd)
-                    my_interface_marccd->setTimeout(reader_timeout/1000);
-                my_control                 = new lima::CtControl(my_interface_marccd);
-                ControlFactory::is_created = true;
-                return my_control;
+                m_camera = static_cast<void*> (new Marccd::Camera(camera_ip.c_str(), camera_port, img_path));
+                m_interface = static_cast<void*> (new Marccd::Interface(*static_cast<Marccd::Camera*> (m_camera)));
+                if (m_interface)
+                    static_cast<Marccd::Interface*> (m_interface)->setTimeout(reader_timeout / 1000);
+
+                m_control = new CtControl(static_cast<Marccd::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
@@ -260,27 +256,28 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         if (detector_type == "AdscCCD")
         {
 
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("ReaderTimeout"));
                 db_data.push_back(Tango::DbDatum("UseReader"));
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
                 short reader_timeout = 1000;
                 bool use_reader;
                 db_data[0] >> reader_timeout;
                 db_data[1] >> use_reader;
-                my_camera_adsc                = new lima::Adsc::Camera();
-                my_interface_adsc             = new lima::Adsc::Interface(*my_camera_adsc);
-                if(my_interface_adsc && use_reader)
-                    my_interface_adsc->enableReader();
-                if(my_interface_adsc && !use_reader)
-                    my_interface_adsc->disableReader();
-                if(my_interface_adsc)
-                    my_interface_adsc->setTimeout(reader_timeout);
-                my_control                    = new lima::CtControl(my_interface_adsc);
-                ControlFactory::is_created    = true;
-                return my_control;
+                m_camera = static_cast<void*> (new Adsc::Camera());
+                m_interface = static_cast<void*> (new Adsc::Interface(*static_cast<Adsc::Camera*> (m_camera)));
+                if (m_interface && use_reader)
+                    static_cast<Adsc::Interface*> (m_interface)->enableReader();
+                if (m_interface && !use_reader)
+                    static_cast<Adsc::Interface*> (m_interface)->disableReader();
+                if (m_interface)
+                    static_cast<Adsc::Interface*> (m_interface)->setTimeout(reader_timeout);
+
+                m_control = new CtControl(static_cast<Adsc::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif        
@@ -289,19 +286,40 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         if (detector_type == "ProsilicaCCD")
         {
 
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("DetectorIP"));
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
                 std::string camera_ip;
                 db_data[0] >> camera_ip;
 
-                my_camera_prosilica           	= new lima::Prosilica::Camera(camera_ip.c_str());
-                my_interface_prosilica        	= new lima::Prosilica::Interface(my_camera_prosilica);
-                my_control                  	= new lima::CtControl(my_interface_prosilica);
-                ControlFactory::is_created  	= true;
-                return my_control;
+                m_camera = static_cast<void*> (new Prosilica::Camera(camera_ip.c_str()));
+                m_interface = static_cast<void*> (new Prosilica::Interface(static_cast<Prosilica::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Prosilica::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
+            }
+        }
+#endif
+
+#ifdef ANDOR_ENABLED
+        if (detector_type == "AndorCCD")
+        {
+
+            if (!ControlFactory::m_is_created)
+            {
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("DetectorNum"));
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
+                long camera_num;
+                db_data[0] >> camera_num;
+
+                m_camera = static_cast<void*> (new Andor::Camera("Not Used At Soleil", camera_num));
+                m_interface = static_cast<void*> (new Andor::Interface(*static_cast<Andor::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Andor::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
@@ -310,18 +328,19 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
         if (detector_type == "PrincetonCCD")
         {
 
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
                 Tango::DbData db_data;
-				db_data.push_back(Tango::DbDatum("DetectorNum"));
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                db_data.push_back(Tango::DbDatum("DetectorNum"));
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
                 long camera_num;
                 db_data[0] >> camera_num;
-                my_camera_princeton           	= new lima::RoperScientific::Camera(camera_num);
-                my_interface_princeton        	= new lima::RoperScientific::Interface(*my_camera_princeton);
-                my_control                  	= new lima::CtControl(my_interface_princeton);
-                ControlFactory::is_created  	= true;
-                return my_control;
+
+                m_camera = static_cast<void*> (new RoperScientific::Camera(camera_num));
+                m_interface = static_cast<void*> (new RoperScientific::Interface(*static_cast<RoperScientific::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<RoperScientific::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
@@ -329,13 +348,13 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 #ifdef PCO_ENABLED
         if (detector_type == "Pco")
         {
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
-                my_camera_pco               = new lima::Pco::Camera("");
-                my_interface_pco            = new lima::Pco::Interface(my_camera_pco);
-                my_control                  = new lima::CtControl(my_interface_pco);
-                ControlFactory::is_created  = true;
-                return my_control;
+                m_camera = static_cast<void*> (new Pco::Camera(""));
+                m_interface = static_cast<void*> (new Pco::Interface(static_cast<Pco::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Pco::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
@@ -343,12 +362,54 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 #ifdef PERKINELMER_ENABLED
         if (detector_type == "PerkinElmer")
         {
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
-                my_interface_perkinelmer    = new lima::PerkinElmer::Interface();
-                my_control                  = new lima::CtControl(my_interface_perkinelmer);
-                ControlFactory::is_created  = true;
-                return my_control;
+                m_camera = 0;
+                m_interface = static_cast<void*> (new PerkinElmer::Interface());
+                m_control = new CtControl(static_cast<PerkinElmer::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
+            }
+        }
+#endif
+
+
+#ifdef MERLIN_ENABLED
+        if (detector_type == "Merlin")
+        {
+            if(!ControlFactory::m_is_created)
+            {
+                m_camera = 0;
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("HostName"));
+				db_data.push_back(Tango::DbDatum("CmdPort"));
+                db_data.push_back(Tango::DbDatum("DataPort"));
+                db_data.push_back(Tango::DbDatum("ImageWidth"));
+                db_data.push_back(Tango::DbDatum("ImageHeight"));
+                db_data.push_back(Tango::DbDatum("Chips"));
+                db_data.push_back(Tango::DbDatum("Simulate"));          
+                
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
+                std::string hostName;
+                long cmdPort;
+                long dataPort;
+                long chips;
+                long imageWidth;
+                long imageHeight;
+                bool simulate;
+                db_data[0] >> hostName;
+                db_data[1] >> cmdPort;
+                db_data[2] >> dataPort;
+                db_data[3] >> imageWidth;
+                db_data[4] >> imageHeight;
+                db_data[5] >> chips;
+                db_data[6] >> simulate;
+			
+                m_camera = static_cast<void*> (new Merlin::Camera(hostName, cmdPort, dataPort, imageWidth, imageHeight, chips, simulate));
+                m_interface = static_cast<void*> (new Merlin::Interface(*static_cast<Merlin::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Merlin::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
@@ -356,22 +417,22 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 #ifdef ANDOR3_ENABLED
         if (detector_type == "Andor3")
         {
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
                 Tango::DbData db_data;
-				db_data.push_back(Tango::DbDatum("BitFlowPath"));
+                db_data.push_back(Tango::DbDatum("BitFlowPath"));
                 db_data.push_back(Tango::DbDatum("CameraNumber"));
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
                 std::string bit_flow_path;
                 long camera_number;
                 db_data[0] >> bit_flow_path;
                 db_data[1] >> camera_number;
-                
-                my_camera_andor3            = new lima::Andor3::Camera(bit_flow_path,camera_number);
-                my_interface_andor3         = new lima::Andor3::Interface(*my_camera_andor3);
-                my_control                  = new lima::CtControl(my_interface_andor3);
-                ControlFactory::is_created  = true;
-                return my_control;
+
+                m_camera = static_cast<void*> (new Andor3::Camera(bit_flow_path, camera_number));
+                m_interface = static_cast<void*> (new Andor3::Interface(*static_cast<Andor3::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Andor3::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
@@ -379,16 +440,16 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
 #ifdef VIEWORKSVP_ENABLED
         if (detector_type == "VieworksVP")
         {
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("SisoPath"));
-				db_data.push_back(Tango::DbDatum("BoardIndex"));
+                db_data.push_back(Tango::DbDatum("BoardIndex"));
                 db_data.push_back(Tango::DbDatum("CameraPort"));
                 db_data.push_back(Tango::DbDatum("AppletName"));
                 db_data.push_back(Tango::DbDatum("DMAIndex"));
-                
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
+
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
                 std::string siso_path;
                 long board_index;
                 long camera_port;
@@ -399,337 +460,274 @@ CtControl* ControlFactory::get_control( const std::string& detector_type)
                 db_data[2] >> camera_port;
                 db_data[3] >> applet_name;
                 db_data[4] >> dma_index;
-                
-                my_camera_vieworksvp        = new lima::VieworksVP::Camera(siso_path,board_index,camera_port,applet_name,dma_index);
-                my_interface_vieworksvp     = new lima::VieworksVP::Interface(*my_camera_vieworksvp);
-                my_control                  = new lima::CtControl(my_interface_vieworksvp);
-                ControlFactory::is_created  = true;
-                return my_control;
+
+                m_camera = static_cast<void*> (new VieworksVP::Camera(siso_path, board_index, camera_port, applet_name, dma_index));
+                m_interface = static_cast<void*> (new VieworksVP::Interface(*static_cast<VieworksVP::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<VieworksVP::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
 
-#ifdef MERLIN_ENABLED
-        if (detector_type == "Merlin")
+#ifdef HAMAMATSU_ENABLED
+        if (detector_type == "Hamamatsu")
         {
-            if(!ControlFactory::is_created)
+            if (!ControlFactory::m_is_created)
             {
                 Tango::DbData db_data;
-                db_data.push_back(Tango::DbDatum("HostName"));
-				db_data.push_back(Tango::DbDatum("CmdPort"));
-                db_data.push_back(Tango::DbDatum("DataPort"));
-                db_data.push_back(Tango::DbDatum("ImageWidth"));
-                db_data.push_back(Tango::DbDatum("ImageHeight"));
-                db_data.push_back(Tango::DbDatum("Chips"));
-                db_data.push_back(Tango::DbDatum("Simulate"));
+                db_data.push_back(Tango::DbDatum("DetectorNum"));
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
+                long camera_num;
+                db_data[0] >> camera_num;
 
-                (Tango::Util::instance()->get_database())->get_device_property(my_device_name, db_data);
-                std::string hostName;
-                int cmdPort;
-                int dataPort;
-                int chips;
-                int imageWidth;
-                int imageHeight;
-                bool simulate;
-                db_data[0] >> hostName;
-                db_data[1] >> cmdPort;
-                db_data[2] >> dataPort;
-                db_data[3] >> imageWidth;
-                db_data[4] >> imageHeight;
-                db_data[5] >> chips;
-                db_data[6] >> simulate;
-
-                my_camera_merlin = new lima::Merlin::Camera(hostName, cmdPort, dataPort, imageWidth, imageHeight, chips, simulate);
-                my_interface_merlin = new lima::Merlin::Interface(*my_camera_merlin);
-                my_control = new lima::CtControl(my_interface_merlin);
-                ControlFactory::is_created = true;
-                return my_control;
+                m_camera = static_cast<void*> (new Hamamatsu::Camera("Not config path", camera_num));
+                m_interface = static_cast<void*> (new Hamamatsu::Interface(*(static_cast<Hamamatsu::Camera*> (m_camera))));
+                m_control = new CtControl(static_cast<Hamamatsu::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
             }
         }
 #endif
-        
 
-        if(!ControlFactory::is_created)
-            throw LIMA_HW_EXC(Error, "Unable to create the lima control object : Unknown Detector Type");
+#ifdef EIGER_ENABLED
+        if (detector_type == "Eiger")
+        {
+            if (!ControlFactory::m_is_created)
+            {
+                Tango::DbData db_data;
+                db_data.push_back(Tango::DbDatum("DetectorIP"));
+				db_data.push_back(Tango::DbDatum("TargetPath"));
+                (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
+                std::string camera_ip;
+                db_data[0] >> camera_ip;
+                std::string target_path;
+                db_data[1] >> target_path;
+                m_camera = static_cast<void*> (new Eiger::Camera(camera_ip, target_path));
+                m_interface = static_cast<void*> (new Eiger::Interface(*(static_cast<Eiger::Camera*> (m_camera))));
+                m_control = new CtControl(static_cast<Eiger::Interface*> (m_interface));
+                ControlFactory::m_is_created = true;
+                return m_control;
+            }
+        }
+#endif           
+        
+#ifdef UVIEW_ENABLED
+        if (detector_type == "UviewCCD")
+        {
+            if (!ControlFactory::m_is_created)
+            {
+                m_camera = static_cast<void*> (new Uview::Camera());
+                m_interface = static_cast<void*> (new Uview::Interface(*static_cast<Uview::Camera*> (m_camera)));
+                m_control = new CtControl(static_cast<Uview::Interface*> (m_interface));
+
+                ControlFactory::m_is_created = true;
+                return m_control;
+            }
+        }
+#endif
+
+        if (!ControlFactory::m_is_created)
+        {
+            string strMsg = "Unable to create the lima control object : Unknown Detector Type : ";
+            strMsg += detector_type;
+            throw LIMA_HW_EXC(Error, strMsg);
+        }
 
     }
-    catch(Tango::DevFailed& df)
+    catch (Tango::DevFailed& df)
     {
         //- rethrow exception
         throw LIMA_HW_EXC(Error, std::string(df.errors[0].desc).c_str());
     }
-    catch(Exception& e)
+    catch (Exception& e)
     {
         throw LIMA_HW_EXC(Error, e.getErrMsg());
     }
-    catch(...)
+    catch (...)
     {
         throw LIMA_HW_EXC(Error, "Unable to create the lima control object : Unknown Exception");
     }
-    return my_control;
+    
+    return m_control;
 }
 
+//-----------------------------------------------------------------------------------------
+CtControl* ControlFactory::get_control(const std::string& detector_type)
+{
+    yat::AutoMutex<> _lock(object_control_lock);
+	if (!ControlFactory::m_is_created)
+	{
+		std::stringstream ssMsg("");
+		ssMsg<<"Unable to get the lima control of " << "(" << detector_type << ") !" << endl;
+		throw LIMA_HW_EXC(Error, ssMsg.str());
+	}	
+    return m_control;       
+}
 
 //-----------------------------------------------------------------------------------------
-void ControlFactory::reset(const std::string& detector_type )
+void ControlFactory::reset(const std::string& detector_type)
 {
-    yat::MutexLock scoped_lock(object_lock);
+    yat::AutoMutex<> _lock(object_control_lock);
     try
     {
-        if(ControlFactory::is_created)
+        if (ControlFactory::m_is_created)
         {
-            ControlFactory::is_created = false;
-            if(my_control)
+            ControlFactory::m_is_created = false;
+            if (m_control)
             {
-                delete my_control;
-                my_control = 0;
+                delete m_control;
+                m_control = 0;
             }
 
-#ifdef SIMULATOR_ENABLED
-            if (detector_type == "SimulatorCCD")
+            if (m_camera)
             {
-                if(my_camera_simulator)
+#ifdef SIMULATOR_ENABLED        
+                if (detector_type == "SimulatorCCD")
                 {
-                    delete my_camera_simulator;
-                    my_camera_simulator = 0;
+                    delete (static_cast<Simulator::Camera*> (m_camera));
                 }
-
-                if(my_interface_simulator)
-                {
-                    delete my_interface_simulator;
-                    my_interface_simulator = 0;
-                }
-            }
-#endif        
-
-#ifdef AVIEX_ENABLED
-            if (detector_type == "AviexCCD")
-            {
-                if(my_camera_aviex)
-                {
-                    delete my_camera_aviex;
-                    my_camera_aviex = 0;
-                }
-
-                if(my_interface_aviex)
-                {
-                    delete my_interface_aviex;
-                    my_interface_aviex = 0;
-                }
-            }
-#endif
-            
-#ifdef BASLER_ENABLED
-            if (detector_type == "BaslerCCD")
-            {
-                if(my_camera_basler)
-                {
-                    delete my_camera_basler;
-                    my_camera_basler = 0;
-                }
-
-                if(my_interface_basler)
-                {
-                    delete my_interface_basler;
-                    my_interface_basler = 0;
-                }
-            }
 #endif
 
-#ifdef XPAD_ENABLED
-            if (detector_type == "XpadPixelDetector")
-            {
-                if(my_camera_xpad)
+#ifdef AVIEX_ENABLED        
+                if (detector_type == "AviexCCD")
                 {
-                    //- do not delete because its a YAT Task
-                    my_camera_xpad->exit();
-                    my_camera_xpad = 0;
+                    delete (static_cast<Aviex::Camera*> (m_camera));
                 }
-
-                if(my_interface_xpad)
-                {
-                    delete my_interface_xpad;
-                    my_interface_xpad = 0;
-                }
-            }
 #endif
 
-#ifdef PILATUS_ENABLED
-            if (detector_type == "PilatusPixelDetector")
-            {
-                if(my_camera_pilatus)
+#ifdef BASLER_ENABLED        
+                if (detector_type == "BaslerCCD")
                 {
-                    delete my_camera_pilatus;
-                    my_camera_pilatus = 0;
+                    delete (static_cast<Basler::Camera*> (m_camera));
                 }
-
-                if(my_interface_pilatus)
-                {
-                    delete my_interface_pilatus;
-                    my_interface_pilatus = 0;
-                }
-            }
 #endif
 
-#ifdef MARCCD_ENABLED
-            if (detector_type == "MarCCD")
-            {
-                if(my_camera_marccd)
+#ifdef XPAD_ENABLED        
+                if (detector_type == "XpadPixelDetector")
                 {
-                    //- do not delete because its a YAT Task
-                    my_camera_marccd->exit();
-                    my_camera_marccd = 0;
+                    delete (static_cast<Xpad::Camera*> (m_camera));
                 }
+#endif
 
-                if(my_interface_marccd)
+#ifdef PILATUS_ENABLED        
+                if (detector_type == "PilatusPixelDetector")
                 {
-                    delete my_interface_marccd;
-                    my_interface_marccd = 0;
+                    delete (static_cast<Pilatus::Camera*> (m_camera));
                 }
-            }
+#endif
+
+#ifdef MARCCD_ENABLED        
+                if (detector_type == "MarCCD")
+                {
+                    delete (static_cast<Marccd::Camera*> (m_camera));
+                }
+#endif  
+
+#ifdef ADSC_ENABLED        
+                if (detector_type == "AdscCCD")
+                {
+                    delete (static_cast<Adsc::Camera*> (m_camera));
+                }
+#endif 
+
+#ifdef PROSILICA_ENABLED        
+                if (detector_type == "ProsilicaCCD")
+                {
+                    delete (static_cast<Prosilica::Camera*> (m_camera));
+                }
+#endif 
+
+#ifdef ANDOR_ENABLED        
+                if (detector_type == "AndorCCD")
+                {
+                    delete (static_cast<Andor::Camera*> (m_camera));
+                }
 #endif     
 
-#ifdef ADSC_ENABLED
-            if (detector_type == "AdscCCD")
-            {
-                if(my_camera_adsc)
+#ifdef PRINCETON_ENABLED        
+                if (detector_type == "PrincetonCCD")
                 {
-                    delete my_camera_adsc;
-                    my_camera_adsc = 0;
+                    delete (static_cast<RoperScientific::Camera*> (m_camera));
                 }
+#endif         
 
-                if(my_interface_adsc)
+#ifdef PCO_ENABLED        
+                if (detector_type == "Pco")
                 {
-                    delete my_interface_adsc;
-                    my_interface_adsc = 0;
+                    delete (static_cast<Pco::Camera*> (m_camera));
                 }
-            }
+#endif 
+
+#ifdef PERKINELMER_ENABLED        
+                if (detector_type == "PerkinElmer")
+                {
+                    //NOP
+                }
+#endif 
+
+#ifdef MERLIN_ENABLED        
+                if (detector_type == "Merlin")
+                {
+                    delete (static_cast<Merlin::Camera*> (m_camera));
+                }
+#endif   
+
+#ifdef ANDOR3_ENABLED        
+                if (detector_type == "Andor3")
+                {
+                    delete (static_cast<Andor3::Camera*> (m_camera));
+                }
+#endif        
+
+#ifdef VIEWORKSVP_ENABLED        
+                if (detector_type == "VieworksVP")
+                {
+                    delete (static_cast<VieworksVP::Camera*> (m_camera));
+                }
+#endif              
+
+#ifdef HAMAMATSU_ENABLED        
+                if (detector_type == "Hamamatsu")
+                {
+                    delete (static_cast<Hamamatsu::Camera*> (m_camera));
+                }
+#endif    
+
+#ifdef EIGER_ENABLED
+				if (detector_type == "Eiger")
+				{
+					delete (static_cast<Eiger::Camera*> (m_camera));
+				}		
 #endif
 
-#ifdef PROSILICA_ENABLED
-            if (detector_type == "ProsilicaCCD")
-            {
-                if(my_camera_prosilica)
+#ifdef UVIEW_ENABLED        
+                if (detector_type == "UviewCCD")
                 {
-                    delete my_camera_prosilica;
-                    my_camera_prosilica = 0;
+					delete (static_cast<Uview::Camera*> (m_camera));
                 }
+#endif     
 
-                if(my_interface_prosilica)
-                {
-                    delete my_interface_prosilica;
-                    my_interface_prosilica = 0;
-                }
+                m_camera = 0;
             }
-#endif
 
-#ifdef PRINCETON_ENABLED
-            if (detector_type == "PrincetonCCD")
+            if (m_interface)
             {
-                if(my_interface_princeton)
-                {
-                    delete my_interface_princeton;
-                    my_interface_princeton = 0;
-                }
-
-                if(my_camera_princeton)
-                {
-                    delete my_camera_princeton;
-                    my_camera_princeton = 0;
-                }
-            }
-#endif
-
-#ifdef PCO_ENABLED
-            if (detector_type == "Pco")
-            {
-                if(my_interface_pco)
-                {
-                    delete my_interface_pco;
-                    my_interface_pco = 0;
-                }
-
-                if(my_camera_pco)
-                {
-                    delete my_camera_pco;
-                    my_camera_pco = 0;
-                }
-            }
-#endif
-
-#ifdef PERKINELMER_ENABLED
-            if (detector_type == "PerkinElmer")
-            {
-                if(my_interface_perkinelmer)
-                {
-                    delete my_interface_perkinelmer;
-                    my_interface_perkinelmer = 0;
-                }                
-            }
-#endif
-
-#ifdef ANDOR3_ENABLED
-            if (detector_type == "Andor3")
-            {
-                if(my_interface_andor3)
-                {
-                    delete my_interface_andor3;
-                    my_interface_andor3 = 0;
-                }
-
-                if(my_camera_andor3)
-                {
-                    delete my_camera_andor3;
-                    my_camera_andor3 = 0;
-                }
-            }
-#endif
-
-#ifdef VIEWORKSVP_ENABLED
-            if (detector_type == "VieworksVP")
-            {
-                if(my_interface_vieworksvp)
-                {
-                    delete my_interface_vieworksvp;
-                    my_interface_vieworksvp = 0;
-                }
-
-                if(my_camera_vieworksvp)
-                {
-                    delete my_camera_vieworksvp;
-                    my_camera_vieworksvp = 0;
-                }
-            }
-#endif
-    
-#ifdef MERLIN_ENABLED
-            if (detector_type == "Merlin")
-            {
-                if(my_interface_merlin)
-                {
-                    delete my_interface_merlin;
-                    my_interface_merlin = 0;
-                }
-
-                if(my_camera_merlin)
-                {
-                    delete my_camera_merlin;
-                    my_camera_merlin = 0;
-                }
-            }
-#endif
+                delete m_interface;
+                m_interface = 0;
+            }        
         }
     }
-    catch(Tango::DevFailed& df)
+    catch (Tango::DevFailed& df)
     {
         //- rethrow exception
         throw LIMA_HW_EXC(Error, std::string(df.errors[0].desc).c_str());
     }
-    catch(Exception& e)
+    catch (Exception& e)
     {
         throw LIMA_HW_EXC(Error, e.getErrMsg());
     }
-    catch(...)
+    catch (...)
     {
         throw LIMA_HW_EXC(Error, "reset : Unknown Exception");
     }
@@ -738,61 +736,104 @@ void ControlFactory::reset(const std::string& detector_type )
 //-----------------------------------------------------------------------------------------
 //- force Init() on the specific device.
 //-----------------------------------------------------------------------------------------
-void ControlFactory::init_specific_device(const std::string& detector_type )
+void ControlFactory::init_specific_device(const std::string& detector_type)
 {
-    yat::MutexLock scoped_lock(object_lock);
+    yat::AutoMutex<> _lock(object_control_lock);
     try
     {
         //get the tango device/instance
-        if(!ControlFactory::is_created)
+        if (!ControlFactory::m_is_created)
         {
-            std::string  detector = detector_type;
+            std::string detector = detector_type;
             Tango::DbDatum db_datum;
-            my_server_name = Tango::Util::instance()->get_ds_name ();
-            db_datum = (Tango::Util::instance()->get_database())->get_device_name(my_server_name,detector);
-            db_datum >> my_device_name;
+            m_server_name = Tango::Util::instance()->get_ds_name();
+            db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, detector);
+            db_datum >> m_device_name_specific;
         }
-
-        (Tango::Util::instance()->get_device_by_name(my_device_name))->delete_device();
-        (Tango::Util::instance()->get_device_by_name(my_device_name))->init_device();
+        (Tango::Util::instance()->get_device_by_name(m_device_name_specific))->delete_device();
+        (Tango::Util::instance()->get_device_by_name(m_device_name_specific))->init_device();
     }
-    catch(Tango::DevFailed& df)
+    catch (Tango::DevFailed& df)
     {
         //- rethrow exception
         throw LIMA_HW_EXC(Error, std::string(df.errors[0].desc).c_str());
     }
+	
+#ifdef LAYOUT_ENABLED        
+	try
+	{
+        //@@@TODO and if not exist ?? get the tango device/instance for layout
+        if (!ControlFactory::m_is_created)
+        {
+            std::string detector = "Layout";		
+            Tango::DbDatum db_datum;
+            m_server_name = Tango::Util::instance()->get_ds_name();
+            db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, detector);
+            db_datum >> m_device_name_layout;	
+        }
+        (Tango::Util::instance()->get_device_by_name(m_device_name_layout))->delete_device();
+        (Tango::Util::instance()->get_device_by_name(m_device_name_layout))->init_device();
+    }
+    catch (Tango::DevFailed& df)
+    {
+        //- rethrow exception
+        ////throw LIMA_HW_EXC(Error, std::string(df.errors[0].desc).c_str());
+    }		
+#endif
+	
+#ifdef ROICOUNTERS_ENABLED        
+	try
+	{
+        //@@@TODO and if not exist ?? get the tango device/instance for layout
+        if (!ControlFactory::m_is_created)
+        {
+            std::string detector = "RoiCounters";			
+            Tango::DbDatum db_datum;
+            m_server_name = Tango::Util::instance()->get_ds_name();
+            db_datum = (Tango::Util::instance()->get_database())->get_device_name(m_server_name, detector);
+            db_datum >> m_device_name_roicounters;					
+        }
+        (Tango::Util::instance()->get_device_by_name(m_device_name_roicounters))->delete_device();
+        (Tango::Util::instance()->get_device_by_name(m_device_name_roicounters))->init_device();
+    }
+    catch (Tango::DevFailed& df)
+    {
+        //- rethrow exception
+        ////throw LIMA_HW_EXC(Error, std::string(df.errors[0].desc).c_str());
+    }		
+#endif	
 }
 
 //-----------------------------------------------------------------------------------------
 //- call dev_state() command of the generic device.
 //-----------------------------------------------------------------------------------------
-Tango::DevState ControlFactory::get_state(void )
+Tango::DevState ControlFactory::get_state(void)
 {
     yat::AutoMutex<> _lock(object_state_lock);
-    return my_state;
+    return m_state;
 }
 //-----------------------------------------------------------------------------------------
 //- call dev_status() command of the generic device.
 //-----------------------------------------------------------------------------------------
-std::string 	ControlFactory::get_status(void )
+std::string ControlFactory::get_status(void)
 {
-    yat::AutoMutex<> lock(object_state_lock);
-    return (my_status.str());
+    yat::AutoMutex<> _lock(object_state_lock);
+    return (m_status.str());
 
 }
 //-----------------------------------------------------------------------------------------
-void ControlFactory::set_state(Tango::DevState state) 
+void ControlFactory::set_state(Tango::DevState state)
 {
     yat::AutoMutex<> _lock(object_state_lock);
-    my_state = state;
+    m_state = state;
 }
 
 //-----------------------------------------------------------------------------------------
-void ControlFactory::set_status (const std::string& status)
-{      
+void ControlFactory::set_status(const std::string& status)
+{
     yat::AutoMutex<> _lock(object_state_lock);
-    my_status.str("");
-    my_status<<status.c_str()<<endl;
+    m_status.str("");
+    m_status << status.c_str() << endl;
 
 }
 //-----------------------------------------------------------------------------------------

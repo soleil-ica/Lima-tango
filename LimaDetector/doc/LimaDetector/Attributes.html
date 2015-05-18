@@ -71,13 +71,19 @@ Revision:  - Author:
 <Tr><Td><b>detectorModel</b>: <Font Size=-1>Return the model of the Detector.</Font></Td>
 <Td><Center><Font Size=-1>DEV_STRING</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
 
-<Tr><Td><b>detectorWidthMax</b>: <Font Size=-1>Detector width in pixels.</Font></Td>
+<Tr><Td><b>detectorWidthMax</b></Td>
 <Td><Center><Font Size=-1>DEV_USHORT</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
 
-<Tr><Td><b>detectorHeightMax</b>: <Font Size=-1>Detector height in pixels.</Font></Td>
+<Tr><Td><b>detectorHeightMax</b></Td>
 <Td><Center><Font Size=-1>DEV_USHORT</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
 
 <Tr><Td><b>detectorPixelDepth</b>: <Font Size=-1>Pixel resolution in bits:<br> 8<br> 16<br> 32<br></Font></Td>
+<Td><Center><Font Size=-1>DEV_USHORT</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
+
+<Tr><Td><b>binnedWidthMax</b>: <Font Size=-1>Detector max width taking into account the current Horizontal Binning.</Font></Td>
+<Td><Center><Font Size=-1>DEV_USHORT</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
+
+<Tr><Td><b>binnedHeightMax</b>: <Font Size=-1>Detector max width taking into account the current Vertical Binning.</Font></Td>
 <Td><Center><Font Size=-1>DEV_USHORT</Font></Center></Td><Td><Center><Font Size=-1>READ</Font></Center></Td><Td><Center><Font Size=-1>No</Font></Center></Td></Tr>
 
 <Tr><Td><b>triggerMode</b>: <Font Size=-1>Available Trigger Modes :<br> INTERNAL_SINGLE<br> EXTERNAL_SINGLE<br> EXTERNAL_MULTI<br> EXTERNAL_GATE<br> INTERNAL_MULTI<br> EXTERNAL_START_STOP<br> EXTERNAL_READOUT<br></Font></Td>
@@ -119,11 +125,8 @@ Revision:  - Author:
 <Tr><Td><b>fileGeneration</b>: <Font Size=-1>Allow to save grabbed frames into a file on disk.<br> Available formats for the file are:  EDF, RAW, NXS<br> The format is fixed in FileFormat property.<br></Font></Td>
 <Td><Center><Font Size=-1>DEV_BOOLEAN</Font></Center></Td><Td><Center><Font Size=-1>READ_WRITE</Font></Center></Td><Td><Center><Font Size=-1>Yes</Font></Center></Td></Tr>
 
-<Tr><Td><b>flipX</b></Td>
-<Td><Center><Font Size=-1>DEV_BOOLEAN</Font></Center></Td><Td><Center><Font Size=-1>READ_WRITE</Font></Center></Td><Td><Center><Font Size=-1>Yes</Font></Center></Td></Tr>
-
-<Tr><Td><b>flipY</b></Td>
-<Td><Center><Font Size=-1>DEV_BOOLEAN</Font></Center></Td><Td><Center><Font Size=-1>READ_WRITE</Font></Center></Td><Td><Center><Font Size=-1>Yes</Font></Center></Td></Tr>
+<Tr><Td><b>fileNbFrames</b></Td>
+<Td><Center><Font Size=-1>DEV_LONG</Font></Center></Td><Td><Center><Font Size=-1>READ_WRITE</Font></Center></Td><Td><Center><Font Size=-1>Yes</Font></Center></Td></Tr>
 
 </Table>
 </Center>

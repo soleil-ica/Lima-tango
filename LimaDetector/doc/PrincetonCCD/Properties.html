@@ -67,19 +67,23 @@ Revision:  - Author:
 <Td><Font Size=-1>Detector Number.</Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>MemorizedInternalAcquisitionMode </a></b></Td>
-<Td><Font Size=-1>string</Font></Td>
+<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
 <Td><Font Size=-1>Memorize/Define the internalAcquisitionMode attribute at Init device<br>
 Availables values :<br>
 - STANDARD<br>
 - FOCUS<br></Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>MemorizedShutterMode </a></b></Td>
-<Td><Font Size=-1>string</Font></Td>
+<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
 <Td><Font Size=-1>Memorize/Define the SHUTTERMode attribute at Init device<br>
 Availables values :<br>
 - OPEN_NEVER<br>
 - OPEN_PRE_EXPOSURE<br>
 - OPEN_NO_CHANGE<br></Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedTemperatureTarget </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_DOUBLE</Font></Td>
+<Td><Font Size=-1>Memorize/Define the Temperature Target of the Cooler at Init device. (in ?C)<br></Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>MemorizedGain </a></b></Td>
 <Td><Font Size=-1>Tango::DEV_USHORT</Font></Td>
@@ -113,6 +117,10 @@ Availables values :<br>
     <Tr>
         <Td>MemorizedShutterMode</Td>
         <td>OPEN_NO_CHANGE</td>
+    </Tr>
+    <Tr>
+        <Td>MemorizedTemperatureTarget</Td>
+        <td>-110</td>
     </Tr>
     <Tr>
         <Td>MemorizedGain</Td>

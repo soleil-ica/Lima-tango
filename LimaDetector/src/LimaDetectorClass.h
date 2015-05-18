@@ -49,32 +49,18 @@ namespace LimaDetector_ns
 {//=====================================
 //	Define classes for attributes
 //=====================================
-class flipYAttrib: public Tango::Attr
+class fileNbFramesAttrib: public Tango::Attr
 {
 public:
-	flipYAttrib():Attr("flipY", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
-	~flipYAttrib() {};
+	fileNbFramesAttrib():Attr("fileNbFrames", Tango::DEV_LONG, Tango::READ_WRITE) {};
+	~fileNbFramesAttrib() {};
 	
 	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<LimaDetector *>(dev))->read_flipY(att);}
+	{(static_cast<LimaDetector *>(dev))->read_fileNbFrames(att);}
 	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-	{(static_cast<LimaDetector *>(dev))->write_flipY(att);}
+	{(static_cast<LimaDetector *>(dev))->write_fileNbFrames(att);}
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<LimaDetector *>(dev))->is_flipY_allowed(ty);}
-};
-
-class flipXAttrib: public Tango::Attr
-{
-public:
-	flipXAttrib():Attr("flipX", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
-	~flipXAttrib() {};
-	
-	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<LimaDetector *>(dev))->read_flipX(att);}
-	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-	{(static_cast<LimaDetector *>(dev))->write_flipX(att);}
-	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<LimaDetector *>(dev))->is_flipX_allowed(ty);}
+	{return (static_cast<LimaDetector *>(dev))->is_fileNbFrames_allowed(ty);}
 };
 
 class fileGenerationAttrib: public Tango::Attr
@@ -245,6 +231,30 @@ public:
 	{return (static_cast<LimaDetector *>(dev))->is_triggerMode_allowed(ty);}
 };
 
+class binnedHeightMaxAttrib: public Tango::Attr
+{
+public:
+	binnedHeightMaxAttrib():Attr("binnedHeightMax", Tango::DEV_USHORT, Tango::READ) {};
+	~binnedHeightMaxAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<LimaDetector *>(dev))->read_binnedHeightMax(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<LimaDetector *>(dev))->is_binnedHeightMax_allowed(ty);}
+};
+
+class binnedWidthMaxAttrib: public Tango::Attr
+{
+public:
+	binnedWidthMaxAttrib():Attr("binnedWidthMax", Tango::DEV_USHORT, Tango::READ) {};
+	~binnedWidthMaxAttrib() {};
+	
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+	{(static_cast<LimaDetector *>(dev))->read_binnedWidthMax(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+	{return (static_cast<LimaDetector *>(dev))->is_binnedWidthMax_allowed(ty);}
+};
+
 class detectorPixelDepthAttrib: public Tango::Attr
 {
 public:
@@ -320,10 +330,10 @@ public:
 //=========================================
 //	Define classes for commands
 //=========================================
-class NexusResetBufferIndexClass : public Tango::Command
+class ResetFileIndexClass : public Tango::Command
 {
 public:
-	NexusResetBufferIndexClass(const char   *name,
+	ResetFileIndexClass(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out,
 				   const char        *in_desc,
@@ -331,63 +341,15 @@ public:
 				   Tango::DispLevel  level)
 	:Command(name,in,out,in_desc,out_desc, level)	{};
 
-	NexusResetBufferIndexClass(const char   *name,
+	ResetFileIndexClass(const char   *name,
 	               Tango::CmdArgType in,
 				   Tango::CmdArgType out)
 	:Command(name,in,out)	{};
-	~NexusResetBufferIndexClass() {};
+	~ResetFileIndexClass() {};
 	
 	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
 	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
-	{return (static_cast<LimaDetector *>(dev))->is_NexusResetBufferIndex_allowed(any);}
-};
-
-
-
-class CloseShutterCmd : public Tango::Command
-{
-public:
-	CloseShutterCmd(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out,
-				   const char        *in_desc,
-				   const char        *out_desc,
-				   Tango::DispLevel  level)
-	:Command(name,in,out,in_desc,out_desc, level)	{};
-
-	CloseShutterCmd(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out)
-	:Command(name,in,out)	{};
-	~CloseShutterCmd() {};
-	
-	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
-	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
-	{return (static_cast<LimaDetector *>(dev))->is_CloseShutter_allowed(any);}
-};
-
-
-
-class OpenShutterCmd : public Tango::Command
-{
-public:
-	OpenShutterCmd(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out,
-				   const char        *in_desc,
-				   const char        *out_desc,
-				   Tango::DispLevel  level)
-	:Command(name,in,out,in_desc,out_desc, level)	{};
-
-	OpenShutterCmd(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out)
-	:Command(name,in,out)	{};
-	~OpenShutterCmd() {};
-	
-	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
-	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
-	{return (static_cast<LimaDetector *>(dev))->is_OpenShutter_allowed(any);}
+	{return (static_cast<LimaDetector *>(dev))->is_ResetFileIndex_allowed(any);}
 };
 
 
@@ -580,6 +542,30 @@ public:
 	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
 	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
 	{return (static_cast<LimaDetector *>(dev))->is_Snap_allowed(any);}
+};
+
+
+
+class PrepareClass : public Tango::Command
+{
+public:
+	PrepareClass(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	PrepareClass(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~PrepareClass() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<LimaDetector *>(dev))->is_Prepare_allowed(any);}
 };
 
 

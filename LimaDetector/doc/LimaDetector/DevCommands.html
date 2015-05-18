@@ -102,9 +102,23 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <Br>&nbsp
 </ul><Br>
 <Br>
+<A NAME="Prepare"><!-- --></A>
+<A NAME="Prepare"><!-- --></A>
+<h2>4 - Prepare</h2>
+<ul>
+<Li><Strong>Description: </Strong> Prepare the acquisition (Apply parameters like bin/roi/exposure/.. & allocate buffers & ...)<Br>&nbsp
+<Li><Strong>Argin:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::STANDBY<Li>Tango::RUNNING</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
 <A NAME="Snap"><!-- --></A>
 <A NAME="Snap"><!-- --></A>
-<h2>4 - Snap</h2>
+<h2>5 - Snap</h2>
 <ul>
 <Li><Strong>Description: </Strong> Starts the acquisition of a number of frames equal to  'nbFrames' attribute value.<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
@@ -118,7 +132,7 @@ The language device desctructor automatically calls the <i> delete_device() </i>
 <Br>
 <A NAME="Start"><!-- --></A>
 <A NAME="Start"><!-- --></A>
-<h2>5 - Start</h2>
+<h2>6 - Start</h2>
 <ul>
 <Li><Strong>Description: </Strong> Starts a "video/live" acquisition of an infinite number of frames.<br>
 In this mode, In this mode, the frame loss is permitted and not signaled as FAULT in the device state<br>
@@ -134,7 +148,7 @@ It is not allowed to generate files in this mode.<Br>&nbsp
 <Br>
 <A NAME="Stop"><!-- --></A>
 <A NAME="Stop"><!-- --></A>
-<h2>6 - Stop</h2>
+<h2>7 - Stop</h2>
 <ul>
 <Li><Strong>Description: </Strong> Stop current acquisition/video.<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
@@ -148,7 +162,7 @@ It is not allowed to generate files in this mode.<Br>&nbsp
 <Br>
 <A NAME="SetROI"><!-- --></A>
 <A NAME="SetROI"><!-- --></A>
-<h2>7 - SetROI</h2>
+<h2>8 - SetROI</h2>
 <ul>
 <Li><Strong>Description: </Strong> Define a Region of Interest . (OriginX, OriginY, Width, Height)<br>
 Roi and Binning are associated.<Br>&nbsp
@@ -163,7 +177,7 @@ Roi and Binning are associated.<Br>&nbsp
 <Br>
 <A NAME="SetBinning"><!-- --></A>
 <A NAME="SetBinning"><!-- --></A>
-<h2>8 - SetBinning</h2>
+<h2>9 - SetBinning</h2>
 <ul>
 <Li><Strong>Description: </Strong> Define a binning Horizontal (x) & Vertical (y) for the image. <br><Br>&nbsp
 <Li><Strong>Argin:<Br>DEVVAR_ULONGARRAY</Strong>
@@ -175,9 +189,23 @@ Roi and Binning are associated.<Br>&nbsp
 <Br>&nbsp
 </ul><Br>
 <Br>
+<A NAME="ResetBinning"><!-- --></A>
+<A NAME="ResetBinning"><!-- --></A>
+<h2>10 - ResetBinning</h2>
+<ul>
+<Li><Strong>Description: </Strong> Use the binning Hrizontal=1 & Verical=1 of the detector according to current Roi.<Br>&nbsp
+<Li><Strong>Argin:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Argout:<Br>DEV_VOID</Strong>
+ : <Br>&nbsp
+<Li><Strong>Command allowed for: </Strong><Ul>
+<Li>Tango::STANDBY</Ul>
+<Br>&nbsp
+</ul><Br>
+<Br>
 <A NAME="ResetROI"><!-- --></A>
 <A NAME="ResetROI"><!-- --></A>
-<h2>9 - ResetROI</h2>
+<h2>11 - ResetROI</h2>
 <ul>
 <Li><Strong>Description: </Strong> Use the full frame of the detector according to current Binning.<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
@@ -191,7 +219,7 @@ Roi and Binning are associated.<Br>&nbsp
 <Br>
 <A NAME="GetAttributeAvailableValues"><!-- --></A>
 <A NAME="GetAttributeAvailableValues"><!-- --></A>
-<h2>10 - GetAttributeAvailableValues (for expert only)</h2>
+<h2>12 - GetAttributeAvailableValues (for expert only)</h2>
 <ul>
 <Li><Strong>Description: </Strong> Return a list of string containing all available values of a DevString attribute.<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_STRING</Strong>
@@ -199,35 +227,21 @@ Roi and Binning are associated.<Br>&nbsp
 <Li><Strong>Argout:<Br>DEVVAR_STRINGARRAY</Strong>
  : List of strings containing the available values<Br>&nbsp
 <Li><Strong>Command allowed for: </Strong><Ul>
-<Li>Tango::STANDBY<Li>Tango::FAULT<Li>Tango::RUNNING</Ul>
+<Li>Tango::STANDBY</Ul>
 <Br>&nbsp
 </ul><Br>
 <Br>
-<A NAME="OpenShutter"><!-- --></A>
-<A NAME="OpenShutter"><!-- --></A>
-<h2>11 - OpenShutter (for expert only)</h2>
+<A NAME="ResetFileIndex"><!-- --></A>
+<A NAME="ResetFileIndex"><!-- --></A>
+<h2>13 - ResetFileIndex (for expert only)</h2>
 <ul>
-<Li><Strong>Description: </Strong> Open the shutter in case of Shutter being in available and in Manual Mode<Br>&nbsp
+<Li><Strong>Description: </Strong> Reset the file index<Br>&nbsp
 <Li><Strong>Argin:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Argout:<Br>DEV_VOID</Strong>
  : <Br>&nbsp
 <Li><Strong>Command allowed for: </Strong><Ul>
-<Li>Tango::STANDBY<Li>Tango::RUNNING</Ul>
-<Br>&nbsp
-</ul><Br>
-<Br>
-<A NAME="CloseShutter"><!-- --></A>
-<A NAME="CloseShutter"><!-- --></A>
-<h2>12 - CloseShutter (for expert only)</h2>
-<ul>
-<Li><Strong>Description: </Strong> Close the shutter in case of Shutter being in available and in Manual Mode<Br>&nbsp
-<Li><Strong>Argin:<Br>DEV_VOID</Strong>
- : <Br>&nbsp
-<Li><Strong>Argout:<Br>DEV_VOID</Strong>
- : <Br>&nbsp
-<Li><Strong>Command allowed for: </Strong><Ul>
-<Li>Tango::STANDBY<Li>Tango::RUNNING</Ul>
+<Li>Tango::STANDBY</Ul>
 <Br>&nbsp
 </ul><Br>
 <Br>

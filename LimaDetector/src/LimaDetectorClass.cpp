@@ -67,7 +67,7 @@ namespace LimaDetector_ns
 {
 //+----------------------------------------------------------------------------
 //
-// method : 		NexusResetBufferIndexClass::execute()
+// method : 		PrepareClass::execute()
 // 
 // description : 	method to trigger the execution of the command.
 //                PLEASE DO NOT MODIFY this method core without pogo   
@@ -78,12 +78,34 @@ namespace LimaDetector_ns
 // returns : The command output data (packed in the Any object)
 //
 //-----------------------------------------------------------------------------
-CORBA::Any *NexusResetBufferIndexClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+CORBA::Any *PrepareClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
 {
 
-	cout2 << "NexusResetBufferIndexClass::execute(): arrived" << endl;
+	cout2 << "PrepareClass::execute(): arrived" << endl;
 
-	((static_cast<LimaDetector *>(device))->nexus_reset_buffer_index());
+	((static_cast<LimaDetector *>(device))->prepare());
+	return new CORBA::Any();
+}
+
+//+----------------------------------------------------------------------------
+//
+// method : 		ResetFileIndexClass::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *ResetFileIndexClass::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "ResetFileIndexClass::execute(): arrived" << endl;
+
+	((static_cast<LimaDetector *>(device))->reset_file_index());
 	return new CORBA::Any();
 }
 
@@ -109,50 +131,6 @@ CORBA::Any *ResetBinningCmd::execute(Tango::DeviceImpl *device,const CORBA::Any 
 	return new CORBA::Any();
 }
 
-
-//+----------------------------------------------------------------------------
-//
-// method : 		CloseShutterCmd::execute()
-// 
-// description : 	method to trigger the execution of the command.
-//                PLEASE DO NOT MODIFY this method core without pogo   
-//
-// in : - device : The device on which the command must be executed
-//		- in_any : The command input data
-//
-// returns : The command output data (packed in the Any object)
-//
-//-----------------------------------------------------------------------------
-CORBA::Any *CloseShutterCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
-{
-
-	cout2 << "CloseShutterCmd::execute(): arrived" << endl;
-
-	((static_cast<LimaDetector *>(device))->close_shutter());
-	return new CORBA::Any();
-}
-
-//+----------------------------------------------------------------------------
-//
-// method : 		OpenShutterCmd::execute()
-// 
-// description : 	method to trigger the execution of the command.
-//                PLEASE DO NOT MODIFY this method core without pogo   
-//
-// in : - device : The device on which the command must be executed
-//		- in_any : The command input data
-//
-// returns : The command output data (packed in the Any object)
-//
-//-----------------------------------------------------------------------------
-CORBA::Any *OpenShutterCmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
-{
-
-	cout2 << "OpenShutterCmd::execute(): arrived" << endl;
-
-	((static_cast<LimaDetector *>(device))->open_shutter());
-	return new CORBA::Any();
-}
 
 //+----------------------------------------------------------------------------
 //
@@ -410,6 +388,11 @@ LimaDetectorClass *LimaDetectorClass::instance()
 //-----------------------------------------------------------------------------
 void LimaDetectorClass::command_factory()
 {
+	command_list.push_back(new PrepareClass("Prepare",
+		Tango::DEV_VOID, Tango::DEV_VOID,
+		"",
+		"",
+		Tango::OPERATOR));
 	command_list.push_back(new SnapCmd("Snap",
 		Tango::DEV_VOID, Tango::DEV_VOID,
 		"",
@@ -450,17 +433,7 @@ void LimaDetectorClass::command_factory()
 		"Attribute name",
 		"List of strings containing the available values",
 		Tango::EXPERT));
-	command_list.push_back(new OpenShutterCmd("OpenShutter",
-		Tango::DEV_VOID, Tango::DEV_VOID,
-		"",
-		"",
-		Tango::EXPERT));
-	command_list.push_back(new CloseShutterCmd("CloseShutter",
-		Tango::DEV_VOID, Tango::DEV_VOID,
-		"",
-		"",
-		Tango::EXPERT));
-	command_list.push_back(new NexusResetBufferIndexClass("NexusResetBufferIndex",
+	command_list.push_back(new ResetFileIndexClass("ResetFileIndex",
 		Tango::DEV_VOID, Tango::DEV_VOID,
 		"",
 		"",
@@ -585,10 +558,7 @@ void LimaDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	detectorWidthMaxAttrib	*detector_width_max = new detectorWidthMaxAttrib();
 	Tango::UserDefaultAttrProp	detector_width_max_prop;
 	detector_width_max_prop.set_unit(" ");
-	detector_width_max_prop.set_standard_unit(" ");
-	detector_width_max_prop.set_display_unit(" ");
 	detector_width_max_prop.set_format("%6d");
-	detector_width_max_prop.set_description("Detector width in pixels.");
 	detector_width_max->set_default_properties(detector_width_max_prop);
 	att_list.push_back(detector_width_max);
 
@@ -596,10 +566,7 @@ void LimaDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	detectorHeightMaxAttrib	*detector_height_max = new detectorHeightMaxAttrib();
 	Tango::UserDefaultAttrProp	detector_height_max_prop;
 	detector_height_max_prop.set_unit(" ");
-	detector_height_max_prop.set_standard_unit(" ");
-	detector_height_max_prop.set_display_unit(" ");
 	detector_height_max_prop.set_format("%6d");
-	detector_height_max_prop.set_description("Detector height in pixels.");
 	detector_height_max->set_default_properties(detector_height_max_prop);
 	att_list.push_back(detector_height_max);
 
@@ -613,6 +580,28 @@ void LimaDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	detector_pixel_depth_prop.set_description("Pixel resolution in bits:<br>\n8<br>\n16<br>\n32<br>");
 	detector_pixel_depth->set_default_properties(detector_pixel_depth_prop);
 	att_list.push_back(detector_pixel_depth);
+
+	//	Attribute : binnedWidthMax
+	binnedWidthMaxAttrib	*binned_width_max = new binnedWidthMaxAttrib();
+	Tango::UserDefaultAttrProp	binned_width_max_prop;
+	binned_width_max_prop.set_unit(" ");
+	binned_width_max_prop.set_standard_unit(" ");
+	binned_width_max_prop.set_display_unit(" ");
+	binned_width_max_prop.set_format("%6d");
+	binned_width_max_prop.set_description("Detector max width taking into account the current Horizontal Binning.");
+	binned_width_max->set_default_properties(binned_width_max_prop);
+	att_list.push_back(binned_width_max);
+
+	//	Attribute : binnedHeightMax
+	binnedHeightMaxAttrib	*binned_height_max = new binnedHeightMaxAttrib();
+	Tango::UserDefaultAttrProp	binned_height_max_prop;
+	binned_height_max_prop.set_unit(" ");
+	binned_height_max_prop.set_standard_unit(" ");
+	binned_height_max_prop.set_display_unit(" ");
+	binned_height_max_prop.set_format("%6d");
+	binned_height_max_prop.set_description("Detector max width taking into account the current Vertical Binning.");
+	binned_height_max->set_default_properties(binned_height_max_prop);
+	att_list.push_back(binned_height_max);
 
 	//	Attribute : triggerMode
 	triggerModeAttrib	*trigger_mode = new triggerModeAttrib();
@@ -748,15 +737,15 @@ void LimaDetectorClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	file_generation->set_memorized_init(false);
 	att_list.push_back(file_generation);
 
-	//	Attribute : flipX
-	flipXAttrib	*flip_x = new flipXAttrib();
-	flip_x->set_disp_level(Tango::EXPERT);
-	att_list.push_back(flip_x);
-
-	//	Attribute : flipY
-	flipYAttrib	*flip_y = new flipYAttrib();
-	flip_y->set_disp_level(Tango::EXPERT);
-	att_list.push_back(flip_y);
+	//	Attribute : fileNbFrames
+	fileNbFramesAttrib	*file_nb_frames = new fileNbFramesAttrib();
+	Tango::UserDefaultAttrProp	file_nb_frames_prop;
+	file_nb_frames_prop.set_unit(" ");
+	file_nb_frames->set_default_properties(file_nb_frames_prop);
+	file_nb_frames->set_disp_level(Tango::EXPERT);
+	file_nb_frames->set_memorized();
+	file_nb_frames->set_memorized_init(false);
+	att_list.push_back(file_nb_frames);
 
 	//	End of Automatic code generation
 	//-------------------------------------------------------------
@@ -825,7 +814,7 @@ void LimaDetectorClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "DetectorType";
-	prop_desc = "Define the type of the connected Detector .<BR>\nAvailables types :<BR>\n- AdscCCD<BR>\n- BaslerCCD<BR>\n- MarCCD<BR>\n- Pco<BR>\n- PerkinElmer<BR>\n- PilatusPixelDetector<BR>\n- ProsilicaCCD<BR>\n- PrincetonCCD<BR>\n- SimulatorCCD<BR>\n- XpadPixelDetector<BR>\n\n";
+	prop_desc = "Define the type of the connected Detector .<BR>\nAvailables types :<BR>\n- AdscCCD<BR>\n- AviexCCD<br>\n- BaslerCCD<BR>\n- Eiger<br>\n- Hamamatsu<br>\n- MarCCD<BR>\n- Pco<BR>\n- PerkinElmer<BR>\n- PilatusPixelDetector<BR>\n- ProsilicaCCD<BR>\n- PrincetonCCD<BR>\n- SimulatorCCD<BR>\n- XpadPixelDetector<BR>\n\n";
 	prop_def  = "SimulatorCCD";
 	vect_data.clear();
 	vect_data.push_back("SimulatorCCD");
@@ -840,10 +829,25 @@ void LimaDetectorClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 
 	prop_name = "DetectorPixelDepth";
-	prop_desc = "Define the pixel depth of the detector : <br>\nAvailables values : <br>\n- 8 <br>\n- 16<br>\n- 32<br>";
+	prop_desc = "Define the pixel depth of the detector : <br>\nAvailables values : <br>\n- 8 <br>\n- 16<br>\n- 32<br>\n- 32S<br>";
 	prop_def  = "16";
 	vect_data.clear();
 	vect_data.push_back("16");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "SpecialDisplayType";
+	prop_desc = "Special type of the image attribute for display and saving (NOT_USED, FLOAT, ...)";
+	prop_def  = "NOT_USED";
+	vect_data.clear();
+	vect_data.push_back("NOT_USED");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -859,6 +863,21 @@ void LimaDetectorClass::set_default_property()
 	prop_def  = "NONE";
 	vect_data.clear();
 	vect_data.push_back("NONE");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "ImageSource";
+	prop_desc = "Choose the source of Data given to the image attribute :<br>\n- VIDEO : use ctVideo->LastImage()\n- ACQUISITION : use ctControl->ReadImage()";
+	prop_def  = "VIDEO";
+	vect_data.clear();
+	vect_data.push_back("VIDEO");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -914,8 +933,23 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
+	prop_name = "FileTargetPath";
+	prop_desc = "Define the Path where Files will be generated, only when savingFile is checked.\n\n";
+	prop_def  = "./data";
+	vect_data.clear();
+	vect_data.push_back("./data");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
 	prop_name = "FileNbFrames";
-	prop_desc = "Define the amount of frames stored in the target file.<br>\nIf Nexus file, this is the NbAcqPerFile.";
+	prop_desc = "";
 	prop_def  = "1";
 	vect_data.clear();
 	vect_data.push_back("1");
@@ -929,11 +963,56 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
-	prop_name = "FileTargetPath";
-	prop_desc = "Define the Path where Files will be generated, only when savingFile is checked.\n\n";
-	prop_def  = "./data";
+	prop_name = "FileWriteMode";
+	prop_desc = "Available only for Nexus format : Fix the SetWriteMode(). <br>\nAvailable values :<br>\n- IMMEDIATE<br>\n- SYNCHRONOUS<br>\n- DELAYED";
+	prop_def  = "IMMEDIATE";
 	vect_data.clear();
-	vect_data.push_back("./data");
+	vect_data.push_back("IMMEDIATE");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "FileMemoryMode";
+	prop_desc = "Available only for Nexus format : Fix the SetDataItemMemoryMode().<br>\nAvailable values :<br>\n- COPY<br>\n- NO_COPY";
+	prop_def  = "COPY";
+	vect_data.clear();
+	vect_data.push_back("COPY");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "BufferMaxMemoryPercent";
+	prop_desc = "Define the Percent of Memory reserved by buffer control (from 0 to 100 %).";
+	prop_def  = "70";
+	vect_data.clear();
+	vect_data.push_back("70");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "UsePrepareCmd";
+	prop_desc = "";
+	prop_def  = "false";
+	vect_data.clear();
+	vect_data.push_back("false");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -981,9 +1060,11 @@ void LimaDetectorClass::set_default_property()
 
 	prop_name = "DebugFormats";
 	prop_desc = "Define Lima traces format.<BR>\nAvailables values :<BR>\n- DateTime<BR>\n- Thread<BR>\n- Module<BR>\n- Obj<BR>\n- Funct<BR>\n- FileLine<BR>";
-	prop_def  = "DateTime\nFunct";
+	prop_def  = "DateTime\nModule\nType\nFunct";
 	vect_data.clear();
 	vect_data.push_back("DateTime");
+	vect_data.push_back("Module");
+	vect_data.push_back("Type");
 	vect_data.push_back("Funct");
 	if (prop_def.length()>0)
 	{
@@ -1193,26 +1274,10 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
-	prop_name = "MemorizedFlipX";
-	prop_desc = "Memorize/Define the flipX attribute at Init device<br>";
-	prop_def  = "false";
+	prop_name = "MemorizedFileNbFrames";
+	prop_desc = "";
+	prop_def  = "";
 	vect_data.clear();
-	vect_data.push_back("false");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedFlipY";
-	prop_desc = "Memorize/Define the flipY attribute at Init device<br>";
-	prop_def  = "false";
-	vect_data.clear();
-	vect_data.push_back("false");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);

@@ -38,6 +38,15 @@ static const char *RcsId = "$Id:  $";
 #endif
 #include <LimaDetectorClass.h>
 
+
+#ifdef LAYOUT_ENABLED
+#include <LayoutClass.h>
+#endif
+
+#ifdef ROICOUNTERS_ENABLED
+#include <RoiCountersClass.h>
+#endif
+
 #ifdef SIMULATOR_ENABLED
 #include <SimulatorCCDClass.h>
 #endif
@@ -82,6 +91,14 @@ static const char *RcsId = "$Id:  $";
 #include <PerkinElmerClass.h>
 #endif
 
+#ifdef MERLIN_ENABLED
+#include <MerlinClass.h>
+#endif
+
+#ifdef ANDOR_ENABLED
+#include <AndorCCDClass.h>
+#endif
+
 #ifdef ANDOR3_ENABLED
 #include <Andor3Class.h>
 #endif
@@ -90,8 +107,12 @@ static const char *RcsId = "$Id:  $";
 #include <VieworksVPClass.h>
 #endif
 
-#ifdef MERLIN_ENABLED
-#include <MerlinClass.h>
+#ifdef HAMAMATSU_ENABLED
+#include <HamamatsuClass.h>
+#endif
+
+#ifdef EIGER_ENABLED
+#include <EigerClass.h>
 #endif
 
 #ifndef WIN32
@@ -150,16 +171,36 @@ void Tango::DServer::class_factory()
     add_class(PerkinElmer_ns::PerkinElmerClass::init("PerkinElmer"));
 #endif
 
+#ifdef MERLIN_ENABLED
+    add_class(Merlin_ns::MerlinClass::init("Merlin"));
+#endif
+
+#ifdef ANDOR_ENABLED
+    add_class(AndorCCD_ns::AndorCCDClass::init("AndorCCD"));
+#endif
+	
 #ifdef ANDOR3_ENABLED
     add_class(Andor3_ns::Andor3Class::init("Andor3"));
 #endif
 
 #ifdef VIEWORKSVP_ENABLED
-    add_class(VieworksVP_ns::VieworksVPClass::init("VieworksVP"));
+    add_class(VieworksVP_ns::Andor3Class::init("VieworksVP"));
 #endif
 
-#ifdef MERLIN_ENABLED
-    add_class(Merlin_ns::MerlinClass::init("Merlin"));
+#ifdef HAMAMATSU_ENABLED
+    add_class(Hamamatsu_ns::HamamatsuClass::init("Hamamatsu"));
 #endif
+
+#ifdef EIGER_ENABLED
+    add_class(Eiger_ns::EigerClass::init("Eiger"));
+#endif
+
+#ifdef LAYOUT_ENABLED    
+    add_class(Layout_ns::LayoutClass::init("Layout"));
+#endif
+	
+#ifdef ROICOUNTERS_ENABLED    
+    add_class(RoiCounters_ns::RoiCountersClass::init("RoiCounters"));
+#endif	
 }
 

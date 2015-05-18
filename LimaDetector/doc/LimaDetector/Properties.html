@@ -117,6 +117,12 @@ Nota:<br>
 This property is usefull only for detectors having video capabilities.<BR>
 Otherwise, use only NONE.</Font></Td></Tr>
 
+<Tr><Td><b><a href=#Dev_DefaultValues>ImageSource </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
+<Td><Font Size=-1>Choose the source of Data given to the image attribute :<br>
+- VIDEO : use ctVideo->LastImage()
+- ACQUISITION : use ctControl->ReadImage()</Font></Td></Tr>
+
 <Tr><Td><b><a href=#Dev_DefaultValues>FileFormat </a></b></Td>
 <Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
 <Td><Font Size=-1>Define the format of image files :<BR>
@@ -138,16 +144,38 @@ Nota :<br>
 %04d mean that file name index will be end with exactly  4 digits filled by '0' if necessary .<br>
 </Font></Td></Tr>
 
-<Tr><Td><b><a href=#Dev_DefaultValues>FileNbFrames </a></b></Td>
-<Td><Font Size=-1>Tango::DEV_LONG</Font></Td>
-<Td><Font Size=-1>Define the amount of frames stored in the target file.<br>
-If Nexus file, this is the NbAcqPerFile.</Font></Td></Tr>
-
 <Tr><Td><b><a href=#Dev_DefaultValues>FileTargetPath </a></b></Td>
 <Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
 <Td><Font Size=-1>Define the Path where Files will be generated, only when savingFile is checked.
 
 </Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>FileNbFrames </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_LONG</Font></Td>
+<Td><Font Size=-1></Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>FileWriteMode </a></b></Td>
+<Td><Font Size=-1>string</Font></Td>
+<Td><Font Size=-1>Available only for Nexus format : Fix the SetWriteMode(). <br>
+Available values :<br>
+- IMMEDIATE<br>
+- SYNCHRONOUS<br>
+- DELAYED</Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>FileMemoryMode </a></b></Td>
+<Td><Font Size=-1>string</Font></Td>
+<Td><Font Size=-1>Available only for Nexus format : Fix the SetDataItemMemoryMode().<br>
+Available values :<br>
+- COPY<br>
+- NO_COPY</Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>BufferMaxMemoryPercent </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_USHORT</Font></Td>
+<Td><Font Size=-1>Define the Percent of Memory reserved by buffer control (from 0 to 100 %).</Font></Td></Tr>
+
+<Tr><Td><b><a href=#Dev_DefaultValues>UsePrepareCmd </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_BOOLEAN</Font></Td>
+<Td><Font Size=-1></Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>DebugModules </a></b></Td>
 <Td><Font Size=-1>Array of string</Font></Td>
@@ -211,7 +239,7 @@ Availables values :<br>
 - ACCUMULATION<br></Font></Td></Tr>
 
 <Tr><Td><b><a href=#Dev_DefaultValues>MemorizedTriggerMode </a></b></Td>
-<Td><Font Size=-1>string</Font></Td>
+<Td><Font Size=-1>Tango::DEV_STRING</Font></Td>
 <Td><Font Size=-1>Memorize/Define the triggerMode attribute at Init device<br>
 Availables values :<br>
 - INTERNAL_SINGLE<br>
@@ -259,13 +287,9 @@ Availables values :<br>
 <Td><Font Size=-1>Tango::DEV_BOOLEAN</Font></Td>
 <Td><Font Size=-1>Memorize/Define the fileGeneration attribute at Init device<br></Font></Td></Tr>
 
-<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedFlipX </a></b></Td>
-<Td><Font Size=-1>Tango::DEV_BOOLEAN</Font></Td>
-<Td><Font Size=-1>Memorize/Define the flipX attribute at Init device<br></Font></Td></Tr>
-
-<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedFlipY </a></b></Td>
-<Td><Font Size=-1>Tango::DEV_BOOLEAN</Font></Td>
-<Td><Font Size=-1>Memorize/Define the flipY attribute at Init device<br></Font></Td></Tr>
+<Tr><Td><b><a href=#Dev_DefaultValues>MemorizedFileNbFrames </a></b></Td>
+<Td><Font Size=-1>Tango::DEV_LONG</Font></Td>
+<Td><Font Size=-1></Font></Td></Tr>
 
 </Table>
 
@@ -297,6 +321,10 @@ Availables values :<br>
         <td>NONE</td>
     </Tr>
     <Tr>
+        <Td>ImageSource</Td>
+        <td>VIDEO</td>
+    </Tr>
+    <Tr>
         <Td>FileFormat</Td>
         <td>NXS</td>
     </Tr>
@@ -309,12 +337,28 @@ Availables values :<br>
         <td>%06d</td>
     </Tr>
     <Tr>
+        <Td>FileTargetPath</Td>
+        <td>./data</td>
+    </Tr>
+    <Tr>
         <Td>FileNbFrames</Td>
         <td>1</td>
     </Tr>
     <Tr>
-        <Td>FileTargetPath</Td>
-        <td>./data</td>
+        <Td>FileWriteMode</Td>
+        <td>IMMEDIATE</td>
+    </Tr>
+    <Tr>
+        <Td>FileMemoryMode</Td>
+        <td>COPY</td>
+    </Tr>
+    <Tr>
+        <Td>BufferMaxMemoryPercent</Td>
+        <td>70</td>
+    </Tr>
+    <Tr>
+        <Td>UsePrepareCmd</Td>
+        <td>false</td>
     </Tr>
     <Tr>
         <Td>DebugModules</Td>
@@ -332,6 +376,8 @@ Availables values :<br>
     <Tr>
         <Td>DebugFormats</Td>
         <td>	DateTime<Br>
+	Module<Br>
+	Type<Br>
 	Funct</td>
     </Tr>
     <Tr>
@@ -387,12 +433,8 @@ Availables values :<br>
         <td>false</td>
     </Tr>
     <Tr>
-        <Td>MemorizedFlipX</Td>
-        <td>false</td>
-    </Tr>
-    <Tr>
-        <Td>MemorizedFlipY</Td>
-        <td>false</td>
+        <Td>MemorizedFileNbFrames</Td>
+        <td>No default value</td>
     </Tr>
 </Table>
 
