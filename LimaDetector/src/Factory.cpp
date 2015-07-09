@@ -159,15 +159,20 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("XpadModel"));
                 db_data.push_back(Tango::DbDatum("CalibrationAdjustingNumber"));
+				db_data.push_back(Tango::DbDatum("MinLatencyTimeMs"));
+
                 (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
                 std::string xpad_model;
                 Tango::DevULong calibration_adjusting_number;
+				Tango::DevDouble min_latency_time_ms;
 
                 db_data[0] >> xpad_model;
                 db_data[1] >> calibration_adjusting_number;
+				db_data[2] >> min_latency_time_ms;
 
                 m_camera = static_cast<void*> (new Xpad::Camera(xpad_model));
                 static_cast<Xpad::Camera*> (m_camera)->setCalibrationAdjustingNumber(calibration_adjusting_number);
+				static_cast<Xpad::Camera*> (m_camera)->setMinLatencyTimeMs(min_latency_time_ms);
 
                 m_interface = static_cast<void*> (new Xpad::Interface(*static_cast<Xpad::Camera*> (m_camera)));
                 m_control = new CtControl(static_cast<Xpad::Interface*> (m_interface));
