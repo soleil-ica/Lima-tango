@@ -993,6 +993,21 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
+	prop_name = "FileTimestampEnabled";
+	prop_desc = "Define wether the timestamp is requested in the Nexus file or not<br>";
+	prop_def  = "true";
+	vect_data.clear();
+	vect_data.push_back("true");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
 	prop_name = "BufferMaxMemoryPercent";
 	prop_desc = "Define the Percent of Memory reserved by buffer control (from 0 to 100 %).";
 	prop_def  = "70";

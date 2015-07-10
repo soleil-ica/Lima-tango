@@ -216,7 +216,8 @@ void SimulatorCCD::get_device_property()
 	//	Try to initialize MemorizedFillType from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
 	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedFillType;
-	else {
+    else
+    {
 		//	Try to initialize MemorizedFillType from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
 		if (def_prop.is_empty()==false)	def_prop  >>  memorizedFillType;
@@ -227,7 +228,8 @@ void SimulatorCCD::get_device_property()
 	//	Try to initialize MemorizedGrowFactor from class property
 	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
 	if (cl_prop.is_empty()==false)	cl_prop  >>  memorizedGrowFactor;
-	else {
+    else
+    {
 		//	Try to initialize MemorizedGrowFactor from default device value
 		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
 		if (def_prop.is_empty()==false)	def_prop  >>  memorizedGrowFactor;
@@ -315,21 +317,22 @@ void SimulatorCCD::read_fillType(Tango::Attribute &attr)
     try
     {
         std::string strFillType;
-        FrameBuilder::FillType eFillType;
+        Simulator::FrameBuilder::FillType eFillType;
         m_camera->getFrameBuilder()->getFillType(eFillType);
 
         switch (eFillType)
         {
-            case FrameBuilder::FillType::Gauss:			strFillType = C_STR_GAUSS;
+            case Simulator::FrameBuilder::FillType::Gauss:
+                strFillType = STR_GAUSS;
                 break;
-            case FrameBuilder::FillType::Diffraction:	strFillType = C_STR_DIFFRACTION;
+            case Simulator::FrameBuilder::FillType::Diffraction:
+                strFillType = STR_DIFFRACTION;
                 break;
             default:
             {
-                Tango::Except::throw_exception(
-                                               static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                               static_cast<const char*> ("Unexpected filltype value."),
-                                               static_cast<const char*> ("SimulatorCCD::read_fillType"));
+                Tango::Except::throw_exception("TANGO_DEVICE_ERROR",
+                                               "Unexpected filltype value.",
+                                               "SimulatorCCD::read_fillType");
             }
         }
 
@@ -342,18 +345,17 @@ void SimulatorCCD::read_fillType(Tango::Attribute &attr)
         ERROR_STREAM << df << endl;
         //- rethrow exception
         Tango::Except::re_throw_exception(df,
-                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                          static_cast<const char*> ("SimulatorCCD::read_fillType"));
+                                          "TANGO_DEVICE_ERROR",
+                                          string(df.errors[0].desc).c_str(),
+                                          "SimulatorCCD::read_fillType");
     }
     catch (Exception& e)
     {
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
-        Tango::Except::throw_exception(
-                                       static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                       static_cast<const char*> (e.getErrMsg().c_str()),
-                                       static_cast<const char*> ("SimulatorCCD::read_fillType"));
+        Tango::Except::throw_exception("TANGO_DEVICE_ERROR",
+                                       e.getErrMsg().c_str(),
+                                       "SimulatorCCD::read_fillType");
     }
 }
 
@@ -374,25 +376,25 @@ void SimulatorCCD::write_fillType(Tango::WAttribute &attr)
         attr.get_write_value(attr_fillType_write);
         string current = attr_fillType_write;
         transform(current.begin(), current.end(), current.begin(), ::toupper);
-        if ((current != C_STR_GAUSS) &&
-            (current != C_STR_DIFFRACTION)
+        if ((current != STR_GAUSS) &&
+            (current != STR_DIFFRACTION)
             )
         {            
             strcpy(attr_fillType_write, m_fillType.c_str());
-            Tango::Except::throw_exception((const char*) ("CONFIGURATION_ERROR"),
-                                           (const char*) ("Possible fillType values are:"
+            Tango::Except::throw_exception("CONFIGURATION_ERROR",
+                                           "Possible fillType values are:"
                                            "\n- GAUSS"
-                                           "\n- DIFFRACTION"),
-                                           (const char*) ("SimulatorCCD::write_fillType"));
+                                           "\n- DIFFRACTION",
+                                           "SimulatorCCD::write_fillType");
         }
 
         //- THIS IS AN AVAILABLE FILLTYPE
         m_fillType = current;
 
-        if (C_STR_GAUSS == m_fillType)
-            m_camera->getFrameBuilder()->setFillType(FrameBuilder::FillType::Gauss);
-        else if (C_STR_DIFFRACTION == m_fillType)
-            m_camera->getFrameBuilder()->setFillType(FrameBuilder::FillType::Diffraction);
+        if (STR_GAUSS == m_fillType)
+            m_camera->getFrameBuilder()->setFillType(Simulator::FrameBuilder::FillType::Gauss);
+        else if (STR_DIFFRACTION == m_fillType)
+            m_camera->getFrameBuilder()->setFillType(Simulator::FrameBuilder::FillType::Diffraction);
 		
         yat4tango::PropertyHelper::set_property(this, "MemorizedFillType", m_fillType);
     }
@@ -401,18 +403,17 @@ void SimulatorCCD::write_fillType(Tango::WAttribute &attr)
         ERROR_STREAM << df << endl;
         //- rethrow exception
         Tango::Except::re_throw_exception(df,
-                                          static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                          static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                          static_cast<const char*> ("SimulatorCCD::write_fillType"));
+                                          "TANGO_DEVICE_ERROR",
+                                          string(df.errors[0].desc).c_str(),
+                                          "SimulatorCCD::write_fillType");
     }
     catch (Exception& e)
     {
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
-        Tango::Except::throw_exception(
-                                       static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                       static_cast<const char*> (e.getErrMsg().c_str()),
-                                       static_cast<const char*> ("SimulatorCCD::write_fillType"));
+        Tango::Except::throw_exception("TANGO_DEVICE_ERROR",
+                                       e.getErrMsg().c_str(),
+                                       "SimulatorCCD::write_fillType");
     }
 
 }
@@ -443,18 +444,17 @@ void SimulatorCCD::read_growFactor(Tango::Attribute &attr)
             ERROR_STREAM << df << endl;
             //- rethrow exception
             Tango::Except::re_throw_exception(df,
-                                              static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                              static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                              static_cast<const char*> ("SimulatorCCD::read_growFactor"));
+                                              "TANGO_DEVICE_ERROR",
+                                              string(df.errors[0].desc).c_str(),
+                                              "SimulatorCCD::read_growFactor");
         }
         catch (lima::Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-                                           static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                           static_cast<const char*> (e.getErrMsg().c_str()),
-                                           static_cast<const char*> ("SimulatorCCD::read_growFactor"));
+            Tango::Except::throw_exception("TANGO_DEVICE_ERROR",
+                                           e.getErrMsg().c_str(),
+                                           "SimulatorCCD::read_growFactor");
         }
     }
 }
@@ -485,18 +485,17 @@ void SimulatorCCD::write_growFactor(Tango::WAttribute &attr)
             ERROR_STREAM << df << endl;
             //- rethrow exception
             Tango::Except::re_throw_exception(df,
-                                              static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                              static_cast<const char*> (string(df.errors[0].desc).c_str()),
-                                              static_cast<const char*> ("SimulatorCCD::write_growFactor"));
+                                              "TANGO_DEVICE_ERROR",
+                                              string(df.errors[0].desc).c_str(),
+                                              "SimulatorCCD::write_growFactor");
         }
         catch (lima::Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-                                           static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-                                           static_cast<const char*> (e.getErrMsg().c_str()),
-                                           static_cast<const char*> ("SimulatorCCD::write_growFactor"));
+            Tango::Except::throw_exception("TANGO_DEVICE_ERROR",
+                                           e.getErrMsg().c_str(),
+                                           "SimulatorCCD::write_growFactor");
         }
     }
 }
