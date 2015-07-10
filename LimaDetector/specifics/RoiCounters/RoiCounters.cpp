@@ -192,7 +192,7 @@ void RoiCounters::init_device()
             attr_y_array[i] = (Tango::DevULong)(__y.at(i));
             attr_width_array[i] = (Tango::DevULong)(__width.at(i));
             attr_height_array[i] = (Tango::DevULong)(__height.at(i));
-        
+
             ssName.str("");
             ssName << "x" << i;
             strName = ssName.str();
@@ -202,7 +202,7 @@ void RoiCounters::init_device()
             yat4tango::DynamicAttributeWriteCallbackData cbd_x;
             cbd_x.tga = &x;
             write_rois_callback(cbd_x);
-        
+
             ssName.str("");
             ssName << "y" << i;
             strName = ssName.str();
@@ -212,7 +212,7 @@ void RoiCounters::init_device()
             yat4tango::DynamicAttributeWriteCallbackData cbd_y;
             cbd_y.tga = &y;
             write_rois_callback(cbd_y);
-        
+
             ssName.str("");
             ssName << "width" << i;
             strName = ssName.str();
@@ -222,7 +222,7 @@ void RoiCounters::init_device()
             yat4tango::DynamicAttributeWriteCallbackData cbd_width;
             cbd_width.tga = &width;
             write_rois_callback(cbd_width);
-                   
+
             ssName.str("");
             ssName << "height" << i;
             strName = ssName.str();
@@ -365,13 +365,13 @@ void RoiCounters::get_device_property()
 
     //	End of Automatic code generation
     //------------------------------------------------------------------
-    PropertyHelper::create_property_if_empty(this, dev_prop, "2", "NbRoiCounters");
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "2", "NbRoiCounters");
     vector<string> vecXY(2, "0");
-    PropertyHelper::create_property_if_empty(this, dev_prop, vecXY, "__x");
-    PropertyHelper::create_property_if_empty(this, dev_prop, vecXY, "__y");
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, vecXY, "__x");
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, vecXY, "__y");
     vector<string> vecWidthHeight(2, "10");
-    PropertyHelper::create_property_if_empty(this, dev_prop, vecWidthHeight, "__width");
-    PropertyHelper::create_property_if_empty(this, dev_prop, vecWidthHeight, "__height");
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, vecWidthHeight, "__width");
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, vecWidthHeight, "__height");
 }
 
 //+----------------------------------------------------------------------------
@@ -386,10 +386,10 @@ void RoiCounters::always_executed_hook()
 {
     yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
     try
-    {    
+    {
         if(!m_is_device_initialized)//nothing to do ! device need init
             return;
-        
+
         //- get the singleton control objet used to pilot the lima framework
         m_ct = ControlFactory::instance().get_control("RoiCounters");
 
@@ -435,10 +435,9 @@ void RoiCounters::read_attr_hardware(vector<long> &attr_list)
     {
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
-        Tango::Except::throw_exception(
-        static_cast<const char*>("TANGO_DEVICE_ERROR"),
-        static_cast<const char*>(e.getErrMsg().c_str()),
-        static_cast<const char*>("RoiCounters::read_attr_hardware"));
+        Tango::Except::throw_exception("TANGO_DEVICE_ERROR",
+                                       e.getErrMsg().c_str(),
+                                       "RoiCounters::read_attr_hardware");
     }
 }
 //+----------------------------------------------------------------------------
@@ -462,9 +461,9 @@ void RoiCounters::read_version(Tango::Attribute &attr)
         ERROR_STREAM << df << endl;
         //- rethrow exception
         Tango::Except::re_throw_exception(df,
-        static_cast<const char*>("TANGO_DEVICE_ERROR"),
-        static_cast<const char*>(string(df.errors[0].desc).c_str()),
-        static_cast<const char*>("RoiCounters::read_version()"));
+                                          "TANGO_DEVICE_ERROR",
+                                          string(df.errors[0].desc).c_str(),
+                                          "RoiCounters::read_version()");
     }
 }
 
@@ -513,10 +512,9 @@ void RoiCounters::update_roi()
     {
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
-        Tango::Except::throw_exception(
-        static_cast<const char*>("TANGO_DEVICE_ERROR"),
-        static_cast<const char*>(e.getErrMsg().c_str()),
-        static_cast<const char*>("RoiCounters::update_roi"));
+        Tango::Except::throw_exception("TANGO_DEVICE_ERROR",
+                                       e.getErrMsg().c_str(),
+                                       "RoiCounters::update_roi");
     }
     INFO_STREAM << "RoiCounters::update_roi() - [END]" << endl;
 }
@@ -579,15 +577,14 @@ void RoiCounters::read_roi()
     catch (ProcessException& p)
     {
         ERROR_STREAM<<"ERROR ProcessException"<<endl;
-    }    
+    }
     catch(Exception& e)
     {
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
-        Tango::Except::throw_exception(
-        static_cast<const char*>("TANGO_DEVICE_ERROR"),
-        static_cast<const char*>(e.getErrMsg().c_str()),
-        static_cast<const char*>("RoiCounters::read_roi"));
+        Tango::Except::throw_exception("TANGO_DEVICE_ERROR",
+                                       e.getErrMsg().c_str(),
+                                       "RoiCounters::read_roi");
     }
     DEBUG_STREAM << "RoiCounters::read_roi() - [END]" << endl;
 }
@@ -614,10 +611,9 @@ void RoiCounters::remove_roi(std::string roiId)
     {
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
-        Tango::Except::throw_exception(
-        static_cast<const char*>("TANGO_DEVICE_ERROR"),
-        static_cast<const char*>(e.getErrMsg().c_str()),
-        static_cast<const char*>("RoiCounters::remove_roi"));
+        Tango::Except::throw_exception("TANGO_DEVICE_ERROR",
+                                       e.getErrMsg().c_str(),
+                                       "RoiCounters::remove_roi");
     }
 }
 
@@ -679,15 +675,15 @@ bool RoiCounters::create_all_dynamic_attributes(void)
     {
         m_status_message.str("");
         m_status_message  <<"Failed to instanciate dynamic attributes  - "
-                <<"nbRoiCounters property must not exceed : "
-                << MAX_NB_ROICOUNTERS
-                <<std::endl;
+        <<"nbRoiCounters property must not exceed : "
+        << MAX_NB_ROICOUNTERS
+        <<std::endl;
         ERROR_STREAM << m_status_message.str() << std::endl;
         set_state(Tango::FAULT);
         set_status(m_status_message.str());
-        return false;        
+        return false;
     }
-    
+
     //- add some dynamic attributes
     try
     {
@@ -774,11 +770,11 @@ void RoiCounters::read_stats_callback(yat4tango::DynamicAttributeReadCallbackDat
         std::string myAttributeName = cbd.dya->get_name();
 
         if(
-        (myAttributeName.find("sum") != std::string::npos) ||
-        (myAttributeName.find("average") != std::string::npos) ||
-        (myAttributeName.find("std") != std::string::npos) ||
-        (myAttributeName.find("minValue") != std::string::npos) ||
-        (myAttributeName.find("maxValue") != std::string::npos))
+           (myAttributeName.find("sum") != std::string::npos) ||
+           (myAttributeName.find("average") != std::string::npos) ||
+           (myAttributeName.find("std") != std::string::npos) ||
+           (myAttributeName.find("minValue") != std::string::npos) ||
+           (myAttributeName.find("maxValue") != std::string::npos))
         {
             val = (Tango::DevDouble*)cbd.dya->get_user_data<Tango::DevDouble>();
 
@@ -798,9 +794,9 @@ void RoiCounters::read_stats_callback(yat4tango::DynamicAttributeReadCallbackDat
         ERROR_STREAM << df << endl;
         //- rethrow exception
         Tango::Except::re_throw_exception(df,
-        static_cast<const char*>("TANGO_DEVICE_ERROR"),
-        static_cast<const char*>(string(df.errors[0].desc).c_str()),
-        static_cast<const char*>("RoiCounters::read_stats_callback"));
+                                          "TANGO_DEVICE_ERROR",
+                                          string(df.errors[0].desc).c_str(),
+                                          "RoiCounters::read_stats_callback");
     }
     DEBUG_STREAM << "RoiCounters::read_stats_callback(yat4tango::DynamicAttributeReadCallbackData& cbd) - [END]" << endl;
 }
@@ -855,9 +851,9 @@ void RoiCounters::read_rois_callback(yat4tango::DynamicAttributeReadCallbackData
         ERROR_STREAM << df << endl;
         //- rethrow exception
         Tango::Except::re_throw_exception(df,
-        static_cast<const char*>("TANGO_DEVICE_ERROR"),
-        static_cast<const char*>(string(df.errors[0].desc).c_str()),
-        static_cast<const char*>("RoiCounters::read_rois_callback"));
+                                          "TANGO_DEVICE_ERROR",
+                                          string(df.errors[0].desc).c_str(),
+                                          "RoiCounters::read_rois_callback");
     }
     DEBUG_STREAM << "RoiCounters::read_rois_callback(yat4tango::DynamicAttributeReadCallbackData& cbd) - [END]" << endl;
 }
@@ -914,30 +910,29 @@ void RoiCounters::write_rois_callback(yat4tango::DynamicAttributeWriteCallbackDa
         __x.at(attrIndex)       = attr_x_array[attrIndex];
         __y.at(attrIndex)       = attr_y_array[attrIndex];
         __width.at(attrIndex)   = attr_width_array[attrIndex];
-        __height.at(attrIndex)  = attr_height_array[attrIndex];        
-        
-        PropertyHelper::set_property(this, "__x", __x);
-        PropertyHelper::set_property(this, "__y", __y);
-        PropertyHelper::set_property(this, "__width", __width);
-        PropertyHelper::set_property(this, "__height", __height);
+        __height.at(attrIndex)  = attr_height_array[attrIndex];
+
+        yat4tango::PropertyHelper::set_property(this, "__x", __x);
+        yat4tango::PropertyHelper::set_property(this, "__y", __y);
+        yat4tango::PropertyHelper::set_property(this, "__width", __width);
+        yat4tango::PropertyHelper::set_property(this, "__height", __height);
     }
     catch(Exception& e)
     {
         ERROR_STREAM << e.getErrMsg() << endl;
         //- throw exception
-        Tango::Except::throw_exception(
-        static_cast<const char*>("TANGO_DEVICE_ERROR"),
-        static_cast<const char*>(e.getErrMsg().c_str()),
-        static_cast<const char*>("RoiCounters::write_rois_callback"));
+        Tango::Except::throw_exception("TANGO_DEVICE_ERROR",
+                                       e.getErrMsg().c_str(),
+                                       "RoiCounters::write_rois_callback");
     }
     catch(Tango::DevFailed& df)
     {
         ERROR_STREAM << df << endl;
         //- rethrow exception
         Tango::Except::re_throw_exception(df,
-        static_cast<const char*>("TANGO_DEVICE_ERROR"),
-        static_cast<const char*>(string(df.errors[0].desc).c_str()),
-        static_cast<const char*>("RoiCounters::write_rois_callback"));
+                                          "TANGO_DEVICE_ERROR",
+                                          string(df.errors[0].desc).c_str(),
+                                          "RoiCounters::write_rois_callback");
     }
     INFO_STREAM << "RoiCounters::write_rois_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd) - [END]" << endl;
 }

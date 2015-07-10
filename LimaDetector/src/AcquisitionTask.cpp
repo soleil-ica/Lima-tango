@@ -12,6 +12,8 @@
 // ============================================================================
 #include <AcquisitionTask.h>
 
+#define TASK_WAITSTATE_DURATION_MS 10 // msec: -> 10 ms
+
 namespace LimaDetector_ns
 {
 // ============================================================================
@@ -174,6 +176,16 @@ void AcquisitionTask::process_message(yat::Message& msg) throw(Tango::DevFailed)
                 {
                     m_acq_conf.ct->stopAcq();
                     m_acq_conf.ct->video()->stopLive();
+
+                    // Ensure the plugin has finished acquiring to continue.
+                    CtControl::Status ctStatus;
+                    do
+                    {
+                        yat::Thread::sleep(TASK_WAITSTATE_DURATION_MS);
+                        m_acq_conf.ct->getStatus(ctStatus);
+                    }
+                    while (lima::AcqRunning == ctStatus.AcquisitionStatus);
+
                     m_acq_conf.ct->resetStatus(false);
                     set_state(Tango::STANDBY);
                     set_status(string("Waiting for request ..."));

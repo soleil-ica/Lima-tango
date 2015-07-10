@@ -59,8 +59,7 @@
 
 
 #define MAX_ATTRIBUTE_STRING_LENGTH     256
-//using namespace lima;
-using namespace yat4tango;
+
 namespace Layout_ns
 {
 
@@ -358,7 +357,7 @@ namespace Layout_ns
         std::map<long, operationParams >    m_mapOperations; 
         
         //LIMA objects
-        CtControl*                          m_ct;
+        lima::CtControl*                m_ct;
         LayoutTask*                     m_layout_task;
     };
 
