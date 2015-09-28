@@ -59,6 +59,7 @@ static const char *RcsId = "$Id:  $";
 //  ResetROI                     |  reset_roi()
 //  GetAttributeAvailableValues  |  get_attribute_available_values()
 //  ResetFileIndex               |  reset_file_index()
+//  ReloadROI                    |  reload_roi()
 //
 //===================================================================
 #include <tango.h>
@@ -75,6 +76,7 @@ namespace LimaDetector_ns
 {
 
 int LimaDetector::m_init_count = 0;
+const unsigned int ROI_SIZE = 4;
 
 //+----------------------------------------------------------------------------
 //
@@ -806,6 +808,12 @@ void LimaDetector::init_device()
 
     set_state(Tango::STANDBY);
     dev_state();
+
+    // Starting "video mode" automatically
+    if (autoStartVideo)
+    {
+        start();
+    }
 }
 
 
@@ -858,6 +866,7 @@ void LimaDetector::get_device_property()
     dev_prop.push_back(Tango::DbDatum("MemorizedNbFrames"));
     dev_prop.push_back(Tango::DbDatum("MemorizedFileGeneration"));
     dev_prop.push_back(Tango::DbDatum("MemorizedFileNbFrames"));
+	dev_prop.push_back(Tango::DbDatum("AutoStartVideo"));
 
     //	Call database and extract values
     //--------------------------------------------
@@ -1231,6 +1240,17 @@ void LimaDetector::get_device_property()
     //	And try to extract MemorizedFileNbFrames value from database
     if(dev_prop[i].is_empty() == false) dev_prop[i] >> memorizedFileNbFrames;
 
+	//	Try to initialize AutoStartVideo from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  autoStartVideo;
+	else {
+		//	Try to initialize AutoStartVideo from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  autoStartVideo;
+	}
+	//	And try to extract AutoStartVideo value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  autoStartVideo;
+
 
 
     //    End of Automatic code generation
@@ -1293,6 +1313,7 @@ void LimaDetector::get_device_property()
     yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "0", "MemorizedLatencyTime");
     yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "1", "MemorizedNbFrames");
     yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "false", "MemorizedFileGeneration");
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "false", "AutoStartVideo");
 }
 //+----------------------------------------------------------------------------
 //
@@ -3532,7 +3553,7 @@ void LimaDetector::set_roi(const Tango::DevVarULongArray *argin)
     //    Add your own code to control device here
     try
     {
-        if(argin->length() != 4)
+        if(argin->length() != ROI_SIZE)
         {
             //- throw exception
             Tango::Except::throw_exception("TANGO_DEVICE_ERROR",
@@ -3667,15 +3688,6 @@ void LimaDetector::reset_roi()
         m_ct->image()->getBin(bin);
         Roi roi(Point(0, 0), Size(size.getWidth() / bin.getX(), size.getHeight() / bin.getY()));
         m_ct->image()->setRoi(roi);
-
-        //- update Roi property
-        vector<short> myVector;
-        myVector.clear();
-        myVector.push_back(0);
-        myVector.push_back(0);
-        myVector.push_back(size.getWidth());
-        myVector.push_back(size.getHeight());
-        yat4tango::PropertyHelper::set_property(this, "MemorizedRoi", myVector);
     }
     catch(Tango::DevFailed& df)
     {
@@ -4133,6 +4145,43 @@ void LimaDetector::execute_close_shutter_callback(yat4tango::DynamicCommandExecu
 }
 
 
+
+
+//+------------------------------------------------------------------
+/**
+ *	method:	LimaDetector::reload_roi
+ *
+ *	description:	method to execute "ReloadROI"
+ *	This command allows reloading the last ROI values set using the SetROI command.
+ *
+ *
+ */
+//+------------------------------------------------------------------
+void LimaDetector::reload_roi()
+{
+	DEBUG_STREAM << "LimaDetector::reload_roi(): entering... !" << endl;
+
+    // Update property value
+    memorizedRoi = yat4tango::PropertyHelper::get_property<vector<short>>(this, "MemorizedRoi");
+
+    // Check if Roi is initialized
+	if ((memorizedRoi.at(0) < 0) || (memorizedRoi.at(1) < 0) || (memorizedRoi.at(2) <= 0) || (memorizedRoi.at(3) <= 0))
+    {
+        Tango::Except::throw_exception("CONFIGURATION_ERROR",
+                                       "No ROI was previously set, use SetROI to define a new ROI.",
+                                       "LimaDetector::reload_roi");
+    }
+
+    // Call the set_roi command
+    Tango::DevVarULongArray* roi = new Tango::DevVarULongArray();
+    roi->length(ROI_SIZE);
+    for (unsigned int i=0; i < ROI_SIZE; i++)
+    {
+        (*roi)[i] = memorizedRoi.at(i);
+    }
+
+    set_roi(roi);
+}
 
 
 } //	namespace

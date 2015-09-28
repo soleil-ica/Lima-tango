@@ -123,35 +123,6 @@ public:
 	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
 	{return (static_cast<BaslerCCD *>(dev))->is_packetSize_allowed(ty);}
 };
-
-class autoGainAttrib: public Tango::Attr
-{
-public:
-	autoGainAttrib():Attr("autoGain", Tango::DEV_BOOLEAN, Tango::READ_WRITE) {};
-	~autoGainAttrib() {};
-	
-	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<BaslerCCD *>(dev))->read_autoGain(att);}
-	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-	{(static_cast<BaslerCCD *>(dev))->write_autoGain(att);}
-	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<BaslerCCD *>(dev))->is_autoGain_allowed(ty);}
-};
-
-class gainAttrib: public Tango::Attr
-{
-public:
-	gainAttrib():Attr("gain", Tango::DEV_DOUBLE, Tango::READ_WRITE) {};
-	~gainAttrib() {};
-	
-	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
-	{(static_cast<BaslerCCD *>(dev))->read_gain(att);}
-	virtual void write(Tango::DeviceImpl *dev,Tango::WAttribute &att)
-	{(static_cast<BaslerCCD *>(dev))->write_gain(att);}
-	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
-	{return (static_cast<BaslerCCD *>(dev))->is_gain_allowed(ty);}
-};
-
 class temperatureAttrib: public Tango::Attr
 {
 public:
