@@ -45,6 +45,7 @@
 #include "tango.h"
 
 #include <yat4tango/PropertyHelper.h>
+#include <yat4tango/DynamicInterfaceManager.h>
 #include <yat/threading/Mutex.h>
 #include "lima/HwInterface.h"
 #include "lima/CtControl.h"
@@ -96,10 +97,6 @@ public :
 		Tango::DevDouble	*attr_frameRate_read;
 		Tango::DevDouble	*attr_dataRate_read;
 		Tango::DevDouble	*attr_temperature_read;
-		Tango::DevDouble	*attr_gain_read;
-		Tango::DevDouble	attr_gain_write;
-		Tango::DevBoolean	*attr_autoGain_read;
-		Tango::DevBoolean	attr_autoGain_write;
 		Tango::DevLong	*attr_packetSize_read;
 		Tango::DevLong	*attr_interPacketDelay_read;
 		Tango::DevLong	attr_interPacketDelay_write;
@@ -223,22 +220,6 @@ public :
  */
 	virtual void read_temperature(Tango::Attribute &attr);
 /**
- *	Extract real attribute values for gain acquisition result.
- */
-	virtual void read_gain(Tango::Attribute &attr);
-/**
- *	Write gain attribute values to hardware.
- */
-	virtual void write_gain(Tango::WAttribute &attr);
-/**
- *	Extract real attribute values for autoGain acquisition result.
- */
-	virtual void read_autoGain(Tango::Attribute &attr);
-/**
- *	Write autoGain attribute values to hardware.
- */
-	virtual void write_autoGain(Tango::WAttribute &attr);
-/**
  *	Extract real attribute values for packetSize acquisition result.
  */
 	virtual void read_packetSize(Tango::Attribute &attr);
@@ -278,14 +259,6 @@ public :
  *	Read/Write allowed for temperature attribute.
  */
 	virtual bool is_temperature_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for gain attribute.
- */
-	virtual bool is_gain_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for autoGain attribute.
- */
-	virtual bool is_autoGain_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for packetSize attribute.
  */
@@ -329,12 +302,84 @@ public :
 	// return true if the device is correctly initialized in init_device
 	bool is_device_initialized(){return m_is_device_initialized;};
 
+    void read_dynamicAttribute_callback(yat4tango::DynamicAttributeReadCallbackData& cbd);
+    void write_dynamicAttribute_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd);
+    void read_gain(Tango::Attribute &attr);
+    void write_gain(Tango::WAttribute &attr);
+    void read_autogain_enabled(Tango::Attribute &attr);
+    void write_autogain_enabled(Tango::WAttribute &attr);
+
+    //-------------------------------------------------------------------
+    /// Create a dynamic attribute
+    //-------------------------------------------------------------------
+    template <typename T>
+    void create_dynamic_attribute(std::string name,
+                                 int type,
+                                 Tango::AttrDataFormat format,
+                                 Tango::AttrWriteType writetype,
+                                 T* user_data)
+    {
+        DEBUG_STREAM << "Ultra::create_dynamic_attribute() - [BEGIN]" << endl;
+        INFO_STREAM << "\t- Create dynamic attribute [" << name << "]" << endl;
+        ////////////////////////////////////////////////////////////////////////////////////////
+        yat4tango::DynamicAttributeInfo dai;
+        dai.dev = this;
+
+        //- initialize the associated data
+        *user_data = 0;
+
+        //- specify the dyn. attr.  name
+        dai.tai.name = name;
+
+        //- associate the dyn. attr. with its data (see read_callback for usage)
+        dai.set_user_data(user_data);
+
+        //- describe the dynamic attr we want...
+        dai.tai.unit        = " ";
+        dai.tai.data_type   = type;
+        dai.tai.data_format = format;
+        dai.tai.writable    = writetype;
+        dai.tai.disp_level  = Tango::OPERATOR;
+        
+        //  //- cleanup tango db option: cleanup tango db when removing this dyn. attr. (i.e. erase its properties fom db)
+        //  dai.cdb = true;
+
+        if (dai.tai.writable == Tango::READ)
+        {
+            //- instanciate the read callback (called when the dyn. attr. is read)
+            //dai.rcb = yat4tango::DynamicAttributeReadCallback::instanciate(*this, &read_callback);
+        }
+        else if (dai.tai.writable == Tango::READ_WRITE)//don't care about read_with_write and others
+        {
+            //- instanciate the read callback (called when the dyn. attr. is read)
+            dai.rcb = yat4tango::DynamicAttributeReadCallback::instanciate(*this, &BaslerCCD::read_dynamicAttribute_callback);
+
+            //- instanciate the write callback (called when the dyn. attr. is written)
+            dai.wcb = yat4tango::DynamicAttributeWriteCallback::instanciate(*this, &BaslerCCD::write_dynamicAttribute_callback);
+        }
+
+        //- add the dyn. attr. to the device
+        m_dim.dynamic_attributes_manager().add_attribute(dai);
+        DEBUG_STREAM << "Ultra::create_dynamic_attribute() - [END]" << endl;
+    }
+
+    /// Create all the dynamic attributes
+    void create_dynamic_attributes();
+
 protected :    
     //    Add your own data members here
     //-----------------------------------------
+    //dynamic attributes objects
+    yat4tango::DynamicInterfaceManager m_dim;
 	
     bool                m_is_device_initialized ;
     stringstream        m_status_message;
+    bool                m_is_autogain_available;
+
+    Tango::DevBoolean*  m_is_autogain_enabled_read;
+    Tango::DevBoolean   m_is_autogain_enabled_write;
+    Tango::DevDouble*   m_gain_read;
+    Tango::DevDouble    m_gain_write;
     
     //lima OBJECTS
     Basler::Camera*       m_camera;    

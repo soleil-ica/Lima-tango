@@ -422,6 +422,12 @@ public:
  *	
  */
 	Tango::DevLong	memorizedFileNbFrames;
+/**
+ *	Allows calling automatically the "Start" command when:<br>
+ *	- The device starts.
+ *	- After calling the "Init" command.
+ */
+	Tango::DevBoolean	autoStartVideo;
 //@}
 
     /**
@@ -742,6 +748,10 @@ public:
  */
 	virtual bool is_ResetFileIndex_allowed(const CORBA::Any &any);
 /**
+ *	Execution allowed for ReloadROI command.
+ */
+	virtual bool is_ReloadROI_allowed(const CORBA::Any &any);
+/**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code
  *	@exception DevFailed
@@ -804,6 +814,11 @@ public:
  *	@exception DevFailed
  */
 	void	reset_file_index();
+/**
+ * This command allows reloading the last ROI values set using the SetROI command.
+ *	@exception DevFailed
+ */
+	void	reload_roi();
 
 /**
  *	Read the device properties from database
