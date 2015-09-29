@@ -1,7 +1,8 @@
+#!/usr/bin/env python
 ############################################################################
 # This file is part of LImA, a Library for Image Acquisition
 #
-# Copyright (C) : 2009-2011
+# Copyright (C) : 2009-2015
 # European Synchrotron Radiation Facility
 # BP 220, Grenoble 38043
 # FRANCE
@@ -63,7 +64,7 @@ from EnvHelper import get_sub_devices
 from EnvHelper import get_lima_camera_type, get_lima_device_name
 from EnvHelper import create_tango_objects
 from AttrHelper import get_attr_4u
-
+from AttrHelper import _getDictKey, _getDictValue
 from Lima import Core
 
 import plugins
@@ -420,8 +421,10 @@ class LimaCCDs(PyTango.Device_4Impl) :
                 self.ImageType2String[Bpp_type] = Bpp_name
                 self.ImageType2DataArrayType[Bpp_type] = Bpp_size
 
+        self.__Name2SubClass = {'acc_time_mode' : self.__control.acquisition}
+
         #Tango Enum to Lima Enum
-        self.__Prefix2SubClass = {'acc' : self.__control.acquisition,
+        self.__Prefix2SubClass = {'acc' : self.__control.accumulation,
                                   'acq' : self.__control.acquisition,
                                   'shutter' : self.__control.shutter,
                                   'saving' : self.__control.saving,
@@ -436,7 +439,11 @@ class LimaCCDs(PyTango.Device_4Impl) :
                                          'shutter_mode' : 'Mode',
 					 'image_rotation':'Rotation',
                                          'video_mode':'Mode',
-                                         'buffer_max_memory': 'MaxMemory'}
+                                         'buffer_max_memory': 'MaxMemory',
+                                         'acc_mode': 'Mode',
+                                         'acc_threshold_before': 'ThresholdBefore',
+                                         'acc_offset_before': 'OffsetBefore'}
+    
             
         self.__ShutterMode = {'MANUAL': Core.ShutterManual,
                               'AUTO_FRAME': Core.ShutterAutoFrame,
@@ -504,6 +511,11 @@ class LimaCCDs(PyTango.Device_4Impl) :
                                     '90' : Core.Rotation_90,
                                     '180' : Core.Rotation_180,
                                     '270' : Core.Rotation_270}
+ 
+        if SystemHasFeature('Core.CtAccumulation.Parameters.STANDARD'):
+            self.__AccMode = {'STANDARD': Core.CtAccumulation.Parameters.STANDARD,
+                              'THRESHOLD_BEFORE': Core.CtAccumulation.Parameters.THRESHOLD_BEFORE,
+                              'OFFSET_THEN_THRESHOLD_BEFORE': Core.CtAccumulation.Parameters.OFFSET_THEN_THRESHOLD_BEFORE}
 
         try:
             self.__VideoMode = {'Y8'         : Core.Y8,
@@ -599,7 +611,9 @@ class LimaCCDs(PyTango.Device_4Impl) :
             return func
         else :
              split_name = name.split('_')[1:]
-             subClass = self.__Prefix2SubClass.get(split_name[0],None)
+             subClass = self.__Name2SubClass.get("_".join(split_name),None)
+             if subClass is None:
+                 subClass = self.__Prefix2SubClass.get(split_name[0],None)
              if subClass:
                  obj = subClass()
                  return get_attr_4u(self,name, obj)
@@ -897,7 +911,8 @@ class LimaCCDs(PyTango.Device_4Impl) :
             msg = "Accumulation threshold plugins not loaded"
             deb.Error(msg)
             raise Exception(msg)
-        
+
+
     ## @brief Read latency time 
     #
     @Core.DEB_MEMBER_FUNCT
@@ -1335,7 +1350,7 @@ class LimaCCDs(PyTango.Device_4Impl) :
     def read_saving_frame_per_file(self,attr) :
         saving = self.__control.saving()
 
-        attr.set_value(saving.getFramePerFile())
+        attr.set_value(saving.getFramesPerFile())
 
     @Core.DEB_MEMBER_FUNCT
     def write_saving_frame_per_file(self,attr) :
@@ -1617,6 +1632,14 @@ class LimaCCDs(PyTango.Device_4Impl) :
                     val = val[:-1]
                 header_map[key] = val
             saving.updateFrameHeader(imageId,header_map)
+
+    ##@brief reset common header
+    #
+    @Core.DEB_MEMBER_FUNCT
+    def resetCommonHeader(self):
+        control = self.__control
+        saving = control.saving()
+        saving.resetCommonHeader()
 
     ##@brief get image data
     #
@@ -1916,6 +1939,9 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         'setImageHeader':
         [[PyTango.DevVarStringArray,"ImageId0 SEPARATOR imageHeader0,ImageId1 SEPARATOR imageHeader1..."],
          [PyTango.DevVoid,""]],
+        'resetCommonHeader':
+        [[PyTango.DevVoid,""],
+         [PyTango.DevVoid,""]],
         'getImage':
         [[PyTango.DevLong,"The image number"],
          [PyTango.DevVarCharArray,"The data image"]],
@@ -2061,6 +2087,18 @@ class LimaCCDsClass(PyTango.DeviceClass) :
         [[PyTango.DevDouble,
           PyTango.SCALAR,
           PyTango.READ_WRITE]],
+        'acc_mode':
+         [[PyTango.DevString,
+           PyTango.SCALAR,
+           PyTango.READ_WRITE]],
+        'acc_threshold_before':
+         [[PyTango.DevLong,
+           PyTango.SCALAR,
+           PyTango.READ_WRITE]],      
+        'acc_offset_before':
+         [[PyTango.DevLong,
+           PyTango.SCALAR,
+           PyTango.READ_WRITE]],      
         'concat_nb_frames':
         [[PyTango.DevLong,
           PyTango.SCALAR,
@@ -2500,8 +2538,11 @@ def _get_control():
         return control
     except NameError:
         pass
+    try:
+        camera_type = LimaCameraType or get_lima_camera_type()
+    except KeyError:            # wizard mode
+        return None
 
-    camera_type = LimaCameraType or get_lima_camera_type()
     mod_name = 'camera.' + camera_type
     try:
         m = __import__(mod_name, None, None, mod_name)
@@ -2569,7 +2610,7 @@ def main() :
         # create ct control
         control = _get_control()
 
-        if pytango_ver >= (8,1,7):
+        if pytango_ver >= (8,1,7) and control is not None:
             master_dev_name = get_lima_device_name()
             beamline_name, _, camera_name = master_dev_name.split('/')
             name_template = "{0}/{{type}}/{1}".format(beamline_name, camera_name)
@@ -2592,7 +2633,8 @@ def main() :
 
         # Configurations management (load default or custom config)
         dev = U.get_device_list_by_class("LimaCCDs")
-        dev[0].apply_config()
+        if dev:
+            dev[0].apply_config()
 
 	try:
             export_default_plugins()
