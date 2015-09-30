@@ -267,6 +267,10 @@ void LimaDetector::init_device()
         {
             dai.tai.data_type = Tango::DEV_USHORT;
         }
+        else if(detectorPixelDepth == "24")
+        {
+            dai.tai.data_type = Tango::DEV_ULONG;
+        }
         else if(detectorPixelDepth == "32")
         {
             dai.tai.data_type = Tango::DEV_ULONG;
@@ -343,6 +347,10 @@ void LimaDetector::init_device()
         {
             hw_det_info->setCurrImageType(Bpp16);
         }
+        else if(detectorPixelDepth == "24")
+        {
+            hw_det_info->setCurrImageType(Bpp24);
+        }
         else if(detectorPixelDepth == "32")
         {
             hw_det_info->setCurrImageType(Bpp32);
@@ -368,23 +376,23 @@ void LimaDetector::init_device()
 
         //- reload Roi from property
         INFO_STREAM << "Reload ROI of detector from Roi property." << endl;
-        Roi myRoi(0, 0, 0, 0);
+        Roi roi_values(0, 0, 0, 0);
         if((memorizedRoi.at(0) < 0) || (memorizedRoi.at(1) < 0) || (memorizedRoi.at(2) <= 0) || (memorizedRoi.at(3) <= 0)) //Roi not initialized, then we consider all detector area as Roi
         {
             Size size;
             hw_det_info->getMaxImageSize(size);
-            myRoi = Roi(0, 0, size.getWidth(), size.getHeight());
+            roi_values = Roi(0, 0, size.getWidth(), size.getHeight());
         }
         else //Roi is initialized, then we consider all memorizedRoi property values as Roi
         {
-            myRoi = Roi(memorizedRoi.at(0), memorizedRoi.at(1), memorizedRoi.at(2), memorizedRoi.at(3));
+            roi_values = Roi(memorizedRoi.at(0), memorizedRoi.at(1), memorizedRoi.at(2), memorizedRoi.at(3));
         }
-        m_ct->image()->setRoi(myRoi);
+        m_ct->image()->setRoi(roi_values);
 
         //- reload Binning from property
         INFO_STREAM << "Reload BIN of detector from Binning property." << endl;
-        Bin myBin(memorizedBinningH, memorizedBinningV);
-        m_ct->image()->setBin(myBin);
+        Bin bin_values(memorizedBinningH, memorizedBinningV);
+        m_ct->image()->setBin(bin_values);
 
         //- if Shutter available: creates dynamic attributes
         if(m_ct->shutter()->hasCapability())
@@ -542,23 +550,23 @@ void LimaDetector::init_device()
 
         //video stuff
         INFO_STREAM << "Initialize video mode according to VideoMode property." << endl;
-        std::map<string, VideoMode> mMyVideoMode;
-        mMyVideoMode["Y8"] = Y8;
-        mMyVideoMode["Y16"] = Y16;
-        mMyVideoMode["Y32"] = Y32;
-        mMyVideoMode["Y64"] = Y64;
-        mMyVideoMode["RGB555"] = RGB555;
-        mMyVideoMode["RGB565"] = RGB565;
-        mMyVideoMode["RGB24"] = RGB24;
-        mMyVideoMode["RGB32"] = RGB32;
-        mMyVideoMode["BGR24"] = BGR24;
-        mMyVideoMode["BGR32"] = BGR32;
-        mMyVideoMode["BAYER_RG8"] = BAYER_RG8;
-        mMyVideoMode["BAYER_RG16"] = BAYER_RG16;
-        mMyVideoMode["I420"] = I420;
-        mMyVideoMode["YUV411"] = YUV411;
-        mMyVideoMode["YUV422"] = YUV422;
-        mMyVideoMode["YUV444"] = YUV444;
+        std::map<string, VideoMode> map_video_modes;
+        map_video_modes["Y8"] = Y8;
+        map_video_modes["Y16"] = Y16;
+        map_video_modes["Y32"] = Y32;
+        map_video_modes["Y64"] = Y64;
+        map_video_modes["RGB555"] = RGB555;
+        map_video_modes["RGB565"] = RGB565;
+        map_video_modes["RGB24"] = RGB24;
+        map_video_modes["RGB32"] = RGB32;
+        map_video_modes["BGR24"] = BGR24;
+        map_video_modes["BGR32"] = BGR32;
+        map_video_modes["BAYER_RG8"] = BAYER_RG8;
+        map_video_modes["BAYER_RG16"] = BAYER_RG16;
+        map_video_modes["I420"] = I420;
+        map_video_modes["YUV411"] = YUV411;
+        map_video_modes["YUV422"] = YUV422;
+        map_video_modes["YUV444"] = YUV444;
 
         transform(detectorVideoMode.begin(), detectorVideoMode.end(), detectorVideoMode.begin(), ::toupper);
         if(detectorVideoMode == "NONE")
@@ -566,8 +574,8 @@ void LimaDetector::init_device()
         }
         else
         {
-            map<string, VideoMode>::iterator it = mMyVideoMode.find(detectorVideoMode);
-            if(it != mMyVideoMode.end())
+            map<string, VideoMode>::iterator it = map_video_modes.find(detectorVideoMode);
+            if(it != map_video_modes.end())
             {
                 m_ct->video()->setMode(it->second);
             }
@@ -1255,7 +1263,7 @@ void LimaDetector::get_device_property()
 
     //    End of Automatic code generation
     //------------------------------------------------------------------
-    vector<string> myVector;
+    vector<string> vec_init;
 
     yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "This is my simulator", "DetectorDescription");
     yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "SimulatorCCD", "DetectorType");
@@ -1271,34 +1279,34 @@ void LimaDetector::get_device_property()
     yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "COPY", "FileMemoryMode");    
     yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "true", "FileTimestampEnabled");    
 
-    myVector.clear();
-    myVector.push_back("Hardware");
-    myVector.push_back("Control");
-    myVector.push_back("Common");
-    myVector.push_back("Camera");
-    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, myVector, "DebugModules");
+    vec_init.clear();
+    vec_init.push_back("Hardware");
+    vec_init.push_back("Control");
+    vec_init.push_back("Common");
+    vec_init.push_back("Camera");
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, vec_init, "DebugModules");
 
-    myVector.clear();
-    myVector.push_back("Fatal");
-    myVector.push_back("Error");
-    myVector.push_back("Warning");
-    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, myVector, "DebugLevels");
+    vec_init.clear();
+    vec_init.push_back("Fatal");
+    vec_init.push_back("Error");
+    vec_init.push_back("Warning");
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, vec_init, "DebugLevels");
 
-    myVector.clear();
-    myVector.push_back("DateTime");
-    myVector.push_back("Module");
-    myVector.push_back("Type");
-    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, myVector, "DebugFormats");
+    vec_init.clear();
+    vec_init.push_back("DateTime");
+    vec_init.push_back("Module");
+    vec_init.push_back("Type");
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, vec_init, "DebugFormats");
 
     yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "70", "BufferMaxMemoryPercent");
     yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "false", "UsePrepareCmd");
 
-    myVector.clear();
-    myVector.push_back("-1");
-    myVector.push_back("-1");
-    myVector.push_back("-1");
-    myVector.push_back("-1");
-    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, myVector, "MemorizedRoi");
+    vec_init.clear();
+    vec_init.push_back("-1");
+    vec_init.push_back("-1");
+    vec_init.push_back("-1");
+    vec_init.push_back("-1");
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, vec_init, "MemorizedRoi");
 
     yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "1", "MemorizedBinningH");
     yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "1", "MemorizedBinningV");
@@ -3574,13 +3582,13 @@ void LimaDetector::set_roi(const Tango::DevVarULongArray *argin)
         m_ct->image()->setRoi(roi);
 
         //- update Roi property
-        vector<short> myVector;
-        myVector.clear();
-        myVector.push_back(roi.getTopLeft().x);
-        myVector.push_back(roi.getTopLeft().y);
-        myVector.push_back(roi.getSize().getWidth());
-        myVector.push_back(roi.getSize().getHeight());
-        yat4tango::PropertyHelper::set_property(this, "MemorizedRoi", myVector);
+        vector<short> vec_roi;
+        vec_roi.clear();
+        vec_roi.push_back(roi.getTopLeft().x);
+        vec_roi.push_back(roi.getTopLeft().y);
+        vec_roi.push_back(roi.getSize().getWidth());
+        vec_roi.push_back(roi.getSize().getHeight());
+        yat4tango::PropertyHelper::set_property(this, "MemorizedRoi", vec_roi);
     }
     catch(Tango::DevFailed& df)
     {
