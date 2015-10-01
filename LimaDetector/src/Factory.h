@@ -151,6 +151,8 @@ using namespace lima;
 
 class ControlFactory : public Singleton<ControlFactory>
 {
+    
+    friend class Singleton<ControlFactory>;    
 public:
 
     //create the main object of Lima CtConttrol
@@ -181,12 +183,15 @@ public:
     yat::Mutex& get_global_mutex();
 
 private:
+    ControlFactory(const ControlFactory&) { }
+    ControlFactory(){}
+    ~ControlFactory(){}
     void initialize();
 
 
     void*                           m_camera;      //generic pointer, must be casted to real XXX::Camera when using it !
     void*                           m_interface;   //generic pointer, must be casted to real XXX::Interface when using it !
-    CtControl*                      m_control;     //the main object of Lima
+    lima::CtControl* m_control; //the main object of Lima
 
     static bool                     m_is_created;
     std::string                     m_server_name;
@@ -208,4 +213,4 @@ private:
 
 } ;
 
-#endif
+#endif //_FACTORY_H_

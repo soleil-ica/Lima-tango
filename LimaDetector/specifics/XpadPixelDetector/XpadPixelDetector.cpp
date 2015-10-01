@@ -272,6 +272,7 @@ void XpadPixelDetector::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("CalibrationPath"));
 	dev_prop.push_back(Tango::DbDatum("CalibrationAdjustingNumber"));
 	dev_prop.push_back(Tango::DbDatum("XpixDebug"));
+	dev_prop.push_back(Tango::DbDatum("MinLatencyTimeMs"));
 
 	//	Call database and extract values
 	//--------------------------------------------
@@ -326,6 +327,17 @@ void XpadPixelDetector::get_device_property()
 	//	And try to extract XpixDebug value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  xpixDebug;
 
+	//	Try to initialize MinLatencyTimeMs from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  minLatencyTimeMs;
+	else {
+		//	Try to initialize MinLatencyTimeMs from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  minLatencyTimeMs;
+	}
+	//	And try to extract MinLatencyTimeMs value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  minLatencyTimeMs;
+
 
 
 	//	End of Automatic code generation
@@ -333,7 +345,8 @@ void XpadPixelDetector::get_device_property()
 
 	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop,"TO_BE_DEFINED, eg: IMXPAD_S70","XpadModel");
 	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop,"/no/path/defined","CalibrationPath");
-	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop,"1","CalibrationAdjustingNumber");
+	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop,"False","XpixDebug");
+	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop,"5","MinLatencyTimeMs");
 }
 //+----------------------------------------------------------------------------
 //
@@ -1657,6 +1670,7 @@ void XpadPixelDetector::set_general_purpose_params()
 	m_camera->setGeneralPurposeParams(attr_gp1_write,attr_gp2_write,attr_gp3_write,attr_gp4_write);
 
 }
+
 
 
 

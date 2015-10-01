@@ -57,10 +57,10 @@
 #include <SimulatorFrameBuilder.h>
 
 #define MAX_ATTRIBUTE_STRING_LENGTH     256
-#define C_STR_GAUSS       "GAUSS"
-#define C_STR_DIFFRACTION "DIFFRACTION"
+#define STR_GAUSS                       "GAUSS"
+#define STR_DIFFRACTION                 "DIFFRACTION"
 
-using namespace lima::Simulator;
+
 namespace SimulatorCCD_ns
 {
 
@@ -226,13 +226,13 @@ protected :
 	//	Add your own data members here
 	//-----------------------------------------
     bool         m_is_device_initialized ;
-    stringstream m_status_message;
+    std::stringstream   m_status_message;
     std::string  m_fillType;
 
     //LIMA objects
-    Simulator::Interface* m_hw;
-    CtControl*            m_ct;
-    Simulator::Camera*    m_camera;    
+    lima::Simulator::Interface* m_hw;
+    lima::CtControl*            m_ct;
+    lima::Simulator::Camera*    m_camera;    
 };
 
 }	// namespace_ns

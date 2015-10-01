@@ -136,6 +136,10 @@ namespace XpadPixelDetector_ns
  *	Flag used to enable Xpix library debug
  */
 	Tango::DevBoolean	xpixDebug;
+/**
+ *	Minimum LatencyTime (aka deadtime) in ms.
+ */
+	Tango::DevDouble	minLatencyTimeMs;
 //@}
 
         /**

@@ -67,6 +67,29 @@ namespace LimaDetector_ns
 {
 //+----------------------------------------------------------------------------
 //
+// method : 		ReloadROICmd::execute()
+// 
+// description : 	method to trigger the execution of the command.
+//                PLEASE DO NOT MODIFY this method core without pogo   
+//
+// in : - device : The device on which the command must be executed
+//		- in_any : The command input data
+//
+// returns : The command output data (packed in the Any object)
+//
+//-----------------------------------------------------------------------------
+CORBA::Any *ReloadROICmd::execute(Tango::DeviceImpl *device,const CORBA::Any &in_any)
+{
+
+	cout2 << "ReloadROICmd::execute(): arrived" << endl;
+
+	((static_cast<LimaDetector *>(device))->reload_roi());
+	return new CORBA::Any();
+}
+
+
+//+----------------------------------------------------------------------------
+//
 // method : 		PrepareClass::execute()
 // 
 // description : 	method to trigger the execution of the command.
@@ -438,6 +461,11 @@ void LimaDetectorClass::command_factory()
 		"",
 		"",
 		Tango::EXPERT));
+	command_list.push_back(new ReloadROICmd("ReloadROI",
+		Tango::DEV_VOID, Tango::DEV_VOID,
+		"",
+		"",
+		Tango::OPERATOR));
 
 	//	add polling if any
 	for (unsigned int i=0 ; i<command_list.size(); i++)
@@ -993,6 +1021,21 @@ void LimaDetectorClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
+	prop_name = "FileTimestampEnabled";
+	prop_desc = "Define wether the timestamp is requested in the Nexus file or not<br>";
+	prop_def  = "true";
+	vect_data.clear();
+	vect_data.push_back("true");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
 	prop_name = "BufferMaxMemoryPercent";
 	prop_desc = "Define the Percent of Memory reserved by buffer control (from 0 to 100 %).";
 	prop_def  = "70";
@@ -1278,6 +1321,21 @@ void LimaDetectorClass::set_default_property()
 	prop_desc = "";
 	prop_def  = "";
 	vect_data.clear();
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "AutoStartVideo";
+	prop_desc = "Allows calling automatically the \"Start\" command when:<br>\n- The device starts.\n- After calling the \"Init\" command.";
+	prop_def  = "false";
+	vect_data.clear();
+	vect_data.push_back("false");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);

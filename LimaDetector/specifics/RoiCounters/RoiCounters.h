@@ -66,8 +66,6 @@
 
 #define CURRENT_VERSION                 "1.0.0"
 
-//using namespace lima;
-using namespace yat4tango;
 
 namespace RoiCounters_ns
 {
@@ -254,8 +252,8 @@ protected:
     stringstream    m_status_message;
 
     //LIMA objects
-    CtControl*      m_ct;
-    SoftOpInstance  m_soft_operation;
+    lima::CtControl*      m_ct;
+    lima::SoftOpInstance  m_soft_operation;
 
     //dynamic attributes objects        
     yat4tango::DynamicInterfaceManager m_dim;
