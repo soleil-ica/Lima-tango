@@ -277,25 +277,6 @@ void BaslerCCDClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	temperature->set_default_properties(temperature_prop);
 	att_list.push_back(temperature);
 
-	//	Attribute : gain
-	gainAttrib	*gain = new gainAttrib();
-	Tango::UserDefaultAttrProp	gain_prop;
-	gain_prop.set_unit(" ");
-	gain_prop.set_description("Define the gain of the detector. [0..1]");
-	gain->set_default_properties(gain_prop);
-	gain->set_memorized();
-	gain->set_memorized_init(false);
-	att_list.push_back(gain);
-
-	//	Attribute : autoGain
-	autoGainAttrib	*auto_gain = new autoGainAttrib();
-	Tango::UserDefaultAttrProp	auto_gain_prop;
-	auto_gain_prop.set_description("Let the detector manage the gain automatically. [0..1]");
-	auto_gain->set_default_properties(auto_gain_prop);
-	auto_gain->set_memorized();
-	auto_gain->set_memorized_init(false);
-	att_list.push_back(auto_gain);
-
 	//	Attribute : packetSize
 	packetSizeAttrib	*packet_size = new packetSizeAttrib();
 	Tango::UserDefaultAttrProp	packet_size_prop;

@@ -61,6 +61,9 @@ static const char *RcsId = "$Id:  $";
 namespace BaslerCCD_ns
 {
 
+const string autogain_attr_name = "autoGain";
+const string gain_attr_name     = "gain";
+
 //+----------------------------------------------------------------------------
 //
 // method :         BaslerCCD::BaslerCCD(string &s)
@@ -72,17 +75,17 @@ namespace BaslerCCD_ns
 //
 //-----------------------------------------------------------------------------
 BaslerCCD::BaslerCCD(Tango::DeviceClass *cl, string &s)
-: Tango::Device_4Impl(cl, s.c_str())
+: Tango::Device_4Impl(cl, s.c_str()), m_dim(this)
 {
     init_device();
 }
 BaslerCCD::BaslerCCD(Tango::DeviceClass *cl, const char *s)
-: Tango::Device_4Impl(cl, s)
+: Tango::Device_4Impl(cl, s), m_dim(this)
 {
     init_device();
 }
 BaslerCCD::BaslerCCD(Tango::DeviceClass *cl, const char *s, const char *d)
-: Tango::Device_4Impl(cl, s, d)
+: Tango::Device_4Impl(cl, s, d), m_dim(this)
 {
     init_device();
 }
@@ -100,8 +103,8 @@ void BaslerCCD::delete_device()
     DELETE_SCALAR_ATTRIBUTE(attr_frameRate_read);
     DELETE_SCALAR_ATTRIBUTE(attr_dataRate_read);
     DELETE_SCALAR_ATTRIBUTE(attr_temperature_read);
-    DELETE_SCALAR_ATTRIBUTE(attr_gain_read);
-    DELETE_SCALAR_ATTRIBUTE(attr_autoGain_read);
+    DELETE_SCALAR_ATTRIBUTE(m_gain_read);
+	DELETE_SCALAR_ATTRIBUTE(m_is_autogain_enabled_read);
     DELETE_SCALAR_ATTRIBUTE(attr_statisticsFailedBufferCount_read);
     DELETE_SCALAR_ATTRIBUTE(attr_packetSize_read);      
     DELETE_SCALAR_ATTRIBUTE(attr_interPacketDelay_read);        
@@ -109,12 +112,9 @@ void BaslerCCD::delete_device()
     DELETE_SCALAR_ATTRIBUTE(attr_maxThroughput_read);   
     DELETE_SCALAR_ATTRIBUTE(attr_currentThroughput_read);       
 
-    //!!!! ONLY LimaDetector device can do this !!!!
-    //if(m_ct!=0)
-    //{
-    //    ControlFactory::instance().reset("BaslerCCD");
-    //    m_ct = 0;
-    //}
+    // Remove any dynamic attr or command
+    INFO_STREAM << "remove any dynamic attributes or commands" << endl;
+    m_dim.remove();
 }
 
 //+----------------------------------------------------------------------------
@@ -130,12 +130,14 @@ void BaslerCCD::init_device()
 
     // Initialise variables to default values
     //--------------------------------------------
+    try
+    {
     get_device_property();
     CREATE_SCALAR_ATTRIBUTE(attr_frameRate_read, 0.0);
     CREATE_SCALAR_ATTRIBUTE(attr_dataRate_read, 0.0);    
     CREATE_SCALAR_ATTRIBUTE(attr_temperature_read, 0.0);
-    CREATE_SCALAR_ATTRIBUTE(attr_gain_read, 0.0);
-    CREATE_SCALAR_ATTRIBUTE(attr_autoGain_read);    
+        CREATE_SCALAR_ATTRIBUTE(m_gain_read, 0.0);
+        CREATE_SCALAR_ATTRIBUTE(m_is_autogain_enabled_read, false);
     CREATE_SCALAR_ATTRIBUTE(attr_statisticsFailedBufferCount_read);    
     CREATE_SCALAR_ATTRIBUTE(attr_packetSize_read);    
     CREATE_SCALAR_ATTRIBUTE(attr_interPacketDelay_read);    
@@ -146,10 +148,9 @@ void BaslerCCD::init_device()
     m_is_device_initialized = false;
     set_state(Tango::INIT);
     m_status_message.str("");
+    	{
     yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
 
-    try
-    {
         //- get the singleton control objet used to pilot the lima framework        
         m_ct = ControlFactory::instance().get_control("BaslerCCD");	
 		
@@ -159,6 +160,25 @@ void BaslerCCD::init_device()
 		//- get camera to specific detector
 		m_camera = &(m_hw->getCamera());
     }
+
+	    // Create the dynamic attributes
+        if (NULL != m_camera)
+        {
+            create_dynamic_attributes();
+        }
+        else
+        {
+            Tango::Except::throw_exception("TANGO_DEVICE_ERROR", "unable to get camera", "BaslerCCD::init_device" );
+        }
+    }
+    catch(yat::Exception& ex)
+    {
+        ex.dump();
+        stringstream ssError;
+        for (unsigned i = 0; i < ex.errors.size(); i++) ssError << ex.errors[i].desc << endl;
+        Tango::Except::throw_exception("TANGO_DEVICE_ERROR", ssError.str().c_str(),"BaslerCCD::init_device");
+        return;
+    }
     catch (Exception& e)
     {
         ERROR_STREAM << "Initialization Failed : " << e.getErrMsg() << endl;
@@ -167,10 +187,15 @@ void BaslerCCD::init_device()
         set_state(Tango::FAULT);
         return;
     }
+    catch (std::exception& e)
+    {
+        ERROR_STREAM << e.what();
+        return;
+    }
     catch (...)
     {
-        ERROR_STREAM << "Initialization Failed : UNKNOWN" << endl;
-        m_status_message << "Initialization Failed : UNKNOWN" << endl;
+        ERROR_STREAM << "Initialization Failed : Unknown exception caught." << endl;
+        m_status_message << "Initialization Failed : Unknown exception caught." << endl;
         set_state(Tango::FAULT);
         m_is_device_initialized = false;
         return;
@@ -187,26 +212,48 @@ void BaslerCCD::init_device()
         interPacketDelay.set_write_value(*attr_interPacketDelay_read);
         write_interPacketDelay(interPacketDelay);
             
+        if (m_camera->isAutoGainAvailable())
+        {
         INFO_STREAM << "Write tango hardware at Init - autoGain." << endl;
-        Tango::WAttribute &autoGain = dev_attr->get_w_attr_by_name("autoGain");
-        *attr_autoGain_read = memorizedAutoGain;
-        autoGain.set_write_value(*attr_autoGain_read);
-        write_autoGain(autoGain);
+            Tango::WAttribute &autoGain = dev_attr->get_w_attr_by_name(autogain_attr_name.c_str());
+            *m_is_autogain_enabled_read = memorizedAutoGain;
+            autoGain.set_write_value(*m_is_autogain_enabled_read);
+            write_autogain_enabled(autoGain);
+        }
 
-        if (!memorizedAutoGain)
+        if ( (m_camera->isGainAvailable()) && (!memorizedAutoGain) )
         {
             INFO_STREAM << "Write tango hardware at Init - gain." << endl;
-            Tango::WAttribute &gain = dev_attr->get_w_attr_by_name("gain");
-            *attr_gain_read = memorizedGain;
-            gain.set_write_value(*attr_gain_read);
+            Tango::WAttribute &gain = dev_attr->get_w_attr_by_name(gain_attr_name.c_str());
+            *m_gain_read = memorizedGain;
+            gain.set_write_value(*m_gain_read);
             write_gain(gain);
         }
     }
 
     set_state(Tango::STANDBY);
-    this->dev_state();
+    dev_state();
 }
 
+
+//----------------------------------------------------------------------------
+// create_dynamic_attributes
+//----------------------------------------------------------------------------
+void BaslerCCD::create_dynamic_attributes()
+{
+    DEBUG_STREAM << "BaslerCCD::create_dynamic_attributes() entering ...";
+    if (m_camera->isGainAvailable())
+    {
+		INFO_STREAM << "Gain available (creating attribute)";
+    create_dynamic_attribute<Tango::DevDouble>(gain_attr_name,   Tango::DEV_DOUBLE, Tango::SCALAR, Tango::READ_WRITE, m_gain_read);
+}
+
+    if (m_camera->isAutoGainAvailable())
+    {
+    	INFO_STREAM << "Autogain available (creating attribute)";
+        create_dynamic_attribute<Tango::DevBoolean>(autogain_attr_name, Tango::DEV_BOOLEAN,   Tango::SCALAR, Tango::READ_WRITE, m_is_autogain_enabled_read);
+    }
+}
 
 //+----------------------------------------------------------------------------
 //
@@ -315,8 +362,9 @@ void BaslerCCD::get_device_property()
     PropertyHelper::create_property_if_empty(this, dev_prop, "0", "MemorizedGain");
     PropertyHelper::create_property_if_empty(this, dev_prop, "False", "MemorizedAutoGain");
     PropertyHelper::create_property_if_empty(this, dev_prop, "0", "MemorizedInterPacketDelay");
-
 }
+
+
 //+----------------------------------------------------------------------------
 //
 // method :         BaslerCCD::always_executed_hook()
@@ -392,7 +440,6 @@ void BaslerCCD::read_packetSize(Tango::Attribute &attr)
         {
             if (m_hw != 0)
             {
-                int packetsize = 0; 
                 (m_hw->getCamera()).getPacketSize((int&)*attr_packetSize_read);                 
                 attr.set_value(attr_packetSize_read);
             }
@@ -401,19 +448,14 @@ void BaslerCCD::read_packetSize(Tango::Attribute &attr)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_packetSize"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR", string(df.errors[0].desc).c_str(), 
+                                                  "BaslerCCD::read_packetSize" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_packetSize"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::read_packetSize" );
         }
     }     
 }
@@ -444,19 +486,14 @@ void BaslerCCD::read_bandwidthAssigned(Tango::Attribute &attr)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_bandwidthAssigned"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR", string(df.errors[0].desc).c_str(), 
+                                                  "BaslerCCD::read_bandwidthAssign" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_bandwidthAssigned"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::read_bandwidthAssigned" );
         }
     }       
 }
@@ -486,19 +523,14 @@ void BaslerCCD::read_maxThroughput(Tango::Attribute &attr)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_maxThroughput"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR", string(df.errors[0].desc).c_str(), 
+                                                  "BaslerCCD::read_maxThroughput" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_maxThroughput"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::read_maxThroughput" );
         }
     }       
 }
@@ -528,19 +560,14 @@ void BaslerCCD::read_currentThroughput(Tango::Attribute &attr)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_currentThroughput"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR", string(df.errors[0].desc).c_str(), 
+                                                  "BaslerCCD::read_currentThroughput" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_currentThroughput"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::read_currentThroughput" );
         }
     }       
 }
@@ -562,7 +589,6 @@ void BaslerCCD::read_interPacketDelay(Tango::Attribute &attr)
         {
             if (m_hw != 0)
             {
-                int interpacketdelay = 0; 
                 (m_hw->getCamera()).getInterPacketDelay((int&)*attr_interPacketDelay_read);                 
                 attr.set_value(attr_interPacketDelay_read);
             }
@@ -571,19 +597,14 @@ void BaslerCCD::read_interPacketDelay(Tango::Attribute &attr)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_interPacketDelay"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR", string(df.errors[0].desc).c_str(), 
+                                                  "BaslerCCD::read_interPacketDelay" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_interPacketDelay"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::read_interPacketDelay" );
         }
     }       
 }
@@ -614,19 +635,14 @@ void BaslerCCD::write_interPacketDelay(Tango::WAttribute &attr)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::write_interPacketDelay"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR", string(df.errors[0].desc).c_str(), 
+                                                  "BaslerCCD::write_interPacketDelay" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::write_interPacketDelay"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::write_interPacketDelay" );
         }
     }        
 }
@@ -679,19 +695,14 @@ void BaslerCCD::read_dataRate(Tango::Attribute &attr)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_frameRate"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR",
+                                                  string(df.errors[0].desc).c_str(), "BaslerCCD::read_frameRate" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_frameRate"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::read_frameRate" );
         }
     }    
 }
@@ -724,19 +735,15 @@ void BaslerCCD::read_statisticsFailedBufferCount(Tango::Attribute &attr)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_statisticsFailedBufferCount"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR",
+                                                  string(df.errors[0].desc).c_str(), "BaslerCCD::read_statisticsFailedBufferCount");
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_statisticsFailedBufferCount"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR",
+                                            e.getErrMsg().c_str(), "BaslerCCD::read_statisticsFailedBufferCount" );
         }
     }           
 }
@@ -766,19 +773,14 @@ void BaslerCCD::read_frameRate(Tango::Attribute &attr)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_frameRate"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR",
+                                                  string(df.errors[0].desc).c_str(), "BaslerCCD::read_frameRate" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_frameRate"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::read_frameRate" );
         }
     }
 }
@@ -808,19 +810,14 @@ void BaslerCCD::read_temperature(Tango::Attribute &attr)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_temperature"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR",
+                                                  string(df.errors[0].desc).c_str(), "BaslerCCD::read_temperature" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_temperature"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::read_temperature" );
         }
     }
 }
@@ -840,31 +837,25 @@ void BaslerCCD::read_gain(Tango::Attribute &attr)
     {
         try
         {
-            double gain;
             if (m_hw != 0)
             {
+                double gain;
                 (m_hw->getCamera()).getGain(gain);
-                *attr_gain_read = (Tango::DevDouble)(gain);
-                attr.set_value(attr_gain_read);
+                *m_gain_read = (Tango::DevDouble)(gain);
+                attr.set_value(m_gain_read);
             }
         }
         catch (Tango::DevFailed& df)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_gain"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR", string(df.errors[0].desc).c_str(), "BaslerCCD::read_gain" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_gain"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::read_gain" );
         }
     }
 }
@@ -886,86 +877,75 @@ void BaslerCCD::write_gain(Tango::WAttribute &attr)
         {
             if (m_hw != 0)
             {
-                attr.get_write_value(attr_gain_write);
-                (m_hw->getCamera()).setGain(attr_gain_write);
-                PropertyHelper::set_property(this, "MemorizedGain", attr_gain_write);
+                attr.get_write_value(m_gain_write);
+                (m_hw->getCamera()).setGain(m_gain_write);
+                PropertyHelper::set_property(this, "MemorizedGain", m_gain_write);
             }
         }
         catch (Tango::DevFailed& df)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::write_gain"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR", string(df.errors[0].desc).c_str(), "BaslerCCD::write_gain");
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::write_gain"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::write_gain" );
         }
     }
 }
 
 //+----------------------------------------------------------------------------
 //
-// method : 		BaslerCCD::read_autoGain
+// method : 		BaslerCCD::read_autogain_enabled
 // 
 // description : 	Extract real attribute values for autoGain acquisition result.
 //
 //-----------------------------------------------------------------------------
-void BaslerCCD::read_autoGain(Tango::Attribute &attr)
+void BaslerCCD::read_autogain_enabled(Tango::Attribute &attr)
 {
-    DEBUG_STREAM << "BaslerCCD::read_autoGain(Tango::Attribute &attr) entering... " << endl;
+    DEBUG_STREAM << "BaslerCCD::read_autogain_enabled(Tango::Attribute &attr) entering... " << endl;
     yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
     if (m_ct != 0)
     {
         try
         {
-            bool bAutoGain;
             if (m_hw != 0)
             {
+                bool bAutoGain;
                 (m_hw->getCamera()).getAutoGain(bAutoGain);
-                *attr_autoGain_read = (Tango::DevBoolean)(bAutoGain);
-                attr.set_value(attr_autoGain_read);
+                *m_is_autogain_enabled_read = (Tango::DevBoolean)(bAutoGain);
+                attr.set_value(m_is_autogain_enabled_read);
             }
         }
         catch (Tango::DevFailed& df)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::read_autoGain"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR",
+                                                  string(df.errors[0].desc).c_str(), "BaslerCCD::read_autogain_enabled" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::read_autoGain"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::read_autogain_enabled" );
         }
     }
 }
 
 //+----------------------------------------------------------------------------
 //
-// method : 		BaslerCCD::write_autoGain
+// method : 		BaslerCCD::write_autogain_enabled
 // 
 // description : 	Write autoGain attribute values to hardware.
 //
 //-----------------------------------------------------------------------------
-void BaslerCCD::write_autoGain(Tango::WAttribute &attr)
+void BaslerCCD::write_autogain_enabled(Tango::WAttribute &attr)
 {
-    DEBUG_STREAM << "BaslerCCD::write_autoGain(Tango::WAttribute &attr) entering... " << endl;
+    DEBUG_STREAM << "BaslerCCD::write_autogain_enabled(Tango::WAttribute &attr) entering... " << endl;
     yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
     if (m_ct != 0)
     {
@@ -973,28 +953,23 @@ void BaslerCCD::write_autoGain(Tango::WAttribute &attr)
         {
             if (m_hw != 0)
             {
-                attr.get_write_value(attr_autoGain_write);
-                (m_hw->getCamera()).setAutoGain(attr_autoGain_write);
-                PropertyHelper::set_property(this, "MemorizedAutoGain", attr_autoGain_write);
+                attr.get_write_value(m_is_autogain_enabled_write);
+                (m_hw->getCamera()).setAutoGain(m_is_autogain_enabled_write);
+                PropertyHelper::set_property(this, "MemorizedAutoGain", m_is_autogain_enabled_write);
             }
         }
         catch (Tango::DevFailed& df)
         {
             ERROR_STREAM << df << endl;
             //- rethrow exception
-            Tango::Except::re_throw_exception(df,
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (string(df.errors[0].desc).c_str()),
-            static_cast<const char*> ("BaslerCCD::write_autoGain"));
+            Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR",
+                                                  string(df.errors[0].desc).c_str(), "BaslerCCD::write_autogain_enabled" );
         }
         catch (Exception& e)
         {
             ERROR_STREAM << e.getErrMsg() << endl;
             //- throw exception
-            Tango::Except::throw_exception(
-            static_cast<const char*> ("TANGO_DEVICE_ERROR"),
-            static_cast<const char*> (e.getErrMsg().c_str()),
-            static_cast<const char*> ("BaslerCCD::write_autoGain"));
+            Tango::Except::throw_exception( "TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::write_autogain_enabled" );
         }
     }
 }
@@ -1039,20 +1014,83 @@ Tango::DevState BaslerCCD::dev_state()
 }
 
 
+//----------------------------------------------------------------------------------------
+// DYN. ATTRS. READ CALLBACK
+//----------------------------------------------------------------------------------------
+void BaslerCCD::read_dynamicAttribute_callback(yat4tango::DynamicAttributeReadCallbackData& cbd)
+{
+    DEBUG_STREAM << "BaslerCCD::read_dynamicAttribute_callback(yat4tango::DynamicAttributeReadCallbackData& cbd) - [BEGIN]" << endl;
+    yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
 
 
+    if ( Tango::STANDBY != get_state()) return;
+
+    try
+    {
+        std::string attrName = cbd.tga->get_name();
+
+        if (autogain_attr_name == attrName)
+        {
+            cbd.tga->set_value((Tango::DevBoolean*)&m_is_autogain_enabled_read);
+            read_autogain_enabled(*cbd.tga);
+        }
+        else
+        if (gain_attr_name == attrName)
+        {
+            cbd.tga->set_value((Tango::DevDouble*)&m_gain_read);
+            read_gain(*cbd.tga);
+        }
+    }
+    catch (Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR",
+                                              string(df.errors[0].desc).c_str(), "BaslerCCD::read_dynamicAttribute_callback" );
+    }
+    DEBUG_STREAM << "BaslerCCD::read_dynamicAttribute_callback(yat4tango::DynamicAttributeReadCallbackData& cbd) - [END]" << endl;
+}
 
 
+//----------------------------------------------------------------------------------------
+// DYN. ATTRS. WRITE CALLBACK
+//----------------------------------------------------------------------------------------
+void BaslerCCD::write_dynamicAttribute_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd)
+{
+    DEBUG_STREAM << "BaslerCCD::write_dynamicAttribute_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd) - [BEGIN]" << endl;
+    yat::AutoMutex<> _lock(ControlFactory::instance().get_global_mutex());
 
+    if (Tango::STANDBY != get_state()) return;
 
+    try
+    {
+        std::string attrName = cbd.tga->get_name();
 
-
-
-
-
-
-
-
+        if (autogain_attr_name == attrName)
+        {
+            write_autogain_enabled(*cbd.tga);
+        }
+        else
+        if (gain_attr_name == attrName)
+        {
+            write_gain(*cbd.tga);
+        }
+    }
+    catch (const Exception& e)
+    {
+        ERROR_STREAM << e.getErrMsg() << endl;
+        //- throw exception
+        Tango::Except::throw_exception("TANGO_DEVICE_ERROR", e.getErrMsg().c_str(), "BaslerCCD::write_dynamicAttribute_callback");
+    }
+    catch (Tango::DevFailed& df)
+    {
+        ERROR_STREAM << df << endl;
+        //- rethrow exception
+        Tango::Except::re_throw_exception(df, "TANGO_DEVICE_ERROR",
+                                              string(df.errors[0].desc).c_str(), "BaslerCCD::write_dynamicAttribute_callback");
+    }
+    DEBUG_STREAM << "BaslerCCD::write_dynamicAttribute_callback(yat4tango::DynamicAttributeWriteCallbackData& cbd) - [END]" << endl;
+}
 
 
 }	//	namespace

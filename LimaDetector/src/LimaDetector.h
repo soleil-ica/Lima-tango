@@ -38,6 +38,7 @@
 #include <tango.h>
 
 //- YAT/YAT4TANGO
+#include <yat/memory/SharedPtr.h>
 #include <yat4tango/PropertyHelper.h>
 #include <yat4tango/InnerAppender.h>
 #include <yat4tango/DynamicInterfaceManager.h>
@@ -66,7 +67,6 @@
 
 using namespace lima;
 using namespace std;
-using namespace yat4tango;
 
 /**
  * @author    $Author:  $
@@ -297,6 +297,10 @@ public:
  */
 	string	fileMemoryMode;
 /**
+ *	Define wether the timestamp is requested in the Nexus file or not<br>
+ */
+	Tango::DevBoolean	fileTimestampEnabled;
+/**
  *	Define the Percent of Memory reserved by buffer control (from 0 to 100 %).
  */
 	Tango::DevUShort	bufferMaxMemoryPercent;
@@ -418,6 +422,12 @@ public:
  *	
  */
 	Tango::DevLong	memorizedFileNbFrames;
+/**
+ *	Allows calling automatically the "Start" command when:<br>
+ *	- The device starts.
+ *	- After calling the "Init" command.
+ */
+	Tango::DevBoolean	autoStartVideo;
 //@}
 
     /**
@@ -738,6 +748,10 @@ public:
  */
 	virtual bool is_ResetFileIndex_allowed(const CORBA::Any &any);
 /**
+ *	Execution allowed for ReloadROI command.
+ */
+	virtual bool is_ReloadROI_allowed(const CORBA::Any &any);
+/**
  * This command gets the device state (stored in its <i>device_state</i> data member) and returns it to the caller.
  *	@return	State Code
  *	@exception DevFailed
@@ -800,6 +814,11 @@ public:
  *	@exception DevFailed
  */
 	void	reset_file_index();
+/**
+ * This command allows reloading the last ROI values set using the SetROI command.
+ *	@exception DevFailed
+ */
+	void	reload_roi();
 
 /**
  *	Read the device properties from database
@@ -852,29 +871,30 @@ protected:
     //get the last frame number acquired
     long long           get_last_image_counter(void);
 
-    //state & status stuff
+    //- state & status stuff
     bool                                m_is_device_initialized ;
     stringstream                        m_status_message;
+    //- 
     static int                          m_init_count;		//indicate when the construction of "generic" device is completed.
 
-    //LIMA objects
-    HwInterface*                        m_hw;				//object to the generic interface of camera's
-    CtControl*                          m_ct;    			//object to Lima, the MAIN object
-    CtSaving::Parameters                m_saving_par;		//struct holding parameters used when saving image in a file (NXS, EDF, ...)
+    //- LIMA objects
+    lima::HwInterface*                  m_hw;				//object to the generic interface of camera's
+    lima::CtControl*                    m_ct;    			//object to Lima, the MAIN object
+    lima::CtSaving::Parameters          m_saving_par;		//struct holding parameters used when saving image in a file (NXS, EDF, ...)
     string                              m_trigger_mode; 	//trigger mode name 	(INTERNAL_SINGLE, EXTERNAL_SINGLE, EXTERNAL_MULTI, EXTERNAL_GATE, INTERNAL_MULTI, EXTERNAL_START_STOP, EXTERNAL_READOUT)
     string                              m_shutter_mode; 	//shutter mode name 	(MANUAL, AUTO_FRAME, AUTO_SEQUENCE)
     string                              m_acquisition_mode;	//aquisition mode name 	(SINGLE, ACCUMULATION) nota: imageType is forced to 32 bits in ACCUMULATION MODE
     string                              m_saving_options;
-    //-Yat::task objects, manage device Start/Snap/Stop commands
-    AcquisitionTask*                    m_acquisition_task;
+    //- yat4tango::DeviceTask object : manage device Start/Snap/Stop commands
+    yat::SharedPtr<AcquisitionTask>     m_acquisition_task;
     AcquisitionTask::AcqConfig          m_acq_conf;
 
 	//-
 	std::vector<std::string>			m_trig_mode_list;
 	std::string							m_trig_mode_list_str;
 
-    //- yat image Dynamic/command Attribute    
-    DynamicInterfaceManager				m_dim;
+    //- yat4tango Dynamic attributes & commands
+    yat4tango::DynamicInterfaceManager	m_dim;
 
 } ;
 

@@ -36,7 +36,6 @@
 
 using namespace lima;
 using namespace std;
-using namespace yat4tango;
 
 // ============================================================================
 // DEVICE TASK ACTIVITY PERIOD IN MILLISECS
@@ -77,7 +76,7 @@ namespace LimaDetector_ns
         //- Struct containing the Task configuration, configuration is set by the main Device
         struct AcqConfig
         {
-            CtControl*        	ct;                          // lima control objet used in owner device (singleton)
+            lima::CtControl*    ct;                          // lima control objet used in owner device (singleton)
             bool            	use_prepare_cmd;        // status when abort is call
             string            	abort_status_message;        // status when abort is call
         };
@@ -113,6 +112,24 @@ namespace LimaDetector_ns
         Tango::DeviceImpl*     	m_device;
     
     };
+    
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    struct TaskExiter
+    {
+        void operator()(yat4tango::DeviceTask * t)
+        {
+            try
+            {
+                //- U may never delete manually a DeviceTask !!!
+                std::cout << "TaskExiter()" << std::endl;
+                t->exit();
+            }
+            catch(...)
+            {
+            }
+        }
+    };
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////       
 
 }
 

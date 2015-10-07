@@ -1703,7 +1703,7 @@ void Merlin::write_triggerOutLVDS(Tango::WAttribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::write_triggerOutLVDS) ENABLED START -----*/
 	try {
     	lima::Merlin::Camera::TriggerOutput trigOut = static_cast<lima::Merlin::Camera::TriggerOutput>(w_val);
-		m_camera->setTriggerOutLVDS(trigOut);
+		////m_camera->setTriggerOutLVDS(trigOut);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
 		Tango::Except::re_throw_exception(df,
@@ -1871,8 +1871,8 @@ void Merlin::read_triggerOutTTLDelay(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_triggerOutTTLDelay) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	long long delay;
-    	m_camera->getTriggerOutTTLDelay(delay);
+    	long long delay = 0;
+    	////m_camera->getTriggerOutTTLDelay(delay);
     	*attr_triggerOutTTLDelay_read = delay;
     	attr.set_value(attr_triggerOutTTLDelay_read);
     } catch (Tango::DevFailed& df) {
@@ -1906,7 +1906,7 @@ void Merlin::write_triggerOutTTLDelay(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_triggerOutTTLDelay) ENABLED START -----*/
 	try {
-		m_camera->setTriggerOutTTLDelay(w_val);
+		////m_camera->setTriggerOutTTLDelay(w_val);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
 		Tango::Except::re_throw_exception(df,
@@ -1938,8 +1938,8 @@ void Merlin::read_triggerOutLVDSDelay(Tango::Attribute &attr)
 	/*----- PROTECTED REGION ID(Merlin::read_triggerOutLVDSDelay) ENABLED START -----*/
 	//	Set the attribute value
     try {
-    	long long delay;
-    	m_camera->getTriggerOutLVDSDelay(delay);
+    	long long delay = 0;
+    	////m_camera->getTriggerOutLVDSDelay(delay);
     	*attr_triggerOutLVDSDelay_read = delay;
     	attr.set_value(attr_triggerOutLVDSDelay_read);
     } catch (Tango::DevFailed& df) {
@@ -1973,7 +1973,7 @@ void Merlin::write_triggerOutLVDSDelay(Tango::WAttribute &attr)
 	attr.get_write_value(w_val);
 	/*----- PROTECTED REGION ID(Merlin::write_triggerOutLVDSDelay) ENABLED START -----*/
 	try {
-		m_camera->setTriggerOutLVDSDelay(w_val);
+		////m_camera->setTriggerOutLVDSDelay(w_val);
 	} catch (Tango::DevFailed& df) {
 		ERROR_STREAM << df << endl;
 		Tango::Except::re_throw_exception(df,
