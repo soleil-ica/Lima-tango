@@ -9,7 +9,7 @@
 
     <groupId>fr.soleil.device</groupId>
     <artifactId>LimaDetector-${aol}-${mode}</artifactId>
-    <version>1.5.3</version>
+    <version>1.5.5</version>
 	
     <packaging>nar</packaging>
     <name>LimaDetector</name>

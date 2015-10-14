@@ -9,7 +9,7 @@
 
     <groupId>fr.soleil.device</groupId>
     <artifactId>LimaDetector-${aol}-${mode}</artifactId>
-    <version>1.5.3</version>
+    <version>1.5.5</version>
 	
     <packaging>nar</packaging>
     <name>LimaDetector</name>
@@ -66,7 +66,7 @@
         <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaXpad-${aol}-shared-${mode}</artifactId>
-            <version>1.4.4</version>
+            <version>1.4.5</version><!--double correction on S70-->
         </dependency>
         <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaEiger-${aol}-shared-${mode}</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version><!--download master.h5-->
         </dependency>
 
         <dependency>

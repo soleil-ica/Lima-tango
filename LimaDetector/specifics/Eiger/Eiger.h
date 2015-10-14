@@ -155,6 +155,10 @@ public :
  *	Stores the value of compression
  */
 	Tango::DevBoolean	memorizedCompression;
+/**
+ *	Enable/Disable the HDF5 Reader, in order to read images from HDF5 file and publish them in image attribute & Nexus files
+ */
+	Tango::DevBoolean	useReader;
 //@}
 
 /**

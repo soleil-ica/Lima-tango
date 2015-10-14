@@ -498,12 +498,17 @@ CtControl* ControlFactory::create_control(const std::string& detector_type)
                 Tango::DbData db_data;
                 db_data.push_back(Tango::DbDatum("DetectorIP"));
 				db_data.push_back(Tango::DbDatum("TargetPath"));
+                db_data.push_back(Tango::DbDatum("UseReader"));
                 (Tango::Util::instance()->get_database())->get_device_property(m_device_name_specific, db_data);
                 std::string camera_ip;
                 db_data[0] >> camera_ip;
                 std::string target_path;
                 db_data[1] >> target_path;
+                bool use_reader;
+                db_data[2] >> use_reader;
                 m_camera = static_cast<void*> (new Eiger::Camera(camera_ip, target_path));
+                if (m_camera)
+                    static_cast<Eiger::Camera*> (m_camera)->setReaderHDF5(use_reader);                
                 m_interface = static_cast<void*> (new Eiger::Interface(*(static_cast<Eiger::Camera*> (m_camera))));
                 m_control = new CtControl(static_cast<Eiger::Interface*> (m_interface));
                 ControlFactory::m_is_created = true;

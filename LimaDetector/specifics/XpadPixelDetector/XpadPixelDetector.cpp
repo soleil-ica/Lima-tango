@@ -416,7 +416,7 @@ void XpadPixelDetector::read_normalizationFactor(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_normalizationFactor(Tango::Attribute &attr) entering... "<< endl;
 
-	if(m_xpad_model != "IMXPAD_S140")
+	if(m_xpad_model != "IMXPAD_S140" && m_xpad_model != "IMXPAD_S70")
 		attr.set_quality(Tango::ATTR_INVALID);
 	else
 		attr.set_value(&attr_normalizationFactor_write);	
@@ -433,7 +433,7 @@ void XpadPixelDetector::write_normalizationFactor(Tango::WAttribute &attr)
 {
 	INFO_STREAM << "XpadPixelDetector::write_normalizationFactor(Tango::WAttribute &attr) entering... "<< endl;
 
-	if(m_xpad_model != "IMXPAD_S140") 
+	if(m_xpad_model != "IMXPAD_S140" && m_xpad_model != "IMXPAD_S70") 
 		attr.set_quality(Tango::ATTR_INVALID);
 	else
 	{
@@ -453,7 +453,7 @@ void XpadPixelDetector::read_enableDoublePixelCorrection(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "XpadPixelDetector::read_enableDoublePixelCorrection(Tango::Attribute &attr) entering... "<< endl;
 
-	if(m_xpad_model != "IMXPAD_S140")
+	if(m_xpad_model != "IMXPAD_S140" && m_xpad_model != "IMXPAD_S70")
 		attr.set_quality(Tango::ATTR_INVALID);
 	else
 		attr.set_value(&attr_enableDoublePixelCorrection_write);	
@@ -472,7 +472,7 @@ void XpadPixelDetector::write_enableDoublePixelCorrection(Tango::WAttribute &att
 
 	try
 	{
-		if(m_xpad_model != "IMXPAD_S140")
+		if(m_xpad_model != "IMXPAD_S140" && m_xpad_model != "IMXPAD_S70")
 			attr.set_quality(Tango::ATTR_INVALID);
 		else
 		{

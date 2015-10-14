@@ -281,6 +281,7 @@ void Eiger::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("MemorizedThresholdEnergy"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedPhotonEnergy"));
 	dev_prop.push_back(Tango::DbDatum("MemorizedCompression"));
+	dev_prop.push_back(Tango::DbDatum("UseReader"));
 
 	//	Call database and extract values
 	//--------------------------------------------
@@ -401,6 +402,17 @@ void Eiger::get_device_property()
 	//	And try to extract MemorizedCompression value from database
 	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  memorizedCompression;
 
+	//	Try to initialize UseReader from class property
+	cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+	if (cl_prop.is_empty()==false)	cl_prop  >>  useReader;
+	else {
+		//	Try to initialize UseReader from default device value
+		def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+		if (def_prop.is_empty()==false)	def_prop  >>  useReader;
+	}
+	//	And try to extract UseReader value from database
+	if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  useReader;
+
 
 
 	//	End of Automatic code generation
@@ -415,6 +427,7 @@ void Eiger::get_device_property()
 	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "4000.0",    "MemorizedThresholdEnergy");
 	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "8000.0", 	 "MemorizedPhotonEnergy");
 	yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "true", 	 "MemorizedCompression");
+    yat4tango::PropertyHelper::create_property_if_empty(this, dev_prop, "true", 	 "UseReader");
 }
 //+----------------------------------------------------------------------------
 //
@@ -776,7 +789,7 @@ void Eiger::read_temperature(Tango::Attribute &attr)
 
 	try
 	{
-		*attr_temperature_read = m_camera->getTemperature();
+        *attr_temperature_read = m_camera->getTemperature();
 		attr.set_value(attr_temperature_read);
 	}
 	catch(Tango::DevFailed& df)
@@ -1053,6 +1066,10 @@ Tango::DevState Eiger::dev_state()
 
 	return DeviceState;
 }
+
+
+
+
 
 
 
