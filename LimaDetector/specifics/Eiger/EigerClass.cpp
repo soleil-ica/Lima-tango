@@ -242,60 +242,64 @@ void EigerClass::device_factory(const Tango::DevVarStringArray *devlist_ptr)
 //-----------------------------------------------------------------------------
 void EigerClass::attribute_factory(vector<Tango::Attr *> &att_list)
 {
+	//	Attribute : fileNamePattern
+	fileNamePatternAttrib	*file_name_pattern = new fileNamePatternAttrib();
+	Tango::UserDefaultAttrProp	file_name_pattern_prop;
+	file_name_pattern_prop.set_unit(" ");
+	file_name_pattern_prop.set_standard_unit(" ");
+	file_name_pattern_prop.set_display_unit(" ");
+	file_name_pattern_prop.set_description("Image file pattern name.");
+	file_name_pattern->set_default_properties(file_name_pattern_prop);
+	file_name_pattern->set_memorized();
+	file_name_pattern->set_memorized_init(false);
+	att_list.push_back(file_name_pattern);
+
 	//	Attribute : countrateCorrection
 	countrateCorrectionAttrib	*countrate_correction = new countrateCorrectionAttrib();
 	Tango::UserDefaultAttrProp	countrate_correction_prop;
-	countrate_correction_prop.set_label("Countrate correction");
+	countrate_correction_prop.set_unit(" ");
 	countrate_correction->set_default_properties(countrate_correction_prop);
+	countrate_correction->set_disp_level(Tango::EXPERT);
 	att_list.push_back(countrate_correction);
 
 	//	Attribute : flatfieldCorrection
 	flatfieldCorrectionAttrib	*flatfield_correction = new flatfieldCorrectionAttrib();
 	Tango::UserDefaultAttrProp	flatfield_correction_prop;
-	flatfield_correction_prop.set_label("Flatfield correction");
+	flatfield_correction_prop.set_unit(" ");
 	flatfield_correction->set_default_properties(flatfield_correction_prop);
 	att_list.push_back(flatfield_correction);
 
 	//	Attribute : pixelMask
 	pixelMaskAttrib	*pixel_mask = new pixelMaskAttrib();
 	Tango::UserDefaultAttrProp	pixel_mask_prop;
-	pixel_mask_prop.set_label("Pixel mask");
+	pixel_mask_prop.set_unit(" ");
 	pixel_mask->set_default_properties(pixel_mask_prop);
 	att_list.push_back(pixel_mask);
 
 	//	Attribute : virtualPixelCorrection
 	virtualPixelCorrectionAttrib	*virtual_pixel_correction = new virtualPixelCorrectionAttrib();
 	Tango::UserDefaultAttrProp	virtual_pixel_correction_prop;
-	virtual_pixel_correction_prop.set_label("VirtualPixel correction");
+	virtual_pixel_correction_prop.set_unit(" ");
 	virtual_pixel_correction->set_default_properties(virtual_pixel_correction_prop);
+	virtual_pixel_correction->set_disp_level(Tango::EXPERT);
 	att_list.push_back(virtual_pixel_correction);
-
-	//	Attribute : efficiencyCorrection
-	efficiencyCorrectionAttrib	*efficiency_correction = new efficiencyCorrectionAttrib();
-	Tango::UserDefaultAttrProp	efficiency_correction_prop;
-	efficiency_correction_prop.set_label("Efficiency Correction");
-	efficiency_correction->set_default_properties(efficiency_correction_prop);
-	att_list.push_back(efficiency_correction);
 
 	//	Attribute : thresholdEnergy
 	thresholdEnergyAttrib	*threshold_energy = new thresholdEnergyAttrib();
 	Tango::UserDefaultAttrProp	threshold_energy_prop;
-	threshold_energy_prop.set_label("Threshold energy");
+	threshold_energy_prop.set_unit("eV");
 	threshold_energy->set_default_properties(threshold_energy_prop);
 	att_list.push_back(threshold_energy);
 
 	//	Attribute : photonEnergy
 	photonEnergyAttrib	*photon_energy = new photonEnergyAttrib();
 	Tango::UserDefaultAttrProp	photon_energy_prop;
-	photon_energy_prop.set_label("Photon energy");
+	photon_energy_prop.set_unit("eV");
 	photon_energy->set_default_properties(photon_energy_prop);
 	att_list.push_back(photon_energy);
 
 	//	Attribute : temperature
 	temperatureAttrib	*temperature = new temperatureAttrib();
-	Tango::UserDefaultAttrProp	temperature_prop;
-	temperature_prop.set_label("Temperature");
-	temperature->set_default_properties(temperature_prop);
 	att_list.push_back(temperature);
 
 	//	Attribute : humidity
@@ -305,8 +309,8 @@ void EigerClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Attribute : compression
 	compressionAttrib	*compression = new compressionAttrib();
 	Tango::UserDefaultAttrProp	compression_prop;
-	compression_prop.set_label("Compression");
-	compression_prop.set_description("Controls the compression of images");
+	compression_prop.set_unit(" ");
+	compression_prop.set_description("Controls the compression of images.[Default= ON]");
 	compression->set_default_properties(compression_prop);
 	compression->set_disp_level(Tango::EXPERT);
 	att_list.push_back(compression);
@@ -393,6 +397,21 @@ void EigerClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 
+	prop_name = "MemorizedFileNamePattern";
+	prop_desc = "";
+	prop_def  = "lima";
+	vect_data.clear();
+	vect_data.push_back("lima");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
 	prop_name = "MemorizedCountrateCorrection";
 	prop_desc = "Stores the value of countrateCorrection";
 	prop_def  = "false";
@@ -440,21 +459,6 @@ void EigerClass::set_default_property()
 
 	prop_name = "MemorizedVirtualPixelCorrection";
 	prop_desc = "Stores the value of virtualPixelCorrection";
-	prop_def  = "false";
-	vect_data.clear();
-	vect_data.push_back("false");
-	if (prop_def.length()>0)
-	{
-		Tango::DbDatum	data(prop_name);
-		data << vect_data ;
-		dev_def_prop.push_back(data);
-		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
-	}
-	else
-		add_wiz_dev_prop(prop_name, prop_desc);
-
-	prop_name = "MemorizedEfficiencyCorrection";
-	prop_desc = "Stores the value of efficiencyCorrection";
 	prop_def  = "false";
 	vect_data.clear();
 	vect_data.push_back("false");
@@ -518,6 +522,21 @@ void EigerClass::set_default_property()
 	prop_def  = "true";
 	vect_data.clear();
 	vect_data.push_back("true");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+
+	prop_name = "VerboseRestful";
+	prop_desc = "For DEBUG Only";
+	prop_def  = "false";
+	vect_data.clear();
+	vect_data.push_back("false");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);

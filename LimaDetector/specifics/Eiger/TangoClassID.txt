@@ -1,0 +1,11 @@
+/**
+ * Device Class Identification:
+ * 
+ * Class Name   :	Eiger
+ * Contact      :	arafat.noureddine@synchrotron-soleil.fr
+ * Class Family :	Acquisition
+ * Platform     :	Unix Like
+ * Bus          :	Not Applicable
+ * Manufacturer :	SOLEIL
+ * Reference    :	
+ */

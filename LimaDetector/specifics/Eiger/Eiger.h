@@ -53,6 +53,8 @@
 #include "EigerInterface.h"
 #include "EigerCamera.h"
 
+#define MAX_ATTRIBUTE_STRING_LENGTH     256
+
 //using namespace lima::Eiger;
 using namespace lima;
 using namespace yat4tango;
@@ -81,6 +83,13 @@ public :
 	//-----------------------------------------
 	Tango::DevDouble attr_thresholdEnergy_read_cache;
 	Tango::DevDouble attr_photonEnergy_read_cache;
+    Tango::DevBoolean attr_compression_read_cache;
+    Tango::DevBoolean attr_countrateCorrection_read_cache;
+    Tango::DevBoolean attr_virtualPixelCorrection_read_cache;
+    Tango::DevBoolean attr_flatfieldCorrection_read_cache;
+    Tango::DevBoolean attr_pixelMask_read_cache;
+    Tango::DevDouble  attr_temperature_read_cache;
+    Tango::DevDouble  attr_humidity_read_cache;    
 
 	//	Here is the Start of the automatic code generation part
 	//-------------------------------------------------------------	
@@ -89,6 +98,8 @@ public :
  *	Attribute member data.
  */
 //@{
+		Tango::DevString	*attr_fileNamePattern_read;
+		Tango::DevString	attr_fileNamePattern_write;
 		Tango::DevBoolean	*attr_countrateCorrection_read;
 		Tango::DevBoolean	attr_countrateCorrection_write;
 		Tango::DevBoolean	*attr_flatfieldCorrection_read;
@@ -97,8 +108,6 @@ public :
 		Tango::DevBoolean	attr_pixelMask_write;
 		Tango::DevBoolean	*attr_virtualPixelCorrection_read;
 		Tango::DevBoolean	attr_virtualPixelCorrection_write;
-		Tango::DevBoolean	*attr_efficiencyCorrection_read;
-		Tango::DevBoolean	attr_efficiencyCorrection_write;
 		Tango::DevDouble	*attr_thresholdEnergy_read;
 		Tango::DevDouble	attr_thresholdEnergy_write;
 		Tango::DevDouble	*attr_photonEnergy_read;
@@ -124,6 +133,10 @@ public :
  */
 	string	targetPath;
 /**
+ *	
+ */
+	string	memorizedFileNamePattern;
+/**
  *	Stores the value of countrateCorrection
  */
 	Tango::DevBoolean	memorizedCountrateCorrection;
@@ -140,10 +153,6 @@ public :
  */
 	Tango::DevBoolean	memorizedVirtualPixelCorrection;
 /**
- *	Stores the value of efficiencyCorrection
- */
-	Tango::DevBoolean	memorizedEfficiencyCorrection;
-/**
  *	Stores the value of thresholdEnergy
  */
 	Tango::DevDouble	memorizedThresholdEnergy;
@@ -159,6 +168,10 @@ public :
  *	Enable/Disable the HDF5 Reader, in order to read images from HDF5 file and publish them in image attribute & Nexus files
  */
 	Tango::DevBoolean	useReader;
+/**
+ *	For DEBUG Only
+ */
+	Tango::DevBoolean	verboseRestful;
 //@}
 
 /**
@@ -232,6 +245,14 @@ public :
  */
 	virtual void read_attr_hardware(vector<long> &attr_list);
 /**
+ *	Extract real attribute values for fileNamePattern acquisition result.
+ */
+	virtual void read_fileNamePattern(Tango::Attribute &attr);
+/**
+ *	Write fileNamePattern attribute values to hardware.
+ */
+	virtual void write_fileNamePattern(Tango::WAttribute &attr);
+/**
  *	Extract real attribute values for countrateCorrection acquisition result.
  */
 	virtual void read_countrateCorrection(Tango::Attribute &attr);
@@ -263,14 +284,6 @@ public :
  *	Write virtualPixelCorrection attribute values to hardware.
  */
 	virtual void write_virtualPixelCorrection(Tango::WAttribute &attr);
-/**
- *	Extract real attribute values for efficiencyCorrection acquisition result.
- */
-	virtual void read_efficiencyCorrection(Tango::Attribute &attr);
-/**
- *	Write efficiencyCorrection attribute values to hardware.
- */
-	virtual void write_efficiencyCorrection(Tango::WAttribute &attr);
 /**
  *	Extract real attribute values for thresholdEnergy acquisition result.
  */
@@ -304,6 +317,10 @@ public :
  */
 	virtual void write_compression(Tango::WAttribute &attr);
 /**
+ *	Read/Write allowed for fileNamePattern attribute.
+ */
+	virtual bool is_fileNamePattern_allowed(Tango::AttReqType type);
+/**
  *	Read/Write allowed for countrateCorrection attribute.
  */
 	virtual bool is_countrateCorrection_allowed(Tango::AttReqType type);
@@ -319,10 +336,6 @@ public :
  *	Read/Write allowed for virtualPixelCorrection attribute.
  */
 	virtual bool is_virtualPixelCorrection_allowed(Tango::AttReqType type);
-/**
- *	Read/Write allowed for efficiencyCorrection attribute.
- */
-	virtual bool is_efficiencyCorrection_allowed(Tango::AttReqType type);
 /**
  *	Read/Write allowed for thresholdEnergy attribute.
  */

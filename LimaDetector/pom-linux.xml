@@ -9,7 +9,7 @@
 
     <groupId>fr.soleil.device</groupId>
     <artifactId>LimaDetector-${aol}-${mode}</artifactId>
-    <version>1.5.5</version>
+    <version>1.5.6</version>
 	
     <packaging>nar</packaging>
     <name>LimaDetector</name>
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>fr.soleil.lib.Lima.Camera</groupId>
             <artifactId>LimaEiger-${aol}-shared-${mode}</artifactId>
-            <version>1.0.4</version><!--download master.h5-->
+            <version>1.0.5</version><!--CR_visite_dectris-->
         </dependency>
 
         <dependency>
