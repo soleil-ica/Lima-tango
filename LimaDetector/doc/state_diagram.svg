@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="514.6067pt" style="width:613px;height:514px;background:#FFFFE0;" version="1.1" viewBox="0 0 613 514" width="613.4831pt">
+    <defs>
+        <filter height="300%" id="f1" width="300%" x="-1" y="-1">
+            <feGaussianBlur result="blurOut" stdDeviation="1.4981273408239701"/>
+            <feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/>
+            <feOffset dx="2.9962546816479403" dy="2.9962546816479403" in="blurOut2" result="blurOut3"/>
+            <feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/>
+        </filter>
+    </defs>
+    <g>
+        <text fill="#000000" font-family="sans-serif" font-size="13.4831" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="265.9176" x="167.0412" y="13.9967">LimaDetector Diagram Class - 2015/09/14</text>
+        <text fill="#000000" font-family="sans-serif" font-size="13.4831" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="5.2434" x="273.7828" y="30.9559">*</text>
+        <text fill="#000000" font-family="sans-serif" font-size="13.4831" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="5.2434" x="279.0262" y="30.9559">*</text>
+        <text fill="#000000" font-family="sans-serif" font-size="13.4831" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="5.2434" x="284.2697" y="30.9559">*</text>
+        <text fill="#000000" font-family="sans-serif" font-size="13.4831" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="5.2434" x="289.5131" y="30.9559">*</text>
+        <text fill="#000000" font-family="sans-serif" font-size="13.4831" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="5.2434" x="294.7566" y="30.9559">*</text>
+        <text fill="#000000" font-family="sans-serif" font-size="13.4831" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="5.2434" x="300" y="30.9559">*</text>
+        <text fill="#000000" font-family="sans-serif" font-size="13.4831" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="5.2434" x="305.2434" y="30.9559">*</text>
+        <text fill="#000000" font-family="sans-serif" font-size="13.4831" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="5.2434" x="310.4869" y="30.9559">*</text>
+        <text fill="#000000" font-family="sans-serif" font-size="13.4831" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="5.2434" x="315.7303" y="30.9559">*</text>
+        <text fill="#000000" font-family="sans-serif" font-size="13.4831" lengthAdjust="spacingAndGlyphs" textLength="5.2434" x="320.9738" y="30.9559">*</text>
+        <ellipse cx="397.0037" cy="58.6376" fill="#000000" filter="url(#f1)" rx="7.4906" ry="7.4906" style="stroke: none; stroke-width: 0.7490636704119851;"/>
+        <rect fill="#CD853F" filter="url(#f1)" height="37.4532" rx="9.3633" ry="9.3633" style="stroke: #808080; stroke-width: 1.1235955056179776;" width="37.4532" x="456.9288" y="39.911"/>
+        <line style="stroke: #808080; stroke-width: 1.1235955056179776;" x1="456.9288" x2="494.382" y1="59.4606" y2="59.4606"/>
+        <text fill="#000000" font-family="Arial" font-size="10.4869" lengthAdjust="spacingAndGlyphs" textLength="13.4831" x="468.9139" y="53.6645">Init</text>
+        <rect fill="#FFFF00" filter="url(#f1)" height="37.4532" rx="9.3633" ry="9.3633" style="stroke: #808080; stroke-width: 1.1235955056179776;" width="53.9326" x="216.4794" y="135.7912"/>
+        <line style="stroke: #808080; stroke-width: 1.1235955056179776;" x1="216.4794" x2="270.412" y1="155.3407" y2="155.3407"/>
+        <text fill="#000000" font-family="Arial" font-size="10.4869" lengthAdjust="spacingAndGlyphs" textLength="38.9513" x="223.97" y="149.5446">Standby</text>
+        <rect fill="#FF0000" filter="url(#f1)" height="37.4532" rx="9.3633" ry="9.3633" style="stroke: #808080; stroke-width: 1.1235955056179776;" width="38.9513" x="296.6292" y="411.4466"/>
+        <line style="stroke: #808080; stroke-width: 1.1235955056179776;" x1="296.6292" x2="335.5805" y1="430.9962" y2="430.9962"/>
+        <text fill="#000000" font-family="Arial" font-size="10.4869" lengthAdjust="spacingAndGlyphs" textLength="23.97" x="304.1199" y="425.2001">Fault</text>
+        <rect fill="#800080" filter="url(#f1)" height="37.4532" rx="9.3633" ry="9.3633" style="stroke: #808080; stroke-width: 1.1235955056179776;" width="65.9176" x="4.4944" y="273.6189"/>
+        <line style="stroke: #808080; stroke-width: 1.1235955056179776;" x1="4.4944" x2="70.412" y1="293.1685" y2="293.1685"/>
+        <text fill="#000000" font-family="Arial" font-size="10.4869" lengthAdjust="spacingAndGlyphs" textLength="50.9363" x="11.985" y="287.3724">Calibrating</text>
+        <ellipse cx="316.1049" cy="502.0833" fill="none" filter="url(#f1)" rx="7.4906" ry="7.4906" style="stroke: #000000; stroke-width: 0.7490636704119851;"/>
+        <ellipse cx="316.4794" cy="502.4579" fill="#000000" rx="4.4944" ry="4.4944" style="stroke: none; stroke-width: 0.7490636704119851;"/>
+        <rect fill="#008000" filter="url(#f1)" height="121.4222" rx="9.3633" ry="9.3633" style="stroke: #808080; stroke-width: 1.1235955056179776;" width="438.9513" x="96.6292" y="231.6713"/>
+        <rect fill="#FFFFE0" height="97.3783" rx="9.3633" ry="9.3633" style="stroke: #FFFFE0; stroke-width: 0.7490636704119851;" width="434.4569" x="98.8764" y="253.4681"/>
+        <line style="stroke: #808080; stroke-width: 1.1235955056179776;" x1="96.6292" x2="535.5805" y1="251.2209" y2="251.2209"/>
+        <text fill="#000000" font-family="Arial" font-size="10.4869" lengthAdjust="spacingAndGlyphs" textLength="39.7004" x="296.2547" y="245.4248">Running</text>
+        <rect fill="#008000" filter="url(#f1)" height="38.3464" rx="9.3633" ry="9.3633" style="stroke: #808080; stroke-width: 1.1235955056179776;" width="220.9738" x="104.8689" y="303.6553"/>
+        <line style="stroke: #808080; stroke-width: 1.1235955056179776;" x1="104.8689" x2="325.8427" y1="323.2049" y2="323.2049"/>
+        <text fill="#000000" font-family="Arial" font-size="10.4869" lengthAdjust="spacingAndGlyphs" textLength="119.1011" x="155.8052" y="317.4088">Acquire frames from SDK</text>
+        <text fill="#000000" font-family="sans-serif" font-size="8.9888" lengthAdjust="spacingAndGlyphs" textLength="205.9925" x="108.6142" y="336.2813">New Frame Ready (ProcessData/Saving Nexus/...)</text>
+        <ellipse cx="215.3558" cy="268.4494" fill="#000000" filter="url(#f1)" rx="7.4906" ry="7.4906" style="stroke: none; stroke-width: 0.7490636704119851;"/>
+        <path d="M215.3558,276.1022 C215.3558,282.115 215.3558,291.1759 215.3558,299.6633 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="215.3558,303.5096,218.3521,296.768,215.3558,299.7643,212.3596,296.768,215.3558,303.5096" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <path d="M325.9625,318.1459 C334.2404,319.1758 339.3258,320.7126 339.3258,322.7565 C339.3258,324.4491 335.839,325.7939 329.9386,326.7911 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="325.9625,327.367,333.0642,329.3654,329.6691,326.8298,332.2047,323.4348,325.9625,327.367" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="9.7378" lengthAdjust="spacingAndGlyphs" textLength="162.5468" x="343.8202" y="326.8727">while nb acquired frames &lt; nbFrames</text>
+        <path d="M404.6846,58.6376 C420.7685,58.6376 436.8517,58.6376 452.9356,58.6376 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="456.8037,58.6376,450.0622,55.6414,453.0584,58.6376,450.0622,61.6339,456.8037,58.6376" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <path d="M456.8494,67.0301 C416.8622,83.2833 323.0659,121.4069 274.2277,141.2571 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="270.5034,142.771,277.8769,143.0097,273.9733,141.3614,275.6216,137.4578,270.5034,142.771" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="9.7378" lengthAdjust="spacingAndGlyphs" textLength="48.6891" x="373.7828" y="110.6939">Succeeded</text>
+        <path d="M489.4494,77.5028 C525.0734,126.6496 613.0307,264.72 549.0637,353.0197 C499.8801,420.9118 388.4779,429.5612 339.7116,429.9403 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="335.7498,429.9537,342.5016,432.9269,339.4951,429.9409,342.4811,426.9344,335.7498,429.9537" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="9.7378" lengthAdjust="spacingAndGlyphs" textLength="26.2172" x="559.5506" y="206.5741">Failed</text>
+        <path d="M239.1558,173.3433 C237.4532,184.1058 236.8052,197.8361 241.1985,209.1994 C243.7281,215.7418 247.0449,222.0848 250.8749,228.153 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="253.0539,231.4961,251.8812,224.2124,251.0081,228.3589,246.8617,227.4858,253.0539,231.4961" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="9.7378" lengthAdjust="spacingAndGlyphs" textLength="74.9064" x="241.9476" y="206.5741">Snap (nbFrames)</text>
+        <path d="M329.3678,231.6204 C329.3596,219.0684 327.0674,206.4107 320.5993,195.7163 C310.4787,178.983 290.8989,168.8339 273.997,162.8871 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="270.4352,161.6811,275.859,166.682,273.9825,162.8828,277.7817,161.0063,270.4352,161.6811" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="9.7378" lengthAdjust="spacingAndGlyphs" textLength="114.6067" x="325.8427" y="206.5741">nbFrames is reached/Stop</text>
+        <path d="M216.3228,156.4062 C165.2457,159.1822 57.8722,168.2234 35.206,195.7163 C18.2847,216.2406 23.3582,248.4886 29.5644,269.8339 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="30.6489,273.4249,31.5679,266.1049,29.566,269.8396,25.8314,267.8376,30.6489,273.4249" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="9.7378" lengthAdjust="spacingAndGlyphs" textLength="50.1873" x="35.9551" y="206.5741">Calibrate/...</text>
+        <path d="M49.1112,273.5702 C57.7838,260.9732 70.409,244.2287 83.8951,231.6713 C121.4135,196.7373 177.8367,174.8766 212.561,163.8931 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="216.2689,162.7358,208.9405,161.8866,212.6941,163.8528,210.7278,167.6064,216.2689,162.7358" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="9.7378" lengthAdjust="spacingAndGlyphs" textLength="92.8839" x="135.5805" y="206.5741">Calibration done/Stop</text>
+        <path d="M47.4515,311.1919 C55.6518,324.4946 68.4108,342.0893 83.8951,353.0197 C150.5341,400.0609 248,419.5335 292.4427,426.3185 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="296.3191,426.8983,290.0951,422.9374,292.615,426.3441,289.2084,428.864,296.3191,426.8983" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="9.7378" lengthAdjust="spacingAndGlyphs" textLength="26.2172" x="148.3146" y="386.3493">Failed</text>
+        <path d="M316.1049,353.0893 C316.1049,372.4998 316.1049,392.8069 316.1049,407.5927 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="316.1049,411.4197,319.1011,404.6781,316.1049,407.6743,313.1086,404.6781,316.1049,411.4197" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="9.7378" lengthAdjust="spacingAndGlyphs" textLength="26.2172" x="316.8539" y="386.3493">Failed</text>
+        <path d="M316.1049,449.0551 C316.1049,462.2648 316.1049,479.7059 316.1049,490.7239 " fill="none" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+        <polygon fill="#A80036" points="316.1049,494.4728,319.1011,487.7312,316.1049,490.7275,313.1086,487.7312,316.1049,494.4728" style="stroke: #A80036; stroke-width: 0.7490636704119851;"/>
+    </g>
+</svg>
